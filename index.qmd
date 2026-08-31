@@ -17,4 +17,4 @@ Welcome! These tutorials walk through the R and analysis skills used in this cou
 
 ## Reference
 
-- [Data Codebook: Area-Level Measures](codebook.qmd) — variable descriptions for `class_data.csv`
+- [Data Codebook](codebook.qmd) — variable descriptions for `class_data_raw.csv`

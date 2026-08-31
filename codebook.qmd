@@ -1,20 +1,99 @@
 ---
-title: "Data Codebook: Area-Level Measures"
-subtitle: "Reference for variables in class_data.csv"
+title: "Data Codebook"
+subtitle: "Reference for variables in class_data_raw.csv"
 format:
   html:
     toc: true
     toc-depth: 2
 ---
 
-This page documents the **tract-level (area-level) environmental and sociodemographic
-variables** in `class_data.csv`, converted from `Classdata_arealevelmeasures_description.docx`.
-It's meant as a reference to check back to while working through the lessons — you don't need to
-read it top to bottom.
+This page documents every variable in `class_data_raw.csv`. Variable names, types, and one-line
+descriptions come from the course's official `codebook.xlsx` (also available in `data_raw/`);
+background and methodology for the tract-level environmental measures is pulled in from
+`Classdata_arealevelmeasures_description.docx`. It's meant as a reference to check back to while
+working through the lessons — you don't need to read it top to bottom.
 
-## Traffic Volume
+::: {.callout-tip}
+## About this dataset
 
-**Variable:** `ctb1traff`
+The primary class dataset is based on the **Southeast Pennsylvania Household Survey** and
+represents a **simulated** cross-sectional survey of adults living in Philadelphia in 2015
+(participants identified via random-digit dialing in the scenario the data represent). It's
+fictitious data designed to resemble real-world data, not actual study participants — this lets
+you work through realistic epidemiologic problems without using identifiable data.
+
+`class_data_raw.csv` contains **2,000 observations and 38 variables**: health outcomes, health
+behaviors, demographic/socioeconomic characteristics, perceptions of neighborhood conditions, and
+geographic location. `PHL_NDVI_summer_annual.csv` (384 Philadelphia census tracts) is a separate
+file you'll link in during Lesson 1.
+:::
+
+## Individual-Level Variables
+
+### Identifiers & Geography
+
+| Variable | Type | Description |
+|---|---|---|
+| `id` | Integer | Random identification number |
+| `geoid10` | String | 2010 Census tract identifier (GEOID) — used to link to tract-level data |
+| `year` | Integer | Year when data are collected |
+
+### Demographics & Socioeconomic Status
+
+| Variable | Type | Description |
+|---|---|---|
+| `age` | Numeric | Age of the individual in years |
+| `gender` | String | Gender identity ('Woman', 'Man', 'Non-binary') |
+| `race_ethnicity` | String | Race/ethnicity of the individual (e.g., 'Black', 'White', 'Hispanic', 'Other') |
+| `education` | String | Educational attainment level (e.g., "< Bachelor's") |
+| `employment_status` | String | Employment status (e.g., 'Not working', 'Working') |
+
+### Health Outcomes
+
+| Variable | Type | Description |
+|---|---|---|
+| `high_blood_pressure` | Integer | Has been diagnosed with high blood pressure (1 = yes, 0 = no) |
+| `diabetes` | Integer | Has been diagnosed with diabetes (1 = yes, 0 = no) |
+| `asthma` | Integer | Diagnosed with asthma (1 = yes, 0 = no) |
+| `obese` | Integer | Individual is classified as obese (1 = yes, 0 = no) |
+| `self_reported_health` | Integer | Self-reported health status (1 = good/very good/excellent, 0 = fair/poor) |
+| `mental_health` | Integer | Mental health is reported as good (1 = good mental health, 0 = otherwise) |
+| `stress` | Integer | Indicator of general stress level (1 = stressed, 0 = not stressed) |
+| `extreme_stress` | Integer | Indicator of extreme stress (1 = extremely stressed, 0 = not extremely stressed) |
+| `yes_adl` | Integer | Engages in activities of daily living independently (1 = yes, 0 = no) |
+
+### Health Behaviors
+
+| Variable | Type | Description |
+|---|---|---|
+| `current_smoker` | Integer | Currently smokes tobacco (1 = yes, 0 = no) |
+| `physical_activity` | Integer | Engages in regular physical activity (1 = yes, 0 = no) |
+| `improve_health` | Integer | Self-reported desire to improve health status (1 = yes, 0 = no) |
+
+### Perceptions of Neighborhood Conditions
+
+| Variable | Type | Description |
+|---|---|---|
+| `daytime_safe` | Integer | Feels safe during the daytime in the neighborhood (1 = yes, 0 = no) |
+| `has_park` | Integer | Self-reported perceived access to a park or green space nearby (1 = yes, 0 = no) |
+| `finds_fruits` | Integer | Able to find fresh fruits and vegetables easily (1 = yes, 0 = no) |
+| `grocery_access` | Integer | Access to a grocery store within a reasonable distance (1 = yes, 0 = no) |
+| `social_capital` | Integer | Reports a sense of community or social capital (1 = yes, 0 = no) |
+
+## Area-Level (Tract-Level) Variables
+
+These variables describe the census tract (`geoid10`) each participant lives in, rather than the
+participant individually — everyone living in the same tract shares the same value.
+
+### Population Density
+
+| Variable | Type | Description |
+|---|---|---|
+| `popden_km` | Numeric | Population density in the census tract (people per km²) |
+
+### Traffic Volume
+
+**Variable:** `ctb1traff` (Numeric — "Traffic density" per the official codebook)
 
 Measured and estimated traffic volumes for major roads by road section are available annually
 from PennDOT (2005–present). Air pollution levels from traffic typically return to background
@@ -36,12 +115,12 @@ volume.**
 - *Data obtained:* Downloaded from [www.pasda.psu.edu](http://www.pasda.psu.edu) (2005–2015
   downloaded 11/4/2016; 2016–2017 downloaded 4/26/2017).
 
-## Land Cover: Tree Canopy & Grass/Shrub Cover
+### Land Cover: Tree Canopy & Grass/Shrub Cover
 
-| Variable | Description |
-|---|---|
-| `hrlctree` | % of census tract area covered by tree canopy |
-| `hrlcgrass_shrub` | % of census tract area covered by grass/shrub |
+| Variable | Type | Description |
+|---|---|---|
+| `hrlctree` | Numeric | Tree canopy cover (proportion in the census tract) |
+| `hrlcgrass_shrub` | Numeric | Grass or shrub cover (proportion in the census tract) |
 
 Derived from the Philadelphia Land Cover Raster, which provides data on surface types in
 Philadelphia in 2008 and an update in 2018 (the 2015 value in this data set was created using
@@ -52,19 +131,17 @@ with the assistance of the University of Vermont Spatial Analysis Laboratory.
 
 You can calculate a total vegetation measure by summing `hrlctree` and `hrlcgrass_shrub` together.
 
-## Tract-Level Sociodemographic Composition
+### Tract-Level Sociodemographic Composition
 
-| Variable | Description | Interpretation |
+| Variable | Type | Description |
 |---|---|---|
-| `race_blackNH` | % of tract population identifying as Black, non-Hispanic | Higher = greater % Black, non-Hispanic residents |
-| `race_whiteNH` | % of tract population identifying as White, non-Hispanic | Higher = greater % White, non-Hispanic residents |
-| `race_hisp` | % of tract population identifying as Hispanic/Latino | Higher = greater % Hispanic/Latino residents |
-| `Educ_ltHS` | % of tract population with less than a high school education | Higher = greater % without a high school education |
-| `Educ_ltba` | % of tract population with less than a bachelor's degree | Higher = greater % without a bachelor's degree |
-| `pov_allage` | % of tract population living in poverty (all ages) | Range 0–1; higher = greater % in poverty (0 = 0% in poverty; 1 = 100% in poverty) |
-| `unemployed` | % of tract population unemployed (age 16+) | Higher = greater % unemployed |
-
-*Note: the source `.docx` labeled these `Educ_minHS`/`Educ_minBA` and described them as "≥ HS/bachelor's"; the columns in `class_data.csv` are actually `Educ_ltHS`/`Educ_ltba` ("less than"), which is the direction documented above.*
+| `race_blackNH` | Numeric | Proportion non-Hispanic Black residents in the census tract |
+| `race_whiteNH` | Numeric | Proportion non-Hispanic White residents in the census tract |
+| `race_hisp` | Numeric | Proportion Hispanic residents in the census tract |
+| `Educ_ltHS` | Numeric | Proportion of tract residents with less than a high school education |
+| `Educ_ltba` | Numeric | Proportion of tract residents with less than a bachelor's degree |
+| `pov_allage` | Numeric | Proportion of tract residents living in poverty |
+| `unemployed` | Numeric | Proportion of tract unemployed |
 
 **Data sources**
 
@@ -77,38 +154,61 @@ You can calculate a total vegetation measure by summing `hrlctree` and `hrlcgras
   measure was suppressed by the Census Bureau due to low sample size (to protect against
   potentially identifying information).
 
-## Crime Variables
+### Crime Variables
 
-Police-reported crime data is available from OpenDataPhilly. Yearly crime **rates** (per 10,000
-persons) and **densities** (per square mile/km) for the City of Philadelphia were created for
-calendar years 2006–2016. Crimes are categorized, with rates/densities available for violent
-crime, narcotic drug violations, and property crime, summarized by 2010 U.S. Census Tract. These
-rates were generated to provide objective measures of neighborhood safety, and can be used to
-explore the influence of crime and safety on health outcomes and behaviors.
+| Variable | Type | Description |
+|---|---|---|
+| `ctviolra` | Numeric | Violent crime rate — units unconfirmed, see flag below |
+| `ctviolkm` | Numeric | Violent crime rate per km² in the census tract |
 
-| Variable | Description | Interpretation | Missing data code |
-|---|---|---|---|
-| `ctviolra` | Rate per 10,000 population, violent crime | Higher = more crime | `9999999999` |
-| `ctviolkm` | Density per sq. km, violent crime | Higher = more crime | `9999999999` |
+Police-reported crime data is available from OpenDataPhilly. Yearly crime **rates** and
+**densities** (per square mile/km) for the City of Philadelphia were created for calendar years
+2006–2016. Crimes are categorized, with rates/densities available for violent crime, narcotic
+drug violations, and property crime, summarized by 2010 U.S. Census Tract. These rates were
+generated to provide objective measures of neighborhood safety, and can be used to explore the
+influence of crime and safety on health outcomes and behaviors.
 
 ::: {.callout-warning}
-Note the missing-data sentinel value **`9999999999`** for the crime variables — this is *not* a
-real crime rate. Be sure to recode it to `NA` before running any analysis or summary statistics
-on `ctviolra`/`ctviolkm`, or it will badly distort means, ranges, and models.
+## ⚠️ Unresolved: units for `ctviolra`
+
+Two source documents disagree on the unit for `ctviolra`, and this hasn't been confirmed yet:
+
+- `Classdata_arealevelmeasures_description.docx` describes it as a rate **per 10,000 population**.
+- The official `codebook.xlsx` (and the `create_data.R` script that generated it) describes it as
+  **"Total violent crime incidents per 1,000 residents."**
+
+Leaving this unresolved for now, per instructor note — don't state a specific unit for
+`ctviolra` in student-facing material until this is confirmed.
 :::
-
-## Individual-Level Variables (Not Covered by This Codebook)
-
-The variables below come from the participant-level survey rather than area-level environmental
-data sources, and aren't described in `Classdata_arealevelmeasures_description.docx`. They're
-listed here just so you know what's in `class_data.csv` and what still needs documentation:
-
-`id`, `geoid10`, `year`, `age`, `gender`, `education`, `employment_status`, `race_ethnicity`,
-`popden_km`, `stress`, `extreme_stress`, `physical_activity`, `current_smoker`, `obese`,
-`self_reported_health`, `mental_health`, `improve_health`, `high_blood_pressure`, `diabetes`,
-`daytime_safe`, `has_park`, `finds_fruits`, `grocery_access`, `social_capital`, `yes_adl`, `asthma`
 
 ::: {.callout-note}
-If you have a separate data dictionary or survey instrument for these (e.g. from the original
-study protocol), send it over and I can fold it into this page the same way.
+The source `.docx` also lists a missing-data sentinel value of `9999999999` for the crime
+variables. That value does **not** actually appear anywhere in `class_data_raw.csv` (checked
+directly) — it looks like a leftover description from the original real-data source system, not
+something present in this simulated class dataset. No special recoding is needed for
+`ctviolra`/`ctviolkm` on that account.
 :::
+
+## Known Missingness in This Dataset
+
+A few variables have a small number of true `NA` values, deliberately built into the simulated
+data set (confirmed by counting missing values directly in `class_data_raw.csv`):
+
+| Variable | # Missing (of 2,000) |
+|---|---|
+| `mental_health` | 42 |
+| `current_smoker` | 20 |
+| `high_blood_pressure` | 12 |
+| `stress` | 7 |
+| `has_park` | 5 |
+| `age` | 3 |
+| `gender` | 2 |
+
+All other variables are complete.
+
+## Known Data Quirks
+
+- **`age` has 4 implausible outliers** coded as 116 years old. These are intentional (built into
+  the simulated data for teaching purposes) — an example of the kind of value that should catch
+  your eye during exploratory data analysis (e.g., via `summary()` or a histogram), well before
+  any modeling. You'll work through recoding this in the Exploratory Data Analysis lesson.

@@ -34,6 +34,18 @@ The gray boxes below are **live R editors** — the code actually runs in your b
 Some sections are marked **🧠 Your Turn**. Those give you a task and a blank (or partially blank) code editor. Try to write the code yourself before you look at the answer — the solution is hidden underneath in a collapsed box. Click it open only after you've given it a real attempt (or if you're truly stuck).
 :::
 
+::: {.callout-note}
+## Doing this in RStudio instead of (or in addition to) the browser?
+
+This lab uses three files, also described in the [Data Codebook](codebook.qmd):
+
+- `class_data_raw.csv` — the primary participant-level data set
+- `codebook.xlsx` — variable descriptions and coding
+- `PHL_NDVI_summer_annual.csv` — tract-level greenness data you'll link in
+
+Download all three into the `data_raw/` folder of the `EOH635_project` you built in the C01 setup assignment before you start.
+:::
+
 ********************
 
 # 🛠 1. Basic R Concepts
@@ -108,22 +120,31 @@ my_data$age[2]
 :::
 
 # ======================================================
-# 📁 2. A Note on Working Directories
+# 📁 2. A Note on Project Organization
 # ======================================================
 
-In RStudio, we use **working directories** to reference the place on your computer where files are stored, loaded, and saved. You'd check yours with:
+In RStudio, we need a reliable way to tell R where to find (and save) files. You'll sometimes see older code use `setwd("C:/Users/yourname/YourFolder")` to do this — but **this course does not use `setwd()` as the standard workflow**. A path like that is tied to one specific computer and breaks the moment the project moves to a different machine (including, for grading, yours to mine).
 
-```r
-getwd()
+Instead, this course uses an **RStudio Project** with a standard folder structure, set up once in the C01 reproducible-workflow assignment:
+
+```
+EOH635_project/
+├── EOH635_project.Rproj
+├── data_raw/          <- original files exactly as you received them (never edit these by hand)
+├── data_processed/    <- new files your scripts create (cleaned, merged, recoded data)
+├── scripts/           <- your .R / .qmd / .Rmd files
+└── outputs/           <- tables, figures, and other generated results
 ```
 
-...and set it with something like:
+When you open `EOH635_project.Rproj`, RStudio automatically sets your working directory to the project root — no `setwd()` needed. From there, you use **relative paths**, typically with `file.path()`, so the same script works on any computer:
 
 ```r
-setwd("C:/Users/yourname/YourFolder")
+read.csv(file.path("data_raw", "class_data_raw.csv"))
 ```
 
-**In this browser-based tutorial, there's no local file system to point to** — the data files below are fetched automatically for you from the web the moment you load this page. But when you move to doing this analysis for real in RStudio on your own computer, `setwd()` (or better, an RStudio Project) and having your data file in that same folder is exactly how you'll read in your own data.
+For this lab, that means: put `class_data_raw.csv`, `PHL_NDVI_summer_annual.csv`, and `codebook.xlsx` in `data_raw/`, and save anything you create (like the merged dataset at the end of this lab) into `data_processed/`.
+
+**In this browser-based tutorial, there's no local file system to point to at all** — the data files below are fetched automatically for you from the web the moment you load this page, using the same `data_raw` / `data_processed` folder names so the code you see here matches what you'll type in RStudio.
 
 # ======================================================
 # 📦 3. Loading Required Packages
@@ -164,22 +185,24 @@ library(tidyverse)
 
 Recall that we can either create a data frame in R, or read one in. A lot of times, as environmental epidemiologists, we have an already-existing data set that we need to read into R — you'll primarily do that this quarter.
 
-In RStudio, once `class_data.csv` is in your working directory, you'd simply run:
+For this lab, the raw data file is **`class_data_raw.csv`** (find it described in the [Data Codebook](codebook.qmd), along with `codebook.xlsx`). In RStudio, once it's in `data_raw/` inside your `EOH635_project`, you'd run:
 
 ```r
-data <- read.csv("class_data.csv")
+data <- read.csv(file.path("data_raw", "class_data_raw.csv"))
 ```
 
-**In the browser, we first have to fetch the file from the web** before R can see it (webR can't see your OneDrive or hard drive — only files that have been downloaded into its in-browser file system). The chunk below does that automatically when the page loads, then reads the file in exactly the same way you would in RStudio.
+**In the browser, we first have to fetch the file from the web** before R can see it (webR can't see your OneDrive or hard drive — only files that have been downloaded into its in-browser file system). The chunk below does that automatically when the page loads: it creates a `data_raw` folder right here in your browser's R session (mirroring the real project structure) and downloads the file into it, then reads it in exactly the way you would in RStudio.
 
 ```{webr-r}
 #| autorun: true
 
 data_base_url <- "https://raw.githubusercontent.com/GITHUB-USERNAME/REPO-NAME/main/data/"
 
-download.file(paste0(data_base_url, "class_data.csv"), "class_data.csv")
+dir.create("data_raw", showWarnings = FALSE)
 
-data <- read.csv("class_data.csv")
+download.file(paste0(data_base_url, "class_data_raw.csv"), file.path("data_raw", "class_data_raw.csv"))
+
+data <- read.csv(file.path("data_raw", "class_data_raw.csv"))
 ```
 
 ******
@@ -392,9 +415,9 @@ Let's read in that data (again, in the browser we first fetch it from the web; i
 ```{webr-r}
 #| autorun: true
 
-download.file(paste0(data_base_url, "PHL_NDVI_summer_annual.csv"), "PHL_NDVI_summer_annual.csv")
+download.file(paste0(data_base_url, "PHL_NDVI_summer_annual.csv"), file.path("data_raw", "PHL_NDVI_summer_annual.csv"))
 
-PHL_NDVI_summer_annual <- read.csv("PHL_NDVI_summer_annual.csv")
+PHL_NDVI_summer_annual <- read.csv(file.path("data_raw", "PHL_NDVI_summer_annual.csv"))
 ```
 
 Inspect the dataset using the `names`, `str`, and `head` functions. Do you remember what each of these shows you?
@@ -512,15 +535,19 @@ Assuming everything looks OK, let's move on. If not, we'd need to do some troubl
 
 Currently, our new data frame just lives in our R environment (or, on this page, in your browser's temporary in-browser R session). Once we close R (or this browser tab), we lose our changes unless we save them. We can either rerun this code again, or save our new data frame with any changes we made. Let's do this now.
 
-**Note:** it's good practice to save your data frame using a **new** name. This way you keep the original data frame to go back to, in case you identify any errors or mistakes.
+**Note:** it's good practice to save your data frame using a **new** name, and — per this course's project convention — into `data_processed/`, not `data_raw/`. That way `data_raw/class_data_raw.csv` stays untouched as your original source, and anyone (including you, later) can tell at a glance that `data_processed/` files were generated by a script rather than hand-edited.
 
 ```{webr-r}
+dir.create("data_processed", showWarnings = FALSE)
+
 # Save dataset
-write.csv(data2, "new_class_data.csv", row.names = FALSE)
+write.csv(data2, file.path("data_processed", "class_data_processed.csv"), row.names = FALSE)
 ```
 
+In RStudio, that line saves `class_data_processed.csv` into `data_processed/` inside your `EOH635_project`, where it will persist.
+
 ::: {.callout-warning}
-In RStudio, this line saves `new_class_data.csv` into your working directory on your own computer, where it will persist. **In this browser tutorial**, `write.csv()` writes the file into webR's temporary in-browser file system — it exists only for this browser session and isn't automatically downloadable to your computer. When you do this for real, run it in RStudio (or your local R installation) so the saved file actually lands on your machine.
+**In this browser tutorial**, `write.csv()` writes the file into webR's temporary in-browser file system — it exists only for this browser session and isn't automatically downloadable to your computer. When you do this for real, run it in RStudio (or your local R installation) so the saved file actually lands in your project's `data_processed/` folder.
 :::
 
 # ======================================================

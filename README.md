@@ -11,9 +11,11 @@ quarto_tutorials/
 ├── _quarto.yml            # Project + site config
 ├── index.qmd               # Landing page listing lessons
 ├── lesson1.qmd              # Lesson 1 (converted from lessonone_2025.Rmd)
+├── codebook.qmd             # Full data codebook (built from the official codebook.xlsx + docx background)
 ├── data/                   # Class data files (also need to be public on GitHub — see below)
-│   ├── class_data.csv
-│   └── PHL_NDVI_summer_annual.csv
+│   ├── class_data_raw.csv
+│   ├── PHL_NDVI_summer_annual.csv
+│   └── codebook.xlsx        # Official codebook, for students who want the spreadsheet directly
 ├── _extensions/coatless/webr/  # The quarto-webr extension (already vendored — no install step needed)
 └── .gitignore
 ```
@@ -44,7 +46,8 @@ to fetch the data files from a public URL on the web. The simplest way to do tha
 whole folder on GitHub and turn on GitHub Pages.
 
 1. **Create a new GitHub repository** (e.g. `eoh635-tutorials`). It can be public — you confirmed
-   `class_data.csv` and the NDVI file are de-identified and OK to host publicly for this purpose.
+   `class_data_raw.csv` and the NDVI file are de-identified and OK to host publicly for this
+   purpose (they're simulated data — see the callout at the top of `codebook.qmd`).
 2. **Push this folder to it:**
    ```
    cd "quarto_tutorials"
@@ -95,3 +98,14 @@ whole folder on GitHub and turn on GitHub Pages.
   loading goes through `download.file()` from the public GitHub URL rather than assuming a local
   working directory — this is the one structural change from the original `.Rmd` you'll notice
   throughout.
+- **Matches the C01 reproducible-workflow convention, not `setwd()`:** per the Week 1 orientation
+  materials ("we will not use `setwd` as the standard course workflow"), all paths use
+  `file.path("data_raw", ...)` / `file.path("data_processed", ...)`, and the browser version even
+  creates `data_raw`/`data_processed` folders in webR's virtual filesystem so the code matches
+  what students type in their real `EOH635_project` RStudio Project.
+
+## Known open item
+
+`ctviolra`'s units are unconfirmed — `Classdata_arealevelmeasures_description.docx` says "per
+10,000 population," but `codebook.xlsx`/`create_data.R` say "per 1,000 residents." Flagged (not
+guessed at) in `codebook.qmd`. Resolve this and update that page once you're sure.
