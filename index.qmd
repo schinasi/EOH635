@@ -14,6 +14,7 @@ Welcome! These tutorials walk through the R and analysis skills used in this cou
 ## Lessons
 
 - [Lesson 1: Intro to R and Handling Data](lesson1.qmd)
+- [Lesson 2: Exploratory Data Analysis & Data Cleaning](lesson2.qmd)
 
 ## Reference
 

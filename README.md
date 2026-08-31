@@ -10,10 +10,12 @@ code in their browser — no R/RStudio install needed.
 quarto_tutorials/
 ├── _quarto.yml            # Project + site config
 ├── index.qmd               # Landing page listing lessons
-├── lesson1.qmd              # Lesson 1 (converted from lessonone_2025.Rmd)
+├── lesson1.qmd              # Lesson 1 (converted from lessonone_2025.Rmd / lessonone_updated.Rmd)
+├── lesson2.qmd              # Lesson 2 (converted from "Exploratory data analysis.Rmd")
 ├── codebook.qmd             # Full data codebook (built from the official codebook.xlsx + docx background)
 ├── data/                   # Class data files (also need to be public on GitHub — see below)
 │   ├── class_data_raw.csv
+│   ├── class_data_processed.csv  # class_data_raw.csv + NDVI merged in — the Lesson 1 output, used to start Lesson 2
 │   ├── PHL_NDVI_summer_annual.csv
 │   └── codebook.xlsx        # Official codebook, for students who want the spreadsheet directly
 ├── _extensions/coatless/webr/  # The quarto-webr extension (already vendored — no install step needed)
@@ -103,6 +105,24 @@ whole folder on GitHub and turn on GitHub Pages.
   `file.path("data_raw", ...)` / `file.path("data_processed", ...)`, and the browser version even
   creates `data_raw`/`data_processed` folders in webR's virtual filesystem so the code matches
   what students type in their real `EOH635_project` RStudio Project.
+
+## About `class_data_processed.csv`
+
+Lesson 2 needs a "raw + NDVI merged" file to start from (the output of Lesson 1). I generated
+`data/class_data_processed.csv` myself with a left join on `geoid10`/`GEOID10` (I don't have R
+available in this environment to run the actual `merge()`) — same 2,000 rows, same values, all
+384 tracts matched with zero unmatched rows. The one difference from a real `merge()` in R: base
+R's `merge()` sorts the output by the join key, so row *order* will differ from what running the
+Lesson 1 code yourself would produce. No exercise in Lesson 2 depends on row order, but if you
+want the exact R-generated version, it's a few lines in RStudio:
+```r
+data <- read.csv(file.path("data_raw", "class_data_raw.csv"))
+ndvi <- read.csv(file.path("data_raw", "PHL_NDVI_summer_annual.csv"))
+data$geoid10 <- as.character(data$geoid10)
+ndvi$GEOID10 <- as.character(ndvi$GEOID10)
+data2 <- merge(data, ndvi, by.x = "geoid10", by.y = "GEOID10", all.x = TRUE)
+write.csv(data2, file.path("data_processed", "class_data_processed.csv"), row.names = FALSE)
+```
 
 ## Known open item
 
