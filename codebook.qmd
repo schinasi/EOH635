@@ -12,24 +12,6 @@ variables** in `class_data.csv`, converted from `Classdata_arealevelmeasures_des
 It's meant as a reference to check back to while working through the lessons — you don't need to
 read it top to bottom.
 
-::: {.callout-important}
-## ⚠️ Please double-check before sharing with students
-
-Two things in the source document are worth verifying against your original data-construction
-code before this goes out:
-
-1. **Traffic variable name.** The description below doesn't name a variable explicitly, but
-   `class_data.csv` has a column called `ctb1traff` whose description ("average daily traffic,
-   100 m kernel density, residential census tract") matches this section. I've assumed
-   `ctb1traff` is the variable being described — please confirm.
-2. **Education variable naming/direction.** The source document refers to `Educ_minHS` /
-   `Educ_minBA` ("% persons **≥** high school" / "**≥** bachelor's"), but the actual columns in
-   `class_data.csv` are named `Educ_ltHS` / `Educ_ltba` (**lt** usually means "less than," the
-   opposite direction). I've labeled these with the `lt`-style names actually in the data, but
-   the **direction of the percentage** needs your confirmation — is it "% with less than HS/BA"
-   or "% with at least HS/BA"?
-:::
-
 ## Traffic Volume
 
 **Variable:** `ctb1traff`
@@ -77,10 +59,12 @@ You can calculate a total vegetation measure by summing `hrlctree` and `hrlcgras
 | `race_blackNH` | % of tract population identifying as Black, non-Hispanic | Higher = greater % Black, non-Hispanic residents |
 | `race_whiteNH` | % of tract population identifying as White, non-Hispanic | Higher = greater % White, non-Hispanic residents |
 | `race_hisp` | % of tract population identifying as Hispanic/Latino | Higher = greater % Hispanic/Latino residents |
-| `Educ_ltHS` | % of tract population, education attainment relative to high school (see note above — direction to be confirmed) | — |
-| `Educ_ltba` | % of tract population, education attainment relative to bachelor's degree (see note above — direction to be confirmed) | — |
+| `Educ_ltHS` | % of tract population with less than a high school education | Higher = greater % without a high school education |
+| `Educ_ltba` | % of tract population with less than a bachelor's degree | Higher = greater % without a bachelor's degree |
 | `pov_allage` | % of tract population living in poverty (all ages) | Range 0–1; higher = greater % in poverty (0 = 0% in poverty; 1 = 100% in poverty) |
 | `unemployed` | % of tract population unemployed (age 16+) | Higher = greater % unemployed |
+
+*Note: the source `.docx` labeled these `Educ_minHS`/`Educ_minBA` and described them as "≥ HS/bachelor's"; the columns in `class_data.csv` are actually `Educ_ltHS`/`Educ_ltba` ("less than"), which is the direction documented above.*
 
 **Data sources**
 
