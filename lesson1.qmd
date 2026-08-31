@@ -1,0 +1,534 @@
+---
+title: "Lesson 1: Intro to R and Handling Data"
+subtitle: "EOH 635 — Environmental Epidemiology Methods"
+author: "Leah Schinasi"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    theme: cosmo
+    code-tools: false
+engine: knitr
+webr:
+  show-startup-message: true
+  packages: ['tidyverse']
+  autoload-packages: true
+filters:
+  - webr
+---
+
+# ======================================================
+# 📌 Introduction to R and Data Handling in RStudio
+# ======================================================
+
+There is lots of syntax to learn for working in R. A lot of this will come in time, with practice, and trial and error. Here are some basics to get you started.
+
+Remember learning R is like learning a language. It will get easier, in time.
+
+::: {.callout-important}
+## How to use this tutorial
+
+The gray boxes below are **live R editors** — the code actually runs in your browser (no install needed). Click **Run Code** to execute a chunk, or edit the code first and then run it.
+
+Some sections are marked **🧠 Your Turn**. Those give you a task and a blank (or partially blank) code editor. Try to write the code yourself before you look at the answer — the solution is hidden underneath in a collapsed box. Click it open only after you've given it a real attempt (or if you're truly stuck).
+:::
+
+********************
+
+# 🛠 1. Basic R Concepts
+
+There are lots of amazing resources on using R on the web! Don't be shy about exploring these.
+
+The following text is excerpted from [this resource](https://www.dataquest.io/blog/tutorial-getting-started-with-r-and-rstudio/#tve-jump-173bb2584fe):
+
+> "Let's start off by introducing some features of the Console. The Console is a tab in RStudio where we can run R code.
+>
+> Notice that the window pane where the console is located contains three tabs: Console, Terminal and Jobs (this may vary depending on the version of RStudio in use). We'll focus on the Console for now.
+>
+> When we open RStudio, the console contains information about the version of R we're working with."
+
+Below, instead of typing into RStudio's console, you can just type directly into the editors on this page and click **Run Code**.
+
+## Assignment Operator (`<-`)
+
+```{webr-r}
+x <- 10  # Assigns the value 10 to x
+
+print(x)  # Prints x
+
+x  # Also prints x
+```
+
+## Creating a Simple Data Frame
+
+We can read a data frame into R, but we can also create a data frame within R itself.
+
+The following code creates a data frame called `my_data`:
+
+```{webr-r}
+my_data <- data.frame(name = c("Alice", "Bob"), age = c(25, 30))
+
+print(my_data)
+```
+
+The data frame has two variables (columns): `name` and `age`. It has two rows, each corresponding to one person.
+
+## Accessing Columns in a Data Frame (`$`)
+
+We may want to view a particular column in the data frame, or, later when we start conducting analyses, refer to a particular variable. We do this using the `$` sign.
+
+```{webr-r}
+# Extracts the "name" column
+my_data$name
+```
+
+## Indexing Rows and Columns `[row, column]`
+
+We can also use R's indexing system to refer to a particular row or column.
+
+```{webr-r}
+my_data[1, 2]  # First row, second column
+my_data[, 1]   # First column (all rows)
+```
+
+::: {.callout-tip title="🧠 Your Turn" collapse="false"}
+Using `my_data`, write one line of code that returns **Bob's age** using `$`-and-indexing together (i.e., pull the `age` column, then index the second element).
+:::
+
+```{webr-r}
+# Your code here
+
+```
+
+::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
+```{webr-r}
+my_data$age[2]
+```
+:::
+
+# ======================================================
+# 📁 2. A Note on Working Directories
+# ======================================================
+
+In RStudio, we use **working directories** to reference the place on your computer where files are stored, loaded, and saved. You'd check yours with:
+
+```r
+getwd()
+```
+
+...and set it with something like:
+
+```r
+setwd("C:/Users/yourname/YourFolder")
+```
+
+**In this browser-based tutorial, there's no local file system to point to** — the data files below are fetched automatically for you from the web the moment you load this page. But when you move to doing this analysis for real in RStudio on your own computer, `setwd()` (or better, an RStudio Project) and having your data file in that same folder is exactly how you'll read in your own data.
+
+# ======================================================
+# 📦 3. Loading Required Packages
+# ======================================================
+
+[This](https://faculty.washington.edu/kenrice/rintro/sess08.pdf) is a great tutorial on packages in R.
+
+Briefly (quoting from that guide):
+
+> "Base R includes pre-installed packages that allow for a fully functioning statistical environment in which a variety of analyses can be conducted. Thousands of user-contributed extension packages are available that provide enhanced functionality with R.
+>
+> R packages are collections of functions, data, and compiled code in a well-defined format.
+>
+> In order to install an extension package, we can invoke the `install.packages()` function, which typically downloads the package from CRAN and installs it for use."
+
+You only need to install a package one time on your computer (upon first use, or after installing/re-installing/updating R). After installing it, you need to *load* it every session with `library()`.
+
+On your own computer you'd run:
+
+```r
+install.packages("tidyverse")
+library(tidyverse)
+```
+
+::: {.callout-note}
+This tutorial page has already installed and loaded **tidyverse** for you in the background (that's what the `webr: packages:` setting in this page does). You can still call `library(tidyverse)` yourself below — it won't hurt anything, it's just already done.
+:::
+
+```{webr-r}
+library(tidyverse)
+```
+
+******
+
+# ======================================================
+# 📊 4. Reading Data into R
+# ======================================================
+
+Recall that we can either create a data frame in R, or read one in. A lot of times, as environmental epidemiologists, we have an already-existing data set that we need to read into R — you'll primarily do that this quarter.
+
+In RStudio, once `class_data.csv` is in your working directory, you'd simply run:
+
+```r
+data <- read.csv("class_data.csv")
+```
+
+**In the browser, we first have to fetch the file from the web** before R can see it (webR can't see your OneDrive or hard drive — only files that have been downloaded into its in-browser file system). The chunk below does that automatically when the page loads, then reads the file in exactly the same way you would in RStudio.
+
+```{webr-r}
+#| autorun: true
+
+data_base_url <- "https://raw.githubusercontent.com/GITHUB-USERNAME/REPO-NAME/main/data/"
+
+download.file(paste0(data_base_url, "class_data.csv"), "class_data.csv")
+
+data <- read.csv("class_data.csv")
+```
+
+******
+
+# ======================================================
+# 👀 5. Exploring Your Data
+# ======================================================
+
+Now let's start to have a look at our data frame.
+
+View first few rows:
+
+```{webr-r}
+head(data)
+```
+
+**Things to think about:**
+
+* What do you notice about the structure of the dataset just by looking at these rows?
+* Are there any missing or unusual values that stand out?
+* Do the variable names seem intuitive? Would renaming any of them improve clarity?
+* Does the dataset contain categorical or numerical variables? How can you tell?
+* Are there any obvious errors or inconsistencies in the first few rows?
+
+Let's view the structure of the dataset:
+
+```{webr-r}
+str(data)
+```
+
+**Some questions:**
+
+* What data types are present in the dataset? Are they what you expected?
+* Are any variables stored in an inappropriate data type (e.g., categorical variables stored as numeric)?
+* How might the structure of the dataset affect downstream analyses?
+* Do any variables have an unexpectedly small or large number of unique values?
+* Are there any factors with many levels? Should any be combined or reclassified?
+
+::: {.callout-note collapse="true" title="💡 One way to think about it — click to reveal"}
+Most of the individual-level variables (`gender`, `education`, `race_ethnicity`, `employment_status`) come in as **character** strings rather than factors, and many of the health/behavior indicators (`stress`, `current_smoker`, `obese`, `high_blood_pressure`, etc.) are stored as **numeric 0/1 flags** even though they're conceptually categorical (binary). That's common in survey data, and it's exactly the kind of thing `str()` is good for catching *before* you run an analysis that assumes the wrong type.
+:::
+
+We can also view the dimensions of the data frame (rows × columns):
+
+* Rows show us the number of observations (in this case, people)
+* Columns show us the number of variables
+
+```{webr-r}
+dim(data)
+```
+
+> How many rows and columns are in our data frame? Based on this, how many people are in our data frame?
+
+******
+
+## Summary of numerical variables
+
+```{webr-r}
+summary(data)
+```
+
+* What summary statistics does this function produce?
+* What do you observe about key variables?
+* Are there particular variables for which these summary statistics do not make sense? (Hint: think about what `summary()` does with a 0/1 variable versus a truly continuous one like `age`.)
+
+******
+
+# ======================================================
+# 🗃 6. Accessing Specific Variables in a Data Frame
+# ======================================================
+
+Let's practice looking at particular variables in our data frame.
+
+Access the `education` column:
+
+```{webr-r}
+data$education
+```
+
+OK, we accessed it, but that looks pretty messy and it's hard to glean much information!
+
+Instead, it can be helpful to create summary counts.
+
+* `education` is a categorical variable, so we can count the number of participants that fall into each level (category).
+* We use the `table()` function to do this.
+* We can also look at the proportion and percentage of participants in each category.
+
+```{webr-r}
+table(data$education)
+
+prop.table(table(data$education))
+
+prop.table(table(data$education)) * 100
+```
+
+::: {.callout-tip title="🧠 Your Turn"}
+See if you can do the same thing (raw counts, proportions, and percentages) with the **`race_ethnicity`** variable.
+:::
+
+```{webr-r}
+# Your code here — counts, proportions, and percentages for race_ethnicity
+
+```
+
+::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
+```{webr-r}
+table(data$race_ethnicity)
+
+prop.table(table(data$race_ethnicity))
+
+prop.table(table(data$race_ethnicity)) * 100
+```
+:::
+
+# ======================================================
+# 🔄 7. Creating a New Variable
+# ======================================================
+
+It's important to understand how to manipulate the variables in your data frame. Consider, again, the `education` variable.
+
+* What type of variable is `education`? Let's use `str()` to check how it's coded in our data frame.
+
+```{webr-r}
+str(data$education)
+```
+
+Based on this, we see that `education` is a character variable.
+
+## Creating a numeric version of the education variable
+
+Sometimes it's helpful to convert a character variable into a numeric variable — this can be very helpful when conducting quantitative analysis. Let's do this now, using base R's `ifelse()`:
+
+```{webr-r}
+data$num_education <- ifelse(data$education == "< Bachelor's", 0, 1)
+```
+
+**What happened here?** This line creates a new variable called `num_education`, a numeric version of `education`, using `ifelse()`:
+
+* The code checks each value of `education`.
+* If the value is `"< Bachelor's"` (less than a bachelor's degree), `num_education` is set to `0`.
+* For all other values (presumably at least a bachelor's degree), `num_education` is set to `1`.
+
+So this line recodes a categorical `education` variable into a binary (0/1) numeric variable, where:
+
+* `0` = less than a bachelor's degree
+* `1` = bachelor's degree or higher
+
+**Note:** in R there are lots of ways to do the same thing. Another way to recode this variable is with the `dplyr` package (loaded as part of `tidyverse`) instead of base R's `ifelse()`.
+
+::: {.callout-tip title="🧠 Your Turn"}
+`dplyr`'s equivalent of `ifelse()` is `if_else()`, typically used inside `mutate()`. Try rewriting the `num_education` recode above using `data %>% mutate(...)` and `if_else()` instead of base R. Call the new column `num_education2` so you can compare it to the original.
+:::
+
+```{webr-r}
+# Your code here — recreate num_education using mutate() + if_else(), call it num_education2
+
+```
+
+::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
+```{webr-r}
+data <- data %>%
+  mutate(num_education2 = if_else(education == "< Bachelor's", 0, 1))
+```
+:::
+
+Verify that the coding of the new variable worked as we wanted, by creating a two-by-two table looking at the distribution of the numeric education variable against the character one:
+
+```{webr-r}
+table(data$num_education, data$education)
+```
+
+******
+
+# ======================================================
+# 📝 8. Merging Data with External Information
+# ======================================================
+
+A lot of times in environmental epidemiology, we have additional environmental information that we want to link into our data. Examples include:
+
+* Air pollution data
+* Housing data
+* Tract-level sociodemographic composition variables
+* Green space data
+* Crime data
+
+You can probably think of additional types of data we might want to link in.
+
+We can do this by **merging** a second data frame — which has the environmental information of interest — into our primary data frame, by combining them using a common variable or variables.
+
+* Often, we use information about participants' neighborhoods (e.g., census tracts) to merge in environmental data.
+
+Let's do that now.
+
+******
+
+## Load another dataset
+
+You'll find an additional data frame, which contains neighborhood-level (tract-level) data on **NDVI** (greenness), called `PHL_NDVI_summer_annual.csv`.
+
+This data frame shows the median value of the summertime NDVI value for each census tract in Philadelphia — that is, how green each census tract is. NDVI stands for Normalized Difference Vegetation Index. *NDVI ranges in value from -1 to 1.*
+
+* Negative values represent water.
+* Values close to 1 mean dense vegetation.
+* Values close to 0 mean a lack of vegetation (there might instead be lots of concrete).
+
+[This page](https://gisgeography.com/ndvi-normalized-difference-vegetation-index/) tells us a bit more about NDVI.
+
+Let's read in that data (again, in the browser we first fetch it from the web; in RStudio you'd just need it in your working directory):
+
+```{webr-r}
+#| autorun: true
+
+download.file(paste0(data_base_url, "PHL_NDVI_summer_annual.csv"), "PHL_NDVI_summer_annual.csv")
+
+PHL_NDVI_summer_annual <- read.csv("PHL_NDVI_summer_annual.csv")
+```
+
+Inspect the dataset using the `names`, `str`, and `head` functions. Do you remember what each of these shows you?
+
+```{webr-r}
+names(PHL_NDVI_summer_annual)
+str(PHL_NDVI_summer_annual)
+head(PHL_NDVI_summer_annual)
+```
+
+**Questions:**
+
+* How many observations (rows) are in the NDVI data frame?
+* What are the names of the variables (columns) in this data frame?
+* What seems to be the unique identifier in the NDVI data frame?
+
+******
+
+## Summarize the NDVI values across Philadelphia
+
+Using our Philadelphia tract-level data frame, let's look at the distribution of NDVI across the city of Philadelphia.
+
+* What is the minimum NDVI value? What does this tell you?
+* What's the median? What's the max?
+
+```{webr-r}
+summary(PHL_NDVI_summer_annual$X2015_NDVI)
+```
+
+* But we want to know how green the neighborhoods of our study participants are.
+* To do so, we're going to link the NDVI data frame to our primary data frame using a common variable found in both.
+
+The common variable is called **geoid10**. In our class data frame, `geoid10` refers to the census tract in which the study participant lives. In the NDVI data frame, `GEOID10` refers to each unique Philadelphia census tract.
+
+In order for the merge/linkage to work, both variables have to be in the **same format** (both character, or both numeric, etc.). Let's check on this now.
+
+```{webr-r}
+str(data$geoid10)
+str(PHL_NDVI_summer_annual$GEOID10)
+```
+
+Let's convert both to character type, using the `as.character()` function:
+
+```{webr-r}
+data$geoid10 <- as.character(data$geoid10)
+PHL_NDVI_summer_annual$GEOID10 <- as.character(PHL_NDVI_summer_annual$GEOID10)
+```
+
+Now let's merge the datasets, using a left join:
+
+```{webr-r}
+data2 <- merge(data, PHL_NDVI_summer_annual, by.x = 'geoid10', by.y = 'GEOID10', all.x = TRUE)
+```
+
+Now the data frame called `data2` should have all of our original variables, plus the variables from the NDVI data frame.
+
+As a check, think about how many variables were in each separate data frame.
+
+* How many rows are in `data2`?
+
+```{webr-r}
+num_rows <- nrow(data2)
+
+print(num_rows)
+```
+
+Or we can use `dim()`, which shows us rows and columns:
+
+```{webr-r}
+dim(data2)
+```
+
+We can also look at the names of the variables in the merged data frame — is everything in there?
+
+```{webr-r}
+names(data2)
+```
+
+It's also helpful to look at the top rows of the merged data frame, to be sure we don't have a bunch of missing values (coded `NA`) — if we see missings in the NDVI variables, that likely means something went wrong with our merge!
+
+```{webr-r}
+head(data2)
+```
+
+We can also do some logic checks to be sure everything checks out.
+
+::: {.callout-tip title="🧠 Your Turn"}
+Do participants living in the identical census tract get assigned the **same** NDVI value? Write code to check this — for example, group `data2` by `geoid10` and count the number of *distinct* `X2015_NDVI` values within each tract. If the merge worked correctly, every tract should have exactly 1 distinct NDVI value.
+
+(Hint: `dplyr`'s `group_by()`, `summarize()`, and `n_distinct()` are useful here.)
+:::
+
+```{webr-r}
+# Your code here — check that every geoid10 tract has exactly one unique NDVI value
+
+```
+
+::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
+```{webr-r}
+data2 %>%
+  group_by(geoid10) %>%
+  summarize(n_unique_ndvi = n_distinct(X2015_NDVI)) %>%
+  count(n_unique_ndvi)
+```
+If this worked correctly, you should see that `n_unique_ndvi` is `1` for every tract — i.e., everyone in the same census tract got the same NDVI value, as expected.
+:::
+
+Assuming everything looks OK, let's move on. If not, we'd need to do some troubleshooting!
+
+*****************
+
+# ======================================================
+# 📂 9. Saving Your Processed Data
+# ======================================================
+
+Currently, our new data frame just lives in our R environment (or, on this page, in your browser's temporary in-browser R session). Once we close R (or this browser tab), we lose our changes unless we save them. We can either rerun this code again, or save our new data frame with any changes we made. Let's do this now.
+
+**Note:** it's good practice to save your data frame using a **new** name. This way you keep the original data frame to go back to, in case you identify any errors or mistakes.
+
+```{webr-r}
+# Save dataset
+write.csv(data2, "new_class_data.csv", row.names = FALSE)
+```
+
+::: {.callout-warning}
+In RStudio, this line saves `new_class_data.csv` into your working directory on your own computer, where it will persist. **In this browser tutorial**, `write.csv()` writes the file into webR's temporary in-browser file system — it exists only for this browser session and isn't automatically downloadable to your computer. When you do this for real, run it in RStudio (or your local R installation) so the saved file actually lands on your machine.
+:::
+
+# ======================================================
+# 🎉 You're Ready for More!
+# ======================================================
+
+**Next steps:**
+
+* Try modifying variables
+* Create new derived columns
+* Perform statistical analyses

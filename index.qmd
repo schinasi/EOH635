@@ -1,0 +1,16 @@
+---
+title: "EOH 635: Environmental Epidemiology Methods"
+subtitle: "Asynchronous R Tutorials"
+---
+
+Welcome! These tutorials walk through the R and analysis skills used in this course. Each lesson is interactive — the code runs live, right in your browser, via [webR](https://docs.r-wasm.org/webr/latest/). You don't need R or RStudio installed to work through them.
+
+**How to use these tutorials:**
+
+- Read through each section, and run the code chunks as you go (click **Run Code**).
+- Sections marked **🧠 Your Turn** ask you to write some code yourself before revealing the solution. Give it a real attempt first — the point is to practice, not just to read the answer.
+- If you get stuck, click the collapsed "Solution" box to reveal the answer, then go back and make sure you understand *why* it works.
+
+## Lessons
+
+- [Lesson 1: Intro to R and Handling Data](lesson1.qmd)

@@ -1,0 +1,21 @@
+project:
+  type: website
+  output-dir: docs
+  resources:
+    - data/
+
+website:
+  title: "EOH 635: Environmental Epidemiology Methods"
+  page-navigation: true
+  navbar:
+    left:
+      - href: index.qmd
+        text: Home
+      - href: lesson1.qmd
+        text: "Lesson 1: Intro to R"
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    toc-depth: 2
