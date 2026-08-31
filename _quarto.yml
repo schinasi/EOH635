@@ -13,6 +13,8 @@ website:
         text: Home
       - href: lesson1.qmd
         text: "Lesson 1: Intro to R"
+      - href: codebook.qmd
+        text: "Codebook"
 
 format:
   html:

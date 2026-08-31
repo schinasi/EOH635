@@ -1,0 +1,130 @@
+---
+title: "Data Codebook: Area-Level Measures"
+subtitle: "Reference for variables in class_data.csv"
+format:
+  html:
+    toc: true
+    toc-depth: 2
+---
+
+This page documents the **tract-level (area-level) environmental and sociodemographic
+variables** in `class_data.csv`, converted from `Classdata_arealevelmeasures_description.docx`.
+It's meant as a reference to check back to while working through the lessons — you don't need to
+read it top to bottom.
+
+::: {.callout-important}
+## ⚠️ Please double-check before sharing with students
+
+Two things in the source document are worth verifying against your original data-construction
+code before this goes out:
+
+1. **Traffic variable name.** The description below doesn't name a variable explicitly, but
+   `class_data.csv` has a column called `ctb1traff` whose description ("average daily traffic,
+   100 m kernel density, residential census tract") matches this section. I've assumed
+   `ctb1traff` is the variable being described — please confirm.
+2. **Education variable naming/direction.** The source document refers to `Educ_minHS` /
+   `Educ_minBA` ("% persons **≥** high school" / "**≥** bachelor's"), but the actual columns in
+   `class_data.csv` are named `Educ_ltHS` / `Educ_ltba` (**lt** usually means "less than," the
+   opposite direction). I've labeled these with the `lt`-style names actually in the data, but
+   the **direction of the percentage** needs your confirmation — is it "% with less than HS/BA"
+   or "% with at least HS/BA"?
+:::
+
+## Traffic Volume
+
+**Variable:** `ctb1traff`
+
+Measured and estimated traffic volumes for major roads by road section are available annually
+from PennDOT (2005–present). Air pollution levels from traffic typically return to background
+levels within 100 to 300 m of roads. We calculated kernel densities of average daily traffic from
+PennDOT traffic data within 100 m and 300 m of road centerlines, on a 30 m grid, for southeastern
+Pennsylvania.
+
+- 100 m was chosen based on work done for the New York City Community Air Survey.
+- 300 m was chosen to account for the road width of wider roads.
+
+The variable in the data set represents the **average of the 100 m kernel-density average daily
+traffic** in the participant's residential census tract. **Higher value = greater traffic
+volume.**
+
+**Data sources**
+
+- *Background:* Annual Average Daily Traffic by road segment, from the Pennsylvania Department of
+  Transportation (PennDOT), Bureau of Planning and Research, Geographic Information Division.
+- *Data obtained:* Downloaded from [www.pasda.psu.edu](http://www.pasda.psu.edu) (2005–2015
+  downloaded 11/4/2016; 2016–2017 downloaded 4/26/2017).
+
+## Land Cover: Tree Canopy & Grass/Shrub Cover
+
+| Variable | Description |
+|---|---|
+| `hrlctree` | % of census tract area covered by tree canopy |
+| `hrlcgrass_shrub` | % of census tract area covered by grass/shrub |
+
+Derived from the Philadelphia Land Cover Raster, which provides data on surface types in
+Philadelphia in 2008 and an update in 2018 (the 2015 value in this data set was created using
+linear interpolation between the two). The data identifies seven categories: tree canopy,
+grass/shrub, bare earth, water, buildings, roads, and other paved surfaces. When tree canopy
+covers another surface type, that area is placed in the tree canopy category. Data were gathered
+with the assistance of the University of Vermont Spatial Analysis Laboratory.
+
+You can calculate a total vegetation measure by summing `hrlctree` and `hrlcgrass_shrub` together.
+
+## Tract-Level Sociodemographic Composition
+
+| Variable | Description | Interpretation |
+|---|---|---|
+| `race_blackNH` | % of tract population identifying as Black, non-Hispanic | Higher = greater % Black, non-Hispanic residents |
+| `race_whiteNH` | % of tract population identifying as White, non-Hispanic | Higher = greater % White, non-Hispanic residents |
+| `race_hisp` | % of tract population identifying as Hispanic/Latino | Higher = greater % Hispanic/Latino residents |
+| `Educ_ltHS` | % of tract population, education attainment relative to high school (see note above — direction to be confirmed) | — |
+| `Educ_ltba` | % of tract population, education attainment relative to bachelor's degree (see note above — direction to be confirmed) | — |
+| `pov_allage` | % of tract population living in poverty (all ages) | Range 0–1; higher = greater % in poverty (0 = 0% in poverty; 1 = 100% in poverty) |
+| `unemployed` | % of tract population unemployed (age 16+) | Higher = greater % unemployed |
+
+**Data sources**
+
+- *Background:* The American Community Survey (ACS), administered by the U.S. Census Bureau, is a
+  nationwide survey providing social, economic, housing, and demographic data. The Census Bureau
+  combines five consecutive years to produce estimates at the census tract level.
+- *Data obtained:* ACS 5-year average data for 2017–2021, downloaded from the U.S. Census Bureau.
+  Race/ethnicity variables were calculated as the percentage of persons in the census tract
+  identifying with each category, across all age/gender groups. **Data may be missing** if a
+  measure was suppressed by the Census Bureau due to low sample size (to protect against
+  potentially identifying information).
+
+## Crime Variables
+
+Police-reported crime data is available from OpenDataPhilly. Yearly crime **rates** (per 10,000
+persons) and **densities** (per square mile/km) for the City of Philadelphia were created for
+calendar years 2006–2016. Crimes are categorized, with rates/densities available for violent
+crime, narcotic drug violations, and property crime, summarized by 2010 U.S. Census Tract. These
+rates were generated to provide objective measures of neighborhood safety, and can be used to
+explore the influence of crime and safety on health outcomes and behaviors.
+
+| Variable | Description | Interpretation | Missing data code |
+|---|---|---|---|
+| `ctviolra` | Rate per 10,000 population, violent crime | Higher = more crime | `9999999999` |
+| `ctviolkm` | Density per sq. km, violent crime | Higher = more crime | `9999999999` |
+
+::: {.callout-warning}
+Note the missing-data sentinel value **`9999999999`** for the crime variables — this is *not* a
+real crime rate. Be sure to recode it to `NA` before running any analysis or summary statistics
+on `ctviolra`/`ctviolkm`, or it will badly distort means, ranges, and models.
+:::
+
+## Individual-Level Variables (Not Covered by This Codebook)
+
+The variables below come from the participant-level survey rather than area-level environmental
+data sources, and aren't described in `Classdata_arealevelmeasures_description.docx`. They're
+listed here just so you know what's in `class_data.csv` and what still needs documentation:
+
+`id`, `geoid10`, `year`, `age`, `gender`, `education`, `employment_status`, `race_ethnicity`,
+`popden_km`, `stress`, `extreme_stress`, `physical_activity`, `current_smoker`, `obese`,
+`self_reported_health`, `mental_health`, `improve_health`, `high_blood_pressure`, `diabetes`,
+`daytime_safe`, `has_park`, `finds_fruits`, `grocery_access`, `social_capital`, `yes_adl`, `asthma`
+
+::: {.callout-note}
+If you have a separate data dictionary or survey instrument for these (e.g. from the original
+study protocol), send it over and I can fold it into this page the same way.
+:::

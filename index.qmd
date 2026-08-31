@@ -14,3 +14,7 @@ Welcome! These tutorials walk through the R and analysis skills used in this cou
 ## Lessons
 
 - [Lesson 1: Intro to R and Handling Data](lesson1.qmd)
+
+## Reference
+
+- [Data Codebook: Area-Level Measures](codebook.qmd) — variable descriptions for `class_data.csv`

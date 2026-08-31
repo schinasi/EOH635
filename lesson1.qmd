@@ -377,7 +377,7 @@ Let's do that now.
 
 ## Load another dataset
 
-You'll find an additional data frame, which contains neighborhood-level (tract-level) data on **NDVI** (greenness), called `PHL_NDVI_summer_annual.csv`.
+You'll find an additional data frame, which contains neighborhood-level (tract-level) data on **NDVI** (greenness), called `PHL_NDVI_summer_annual.csv`. (For the other tract-level environmental and sociodemographic variables already in `data` — like `hrlctree` or `pov_allage` — see the [Data Codebook](codebook.qmd).)
 
 This data frame shows the median value of the summertime NDVI value for each census tract in Philadelphia — that is, how green each census tract is. NDVI stands for Normalized Difference Vegetation Index. *NDVI ranges in value from -1 to 1.*
 
