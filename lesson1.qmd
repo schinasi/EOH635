@@ -196,7 +196,7 @@ data <- read.csv(file.path("data_raw", "class_data_raw.csv"))
 ```{webr-r}
 #| autorun: true
 
-data_base_url <- "https://raw.githubusercontent.com/GITHUB-USERNAME/REPO-NAME/main/data/"
+data_base_url <- "https://raw.githubusercontent.com/schinasi/EOH635/main/data/"
 
 dir.create("data_raw", showWarnings = FALSE)
 

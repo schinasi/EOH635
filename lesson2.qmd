@@ -70,7 +70,7 @@ folder here in webR's virtual filesystem, matching the real project structure:
 ```{webr-r}
 #| autorun: true
 
-data_base_url <- "https://raw.githubusercontent.com/GITHUB-USERNAME/REPO-NAME/main/data/"
+data_base_url <- "https://raw.githubusercontent.com/schinasi/EOH635/main/data/"
 
 dir.create("data_processed", showWarnings = FALSE)
 
