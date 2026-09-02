@@ -29,7 +29,9 @@ Remember learning R is like learning a language. It will get easier, in time.
 ::: {.callout-important}
 ## How to use this tutorial
 
-The gray boxes below are **live R editors** — the code actually runs in your browser (no install needed). Click **Run Code** to execute a chunk, or edit the code first and then run it.
+The gray boxes below are **live R editors** — the code actually runs in your browser (no install needed). In the top-left corner of each gray box, you'll see a **green arrow button labeled "Run Code."** Click that green arrow to run the code in that box. The output (whatever the code produces — a number, a table, a plot, etc.) will appear directly underneath the box a moment later.
+
+You can also edit the code first — click inside the box, change something, then click the green **Run Code** arrow to run your edited version. Nothing you do here can break anything; if you make a mess, just refresh the page to start that box over.
 
 Some sections are marked **🧠 Your Turn**. Those give you a task and a blank (or partially blank) code editor. Try to write the code yourself before you look at the answer — the solution is hidden underneath in a collapsed box. Click it open only after you've given it a real attempt (or if you're truly stuck).
 
@@ -119,6 +121,14 @@ Using `my_data`, write one line of code that returns **Bob's age** using `$`-and
 ```{webr-r}
 my_data$age[2]
 ```
+
+**How this works, piece by piece:**
+
+* `my_data$age` pulls out the entire `age` column from `my_data` — this returns a vector of all the ages, in row order: `25 30` (Alice's age, then Bob's age).
+* `[2]` then indexes into that vector and grabs its **2nd element** — since Bob is in the 2nd row of `my_data`, this returns his age, `30`.
+* Put together, `my_data$age[2]` reads as "give me the `age` column, then give me the 2nd value in it."
+
+This combination — `$` to grab a column, then `[ ]` to grab a specific position within it — comes up constantly in R, so it's worth being comfortable with both steps individually before chaining them together.
 :::
 
 # ======================================================
@@ -144,9 +154,11 @@ When you open `EOH635_project.Rproj`, RStudio automatically sets your working di
 read.csv(file.path("data_raw", "class_data_raw.csv"))
 ```
 
-For this lab, that means: put `class_data_raw.csv`, `PHL_NDVI_summer_annual.csv`, and `codebook.xlsx` in `data_raw/`, and save anything you create (like the merged dataset at the end of this lab) into `data_processed/`.
+For this lab, that means: Please put `class_data_raw.csv`, `PHL_NDVI_summer_annual.csv`, and `codebook.xlsx` in `data_raw/`, and save anything you create (like the merged dataset at the end of this lab) into `data_processed/`.
 
 **In this browser-based tutorial, there's no local file system to point to at all** — the data files below are fetched automatically for you from the web the moment you load this page, using the same `data_raw` / `data_processed` folder names so the code you see here matches what you'll type in RStudio.
+
+**This is important to keep straight:** the "fetch from the web" step you'll see below is a workaround that exists *only* on this tutorial page, because your browser has no access to any files at all — not the tutorial's, and not yours. **For your actual project, the data will live as real files on your own computer**, saved into the `data_raw/` folder of the `EOH635_project` you set up in RStudio. Your project scripts will simply read those files directly off your hard drive with `read.csv(file.path("data_raw", "..."))` — no downloading, no internet fetch, no `data_base_url`. Every time this tutorial shows a "fetch from the web" step, look for the green **"In your RStudio script"** box right after it — that box shows the shorter, simpler line you'll actually use for your project.
 
 # ======================================================
 # 📦 3. Loading Required Packages
@@ -178,6 +190,21 @@ This tutorial page has already installed and loaded **tidyverse** for you in the
 ```{webr-r}
 library(tidyverse)
 ```
+
+::: {.callout-tip}
+## 💻 In your RStudio script
+
+**This automatic install/load is unique to this tutorial page — it will not happen on your own computer.** `tidyverse` is actually a bundle of several packages (including `dplyr` and `tidyr`, which you'll use a lot), but the browser installing it silently for you is just a convenience built into this page.
+
+When you write your own project scripts in RStudio, **you are responsible for installing and loading every package your code uses.** For any package (`tidyverse` or otherwise):
+
+```r
+install.packages("tidyverse")  # run this once per computer, the first time you use the package
+library(tidyverse)              # run this at the top of every script/session that uses it
+```
+
+If you forget the `library()` line, R will give you an error like `could not find function "mutate"` (or whatever function you tried to use) — that's your signal to go back and load the package first.
+:::
 
 ******
 
@@ -581,6 +608,52 @@ dir.create("data_processed", showWarnings = FALSE)
 # Save dataset
 write.csv(data2, file.path("data_processed", "class_data_processed.csv"), row.names = FALSE)
 ```
+
+# ======================================================
+# 🚀 10. Quick-Start Script for Your Own Project
+# ======================================================
+
+Everything above walked through each step one at a time, with the browser-only fetching code mixed in. Below is everything put together as a **single clean script** — this is what actually goes in your `.R` or `.qmd` file inside `EOH635_project/scripts/`, running on your own computer with `class_data_raw.csv` and `PHL_NDVI_summer_annual.csv` already sitting in `data_raw/`.
+
+::: {.callout-tip}
+## 💻 In your RStudio script
+
+Copy the whole block below into a new script in RStudio to get started on your own computer. There's no downloading step here — R just reads the files straight from your `data_raw/` folder.
+
+```r
+# ---- Setup ----
+library(tidyverse)
+
+# ---- Read in your data ----
+data <- read.csv(file.path("data_raw", "class_data_raw.csv"))
+PHL_NDVI_summer_annual <- read.csv(file.path("data_raw", "PHL_NDVI_summer_annual.csv"))
+
+# ---- Take a first look ----
+head(data)
+str(data)
+dim(data)
+summary(data)
+
+# ---- Recode education into a numeric 0/1 variable ----
+data <- data %>%
+  mutate(num_education = if_else(education == "< Bachelor's", 0, 1))
+
+# ---- Match variable types before merging ----
+data$geoid10 <- as.character(data$geoid10)
+PHL_NDVI_summer_annual$GEOID10 <- as.character(PHL_NDVI_summer_annual$GEOID10)
+
+# ---- Merge in the NDVI (greenness) data ----
+data2 <- merge(data, PHL_NDVI_summer_annual,
+                by.x = "geoid10", by.y = "GEOID10", all.x = TRUE)
+
+# ---- Check that the merge worked ----
+dim(data2)
+head(data2)
+
+# ---- Save your processed dataset ----
+write.csv(data2, file.path("data_processed", "class_data_processed.csv"), row.names = FALSE)
+```
+:::
 
 # ======================================================
 # 🎉 You're Ready for More!

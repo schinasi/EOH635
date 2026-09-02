@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Leah Schinasi">
-<meta name="dcterms.date" content="2026-09-01">
+<meta name="dcterms.date" content="2026-09-02">
 
 <title>Lesson 1: Intro to R and Handling Data – EOH 635: Environmental Epidemiology Methods</title>
 <style>
@@ -1758,8 +1758,11 @@ globalThis.qwebrExecuteCode = async function (
   <li><a href="#saving-your-processed-data" id="toc-saving-your-processed-data" class="nav-link" data-scroll-target="#saving-your-processed-data">📂 9. Saving Your Processed Data</a></li>
   <li><a href="#section-17" id="toc-section-17" class="nav-link" data-scroll-target="#section-17">======================================================</a></li>
   <li><a href="#section-18" id="toc-section-18" class="nav-link" data-scroll-target="#section-18">======================================================</a></li>
-  <li><a href="#youre-ready-for-more" id="toc-youre-ready-for-more" class="nav-link" data-scroll-target="#youre-ready-for-more">🎉 You’re Ready for More!</a></li>
+  <li><a href="#quick-start-script-for-your-own-project" id="toc-quick-start-script-for-your-own-project" class="nav-link" data-scroll-target="#quick-start-script-for-your-own-project">🚀 10. Quick-Start Script for Your Own Project</a></li>
   <li><a href="#section-19" id="toc-section-19" class="nav-link" data-scroll-target="#section-19">======================================================</a></li>
+  <li><a href="#section-20" id="toc-section-20" class="nav-link" data-scroll-target="#section-20">======================================================</a></li>
+  <li><a href="#youre-ready-for-more" id="toc-youre-ready-for-more" class="nav-link" data-scroll-target="#youre-ready-for-more">🎉 You’re Ready for More!</a></li>
+  <li><a href="#section-21" id="toc-section-21" class="nav-link" data-scroll-target="#section-21">======================================================</a></li>
   </ul>
 </nav>
     </div>
@@ -2070,7 +2073,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">September 1, 2026</p>
+      <p class="date">September 2, 2026</p>
     </div>
   </div>
   
@@ -2102,7 +2105,8 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The gray boxes below are <strong>live R editors</strong> — the code actually runs in your browser (no install needed). Click <strong>Run Code</strong> to execute a chunk, or edit the code first and then run it.</p>
+<p>The gray boxes below are <strong>live R editors</strong> — the code actually runs in your browser (no install needed). In the top-left corner of each gray box, you’ll see a <strong>green arrow button labeled “Run Code.”</strong> Click that green arrow to run the code in that box. The output (whatever the code produces — a number, a table, a plot, etc.) will appear directly underneath the box a moment later.</p>
+<p>You can also edit the code first — click inside the box, change something, then click the green <strong>Run Code</strong> arrow to run your edited version. Nothing you do here can break anything; if you make a mess, just refresh the page to start that box over.</p>
 <p>Some sections are marked <strong>🧠 Your Turn</strong>. Those give you a task and a blank (or partially blank) code editor. Try to write the code yourself before you look at the answer — the solution is hidden underneath in a collapsed box. Click it open only after you’ve given it a real attempt (or if you’re truly stuck).</p>
 <p><strong>A note on browser vs.&nbsp;RStudio code:</strong> Two chunks in this lesson run automatically in the background (you’ll see them labeled <code>#| autorun: true</code>). These chunks fetch the data files from the web so they’re available in your browser — you don’t need to do anything with them. <strong>When you write your own scripts in RStudio, you will not include this fetching code.</strong> Immediately after each autorun chunk, you’ll find a green box labeled <strong>“In your RStudio script”</strong> showing the simpler code you’ll actually use.</p>
 </div>
@@ -2194,6 +2198,13 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 <div class="callout-body-container callout-body">
 <div id="qwebr-insertion-location-6"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p><strong>How this works, piece by piece:</strong></p>
+<ul>
+<li><code>my_data$age</code> pulls out the entire <code>age</code> column from <code>my_data</code> — this returns a vector of all the ages, in row order: <code>25 30</code> (Alice’s age, then Bob’s age).</li>
+<li><code>[2]</code> then indexes into that vector and grabs its <strong>2nd element</strong> — since Bob is in the 2nd row of <code>my_data</code>, this returns his age, <code>30</code>.</li>
+<li>Put together, <code>my_data$age[2]</code> reads as “give me the <code>age</code> column, then give me the 2nd value in it.”</li>
+</ul>
+<p>This combination — <code>$</code> to grab a column, then <code>[ ]</code> to grab a specific position within it — comes up constantly in R, so it’s worth being comfortable with both steps individually before chaining them together.</p>
 </div>
 </div>
 </div>
@@ -2217,8 +2228,9 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 └── outputs/           &lt;- tables, figures, and other generated results</code></pre>
 <p>When you open <code>EOH635_project.Rproj</code>, RStudio automatically sets your working directory to the project root — no <code>setwd()</code> needed. From there, you use <strong>relative paths</strong>, typically with <code>file.path()</code>, so the same script works on any computer:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"class_data_raw.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>For this lab, that means: put <code>class_data_raw.csv</code>, <code>PHL_NDVI_summer_annual.csv</code>, and <code>codebook.xlsx</code> in <code>data_raw/</code>, and save anything you create (like the merged dataset at the end of this lab) into <code>data_processed/</code>.</p>
+<p>For this lab, that means: Please put <code>class_data_raw.csv</code>, <code>PHL_NDVI_summer_annual.csv</code>, and <code>codebook.xlsx</code> in <code>data_raw/</code>, and save anything you create (like the merged dataset at the end of this lab) into <code>data_processed/</code>.</p>
 <p><strong>In this browser-based tutorial, there’s no local file system to point to at all</strong> — the data files below are fetched automatically for you from the web the moment you load this page, using the same <code>data_raw</code> / <code>data_processed</code> folder names so the code you see here matches what you’ll type in RStudio.</p>
+<p><strong>This is important to keep straight:</strong> the “fetch from the web” step you’ll see below is a workaround that exists <em>only</em> on this tutorial page, because your browser has no access to any files at all — not the tutorial’s, and not yours. <strong>For your actual project, the data will live as real files on your own computer</strong>, saved into the <code>data_raw/</code> folder of the <code>EOH635_project</code> you set up in RStudio. Your project scripts will simply read those files directly off your hard drive with <code>read.csv(file.path("data_raw", "..."))</code> — no downloading, no internet fetch, no <code>data_base_url</code>. Every time this tutorial shows a “fetch from the web” step, look for the green <strong>“In your RStudio script”</strong> box right after it — that box shows the shorter, simpler line you’ll actually use for your project.</p>
 </section>
 <section id="section-4" class="level1">
 <h1>======================================================</h1>
@@ -2254,6 +2266,23 @@ Note
 </div>
 <div id="qwebr-insertion-location-7"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>💻 In your RStudio script
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>This automatic install/load is unique to this tutorial page — it will not happen on your own computer.</strong> <code>tidyverse</code> is actually a bundle of several packages (including <code>dplyr</code> and <code>tidyr</code>, which you’ll use a lot), but the browser installing it silently for you is just a convenience built into this page.</p>
+<p>When you write your own project scripts in RStudio, <strong>you are responsible for installing and loading every package your code uses.</strong> For any package (<code>tidyverse</code> or otherwise):</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"tidyverse"</span>)  <span class="co"># run this once per computer, the first time you use the package</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)              <span class="co"># run this at the top of every script/session that uses it</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>If you forget the <code>library()</code> line, R will give you an error like <code>could not find function "mutate"</code> (or whatever function you tried to use) — that’s your signal to go back and load the package first.</p>
+</div>
+</div>
 <hr>
 </section>
 <section id="section-6" class="level1">
@@ -2266,7 +2295,7 @@ Note
 <h1>======================================================</h1>
 <p>Recall that we can either create a data frame in R, or read one in. A lot of times, as environmental epidemiologists, we have an already-existing data set that we need to read into R — you’ll primarily do that this quarter.</p>
 <p>For this lab, the raw data file is <strong><code>class_data_raw.csv</code></strong> (find it described in the <a href="./codebook.html">Data Codebook</a>, along with <code>codebook.xlsx</code>). In RStudio, once it’s in <code>data_raw/</code> inside your <code>EOH635_project</code>, you’d run:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"class_data_raw.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"class_data_raw.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p><strong>In the browser, we first have to fetch the file from the web</strong> before R can see it (webR can’t see your OneDrive or hard drive — only files that have been downloaded into its in-browser file system). The chunk below does that automatically when the page loads: it creates a <code>data_raw</code> folder right here in your browser’s R session (mirroring the real project structure) and downloads the file into it, then reads it in exactly the way you would in RStudio.</p>
 <div id="qwebr-insertion-location-8"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
@@ -2281,7 +2310,7 @@ Note
 </div>
 <div class="callout-body-container callout-body">
 <p>The chunk above runs automatically in the browser to fetch the data file from the web. <strong>In your own RStudio script, you don’t need any of that.</strong> With <code>class_data_raw.csv</code> already saved in your <code>data_raw/</code> folder, all you need is:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"class_data_raw.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"class_data_raw.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>This is the line to copy into your own analysis script.</p>
 </div>
 </div>
@@ -2319,7 +2348,7 @@ Note
 <li>Are there any factors with many levels? Should any be combined or reclassified?</li>
 </ul>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 One way to think about it — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2328,7 +2357,7 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>Most of the individual-level variables (<code>gender</code>, <code>education</code>, <code>race_ethnicity</code>, <code>employment_status</code>) come in as <strong>character</strong> strings rather than factors, and many of the health/behavior indicators (<code>stress</code>, <code>current_smoker</code>, <code>obese</code>, <code>high_blood_pressure</code>, etc.) are stored as <strong>numeric 0/1 flags</strong> even though they’re conceptually categorical (binary). That’s common in survey data, and it’s exactly the kind of thing <code>str()</code> is good for catching <em>before</em> you run an analysis that assumes the wrong type.</p>
 </div>
@@ -2394,7 +2423,7 @@ Note
 <div id="qwebr-insertion-location-15"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2403,7 +2432,7 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div id="qwebr-insertion-location-16"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
@@ -2459,7 +2488,7 @@ Note
 <div id="qwebr-insertion-location-19"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2468,7 +2497,7 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-11" class="callout-11-contents callout-collapse collapse">
+<div id="callout-12" class="callout-12-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div id="qwebr-insertion-location-20"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
@@ -2528,7 +2557,7 @@ Note
 </div>
 <div class="callout-body-container callout-body">
 <p>The chunk above fetches the NDVI file from the web for the browser. <strong>In your own RStudio script</strong>, with <code>PHL_NDVI_summer_annual.csv</code> already in your <code>data_raw/</code> folder, all you need is:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>PHL_NDVI_summer_annual <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"PHL_NDVI_summer_annual.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>PHL_NDVI_summer_annual <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"PHL_NDVI_summer_annual.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 <p>Inspect the dataset using the <code>names</code>, <code>str</code>, and <code>head</code> functions. Do you remember what each of these shows you?</p>
@@ -2599,7 +2628,7 @@ Note
 <div id="qwebr-insertion-location-32"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-14-contents" aria-controls="callout-14" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-15-contents" aria-controls="callout-15" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2608,7 +2637,7 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-14" class="callout-14-contents callout-collapse collapse">
+<div id="callout-15" class="callout-15-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div id="qwebr-insertion-location-33"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
@@ -2641,7 +2670,7 @@ Note
 </div>
 <div class="callout-body-container callout-body">
 <p>This is the line to use in your own script to save the processed dataset. The <code>data_processed/</code> folder already exists in your <code>EOH635_project</code> from the setup assignment:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(data2, <span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(data2, <span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>This saves <code>class_data_processed.csv</code> into <code>data_processed/</code> inside your project, where it will persist between sessions.</p>
 </div>
 </div>
@@ -2652,10 +2681,64 @@ Note
 <section id="section-18" class="level1">
 <h1>======================================================</h1>
 </section>
+<section id="quick-start-script-for-your-own-project" class="level1">
+<h1>🚀 10. Quick-Start Script for Your Own Project</h1>
+</section>
+<section id="section-19" class="level1">
+<h1>======================================================</h1>
+<p>Everything above walked through each step one at a time, with the browser-only fetching code mixed in. Below is everything put together as a <strong>single clean script</strong> — this is what actually goes in your <code>.R</code> or <code>.qmd</code> file inside <code>EOH635_project/scripts/</code>, running on your own computer with <code>class_data_raw.csv</code> and <code>PHL_NDVI_summer_annual.csv</code> already sitting in <code>data_raw/</code>.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>💻 In your RStudio script
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Copy the whole block below into a new script in RStudio to get started on your own computer. There’s no downloading step here — R just reads the files straight from your <code>data_raw/</code> folder.</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Setup ----</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Read in your data ----</span></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"class_data_raw.csv"</span>))</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>PHL_NDVI_summer_annual <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"PHL_NDVI_summer_annual.csv"</span>))</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Take a first look ----</span></span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data)</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(data)</span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(data)</span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(data)</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Recode education into a numeric 0/1 variable ----</span></span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">num_education =</span> <span class="fu">if_else</span>(education <span class="sc">==</span> <span class="st">"&lt; Bachelor's"</span>, <span class="dv">0</span>, <span class="dv">1</span>))</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Match variable types before merging ----</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>geoid10 <span class="ot">&lt;-</span> <span class="fu">as.character</span>(data<span class="sc">$</span>geoid10)</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>PHL_NDVI_summer_annual<span class="sc">$</span>GEOID10 <span class="ot">&lt;-</span> <span class="fu">as.character</span>(PHL_NDVI_summer_annual<span class="sc">$</span>GEOID10)</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Merge in the NDVI (greenness) data ----</span></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>data2 <span class="ot">&lt;-</span> <span class="fu">merge</span>(data, PHL_NDVI_summer_annual,</span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>                <span class="at">by.x =</span> <span class="st">"geoid10"</span>, <span class="at">by.y =</span> <span class="st">"GEOID10"</span>, <span class="at">all.x =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Check that the merge worked ----</span></span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(data2)</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data2)</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Save your processed dataset ----</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(data2, <span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</section>
+<section id="section-20" class="level1">
+<h1>======================================================</h1>
+</section>
 <section id="youre-ready-for-more" class="level1">
 <h1>🎉 You’re Ready for More!</h1>
 </section>
-<section id="section-19" class="level1">
+<section id="section-21" class="level1">
 <h1>======================================================</h1>
 <p><strong>Next steps:</strong></p>
 <ul>
