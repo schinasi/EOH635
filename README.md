@@ -1,131 +1,114 @@
-# EOH 635 Quarto Tutorials — Setup & Publishing Guide
+# EOH 635: Environmental Epidemiology Methods — Interactive R Tutorials
 
-Interactive, in-browser R tutorials for the class, built with [Quarto](https://quarto.org) +
-[quarto-webr](https://github.com/coatless/quarto-webr). Students open a link and run real R
-code in their browser — no R/RStudio install needed.
+**Live site: <https://schinasi.github.io/EOH635/>**
 
-## What's in this folder
+Asynchronous, browser-based R tutorials for EOH 635 at Drexel. Students open a link and run
+real R code directly in the browser — via [webR](https://docs.r-wasm.org/webr/latest/) — with
+no R or RStudio installation required. Built with [Quarto](https://quarto.org) and
+[quarto-webr](https://github.com/coatless/quarto-webr).
+
+## What's here
+
+- **[Lesson 1: Intro to R and Handling Data](https://schinasi.github.io/EOH635/lesson1.html)**
+  — R basics (assignment, data frames, indexing), project organization and file paths, loading
+  packages, reading in data, exploratory functions (`head`, `str`, `summary`, `dim`), recoding
+  variables, and merging in a second dataset by a shared key.
+- **[Lesson 2: Exploratory Data Analysis & Data Cleaning](https://schinasi.github.io/EOH635/lesson2.html)**
+  — identifying and recoding implausible values (age outliers), visualizing distributions
+  (histograms, boxplots), and a first look at the course's primary exposure–outcome
+  relationship — tree canopy cover and high blood pressure — including how to check whether a
+  third variable (like gender or education) might be confounding that relationship.
+- **[Data Codebook](https://schinasi.github.io/EOH635/codebook.html)** — full variable
+  reference for the class dataset: what each column means, how it's coded, known missingness,
+  and known data quirks to watch for.
+
+Every "🧠 Your Turn" exercise gives students a task and a blank code editor, with the solution
+hidden in a collapsed box underneath — the point is to try it yourself before checking.
+
+## About the data
+
+The class dataset is a **simulated** cross-sectional survey of 2,000 adults living in
+Philadelphia in 2015, modeled on the Southeast Pennsylvania Household Survey — fictitious data
+designed to resemble a real study so students can practice realistic epidemiologic analysis
+without using identifiable data. It combines individual-level health outcomes and behaviors
+(blood pressure, diabetes, asthma, mental health, stress, smoking, physical activity, etc.) and
+demographics with real Philadelphia census-tract-level environmental and sociodemographic data
+(tree canopy cover, traffic density, violent crime, poverty, education, race/ethnicity
+composition). A separate tract-level greenness (NDVI) file is linked in during Lesson 1.
+
+The health/behavior outcomes carry real, moderate, and deliberately calibrated associations with
+plausible predictors (e.g., tree canopy cover is protective for blood pressure; traffic density
+and smoking predict asthma) — including genuine confounding of the tree-canopy → blood-pressure
+relationship by education, while gender is deliberately left unrelated to tree canopy as a clean
+"not a confounder" contrast. Full variable definitions are in the
+[codebook](https://schinasi.github.io/EOH635/codebook.html).
+
+---
+
+## For maintainers
+
+<details>
+<summary>Repo structure, updating the site, and other technical notes</summary>
+
+### Structure
 
 ```
 quarto_tutorials/
-├── _quarto.yml            # Project + site config
-├── index.qmd               # Landing page listing lessons
-├── lesson1.qmd              # Lesson 1 (converted from lessonone_2025.Rmd / lessonone_updated.Rmd)
-├── lesson2.qmd              # Lesson 2 (converted from "Exploratory data analysis.Rmd")
-├── codebook.qmd             # Full data codebook (built from the official codebook.xlsx + docx background)
-├── data/                   # Class data files (also need to be public on GitHub — see below)
+├── _quarto.yml                 # Project + site config (output-dir: docs, for GitHub Pages)
+├── index.qmd                   # Landing page listing lessons
+├── lesson1.qmd / lesson2.qmd   # The two lessons
+├── codebook.qmd                # Data codebook
+├── data/                       # Class data files, fetched by students' browsers at runtime
 │   ├── class_data_raw.csv
-│   ├── class_data_processed.csv  # class_data_raw.csv + NDVI merged in — the Lesson 1 output, used to start Lesson 2
+│   ├── class_data_processed.csv  # class_data_raw.csv + NDVI merged — the Lesson 1 output
 │   ├── PHL_NDVI_summer_annual.csv
-│   └── codebook.xlsx        # Official codebook, for students who want the spreadsheet directly
-├── _extensions/coatless/webr/  # The quarto-webr extension (already vendored — no install step needed)
-└── .gitignore
+│   └── codebook.xlsx
+├── _extensions/coatless/webr/  # quarto-webr extension, vendored (pinned to 0.4.3)
+└── docs/                       # Rendered site (what GitHub Pages actually serves)
 ```
 
-The `quarto-webr` extension files are already included here (pinned to release `0.4.3`), so you
-do **not** need to run `quarto add` yourself. If you ever want to update it to a newer version,
-run `quarto add coatless/quarto-webr` from inside this folder and say yes to overwrite.
+### Updating the site
 
-## One-time setup on your computer
+After editing any `.qmd` file:
 
-1. **Install Quarto** (if you don't have it): <https://quarto.org/docs/get-started/>
-   RStudio (current versions) also bundles Quarto, so you may already have it.
-2. Open a terminal in this `quarto_tutorials` folder and preview the site:
-   ```
-   quarto preview
-   ```
-   This opens the site in your browser with live-reload. **Important:** the "Reading Data into R"
-   chunks in `lesson1.qmd` fetch the class data from a public GitHub URL, so:
-   - Data loading chunks will show a download error until you complete the GitHub steps below and
-     update the placeholder URL.
-   - Everything else (Sections 1–3, and any exercise that doesn't touch `data`/`data2`) will work
-     immediately, with no setup.
+```
+quarto render
+git add -A
+git commit -m "describe the change"
+git push
+```
 
-## Publishing so students can use it (GitHub + GitHub Pages)
+GitHub Pages (Settings → Pages → Deploy from branch → `main` / `/docs`) picks up the new
+`docs/` output automatically within a minute or two. Nothing else needs to change — Pages
+config, the data-fetch URL in `lesson1.qmd`, and the extension are already set up.
 
-webR runs entirely in the student's browser, so it can't reach files on your OneDrive — it needs
-to fetch the data files from a public URL on the web. The simplest way to do that is to host this
-whole folder on GitHub and turn on GitHub Pages.
+### Adding a future lesson
 
-1. **Create a new GitHub repository** (e.g. `eoh635-tutorials`). It can be public — you confirmed
-   `class_data_raw.csv` and the NDVI file are de-identified and OK to host publicly for this
-   purpose (they're simulated data — see the callout at the top of `codebook.qmd`).
-2. **Push this folder to it:**
-   ```
-   cd "quarto_tutorials"
-   git init
-   git add .
-   git commit -m "Lesson 1: interactive R tutorial"
-   git branch -M main
-   git remote add origin https://github.com/<YOUR-GITHUB-USERNAME>/<YOUR-REPO-NAME>.git
-   git push -u origin main
-   ```
-3. **Update the data URL placeholder.** In `lesson1.qmd`, find this line (it appears once, in the
-   "Reading Data into R" section):
-   ```r
-   data_base_url <- "https://raw.githubusercontent.com/GITHUB-USERNAME/REPO-NAME/main/data/"
-   ```
-   Replace `GITHUB-USERNAME` and `REPO-NAME` with your actual username/repo, commit, and push again.
-   (This works as soon as the repo is pushed and public — it does **not** require Pages to be live yet.)
-4. **Render the site and publish it:**
-   ```
-   quarto render
-   git add .
-   git commit -m "Render site"
-   git push
-   ```
-   Then in the GitHub repo: **Settings → Pages → Build and deployment → Deploy from a branch →
-   Branch: `main`, folder: `/docs`** (this matches the `output-dir: docs` setting in `_quarto.yml`).
-   After a minute or two, your site is live at `https://<username>.github.io/<repo-name>/`.
-5. Share that link with students. Anytime you edit a lesson, just re-run `quarto render`, commit,
-   and push — GitHub Pages updates automatically.
-
-## Adding future lessons
-
-1. Duplicate `lesson1.qmd` as `lesson2.qmd` (or create fresh), keeping the same YAML header
+1. Duplicate `lesson1.qmd` (or `lesson2.qmd`) as a starting point, keeping the same YAML header
    (`webr:`, `filters: [webr]`, etc.).
 2. Add it to the navbar in `_quarto.yml` and link it from `index.qmd`.
-3. If a new lesson needs its own data file, drop it in `data/` and reference it the same way —
-   `download.file(paste0(data_base_url, "yourfile.csv"), "yourfile.csv")`.
+3. If it needs its own data file, drop it in `data/` and fetch it the same way existing lessons
+   do: `download.file(paste0(data_base_url, "yourfile.csv"), file.path("data_raw", "yourfile.csv"))`.
 
-## Design choices, so you can adapt them later
+### Design choices worth knowing before you edit
 
 - **Hidden answers:** every "🧠 Your Turn" exercise uses a collapsed callout
-  (`::: {.callout-note collapse="true"} ... :::`) for the solution, so students see a blank editor
-  first. Search `lesson1.qmd` for `Your Turn` to find/add more.
-- **Interactivity:** all code chunks are `{webr-r}` instead of `{r}`, which quarto-webr turns into
-  live, editable, runnable cells. A shared R session persists across chunks on the same page, so
-  `data` created early in the page is still available later.
-- **No local files needed by students:** because webR can't see anyone's hard drive, all data
-  loading goes through `download.file()` from the public GitHub URL rather than assuming a local
-  working directory — this is the one structural change from the original `.Rmd` you'll notice
-  throughout.
-- **Matches the C01 reproducible-workflow convention, not `setwd()`:** per the Week 1 orientation
-  materials ("we will not use `setwd` as the standard course workflow"), all paths use
-  `file.path("data_raw", ...)` / `file.path("data_processed", ...)`, and the browser version even
-  creates `data_raw`/`data_processed` folders in webR's virtual filesystem so the code matches
-  what students type in their real `EOH635_project` RStudio Project.
+  (`::: {.callout-note collapse="true"} ... :::`) for the solution.
+- **All code chunks are `{webr-r}`, not `{r}`** — that's what quarto-webr turns into live,
+  editable, runnable browser cells. A shared R session persists across chunks on the same page.
+- **No local files needed by students:** webR can't see anyone's hard drive, so data loading
+  goes through `download.file()` from this repo's raw GitHub URL rather than assuming a local
+  working directory. Immediately after each fetch chunk, a green "In your RStudio script" box
+  shows the simpler line students actually use in their own project.
+- **Matches the course's `file.path()` convention, not `setwd()`** — paths use
+  `file.path("data_raw", ...)` / `file.path("data_processed", ...)` throughout, matching the
+  `EOH635_project` RStudio Project structure from the Week 1 setup assignment.
 
-## About `class_data_processed.csv`
+### On the simulated data
 
-Lesson 2 needs a "raw + NDVI merged" file to start from (the output of Lesson 1). I generated
-`data/class_data_processed.csv` myself with a left join on `geoid10`/`GEOID10` (I don't have R
-available in this environment to run the actual `merge()`) — same 2,000 rows, same values, all
-384 tracts matched with zero unmatched rows. The one difference from a real `merge()` in R: base
-R's `merge()` sorts the output by the join key, so row *order* will differ from what running the
-Lesson 1 code yourself would produce. No exercise in Lesson 2 depends on row order, but if you
-want the exact R-generated version, it's a few lines in RStudio:
-```r
-data <- read.csv(file.path("data_raw", "class_data_raw.csv"))
-ndvi <- read.csv(file.path("data_raw", "PHL_NDVI_summer_annual.csv"))
-data$geoid10 <- as.character(data$geoid10)
-ndvi$GEOID10 <- as.character(ndvi$GEOID10)
-data2 <- merge(data, ndvi, by.x = "geoid10", by.y = "GEOID10", all.x = TRUE)
-write.csv(data2, file.path("data_processed", "class_data_processed.csv"), row.names = FALSE)
-```
+The data-generating scripts (original generation + a later remediation that fixed some
+association/confounding bugs) are kept in a **separate, private** instructor-only repo, not
+here — they document the dataset's exact ground-truth model, which would give away the answer
+to the confounding exercise in Lesson 2 if published alongside it.
 
-## Known open item
-
-`ctviolra`'s units are unconfirmed — `Classdata_arealevelmeasures_description.docx` says "per
-10,000 population," but `codebook.xlsx`/`create_data.R` say "per 1,000 residents." Flagged (not
-guessed at) in `codebook.qmd`. Resolve this and update that page once you're sure.
+</details>
