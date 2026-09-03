@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Leah Schinasi">
-<meta name="dcterms.date" content="2026-09-02">
+<meta name="dcterms.date" content="2026-09-03">
 
 <title>Lesson 2: Exploratory Data Analysis &amp; Data Cleaning – EOH 635: Environmental Epidemiology Methods</title>
 <style>
@@ -407,7 +407,7 @@ globalThis.qwebrCustomizedWebROptions = {
 };
 
 // Store cell data
-globalThis.qwebrCellDetails = [{"code":"library(tidyverse)","id":1,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-1","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data_base_url <- \"https://raw.githubusercontent.com/schinasi/EOH635/main/data/\"\n\ndir.create(\"data_processed\", showWarnings = FALSE)\n\ndownload.file(paste0(data_base_url, \"class_data_processed.csv\"), file.path(\"data_processed\", \"class_data_processed.csv\"))\n\ndata <- read.csv(file.path(\"data_processed\", \"class_data_processed.csv\"))","id":2,"options":{"autorun":"true","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-2","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Preview first few rows to verify data loading\nhead(data)","id":3,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-3","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Use the is.na() function with colSums() to count missing values in each column.\nmissing_values <- colSums(is.na(data))\nmissing_values","id":4,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-4","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"summary(data)","id":5,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-5","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Select only numeric columns in the data\nnumeric_data <- data %>% select(where(is.double))\n\n# Get summary statistics for only the numeric columns\nsummary(numeric_data)","id":6,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-6","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Identify non-numeric columns (excluding double-precision numeric, id, and year)\nnon_numeric_data <- data %>% select(-where(is.double), -id, -year)","id":7,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-7","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(non_numeric_data$education)\ntable(non_numeric_data$stress)\ntable(non_numeric_data$employment_status)","id":8,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-8","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — distribution of race_ethnicity","id":9,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-9","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(data$race_ethnicity)\nprop.table(table(data$race_ethnicity)) * 100","id":10,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-10","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Use lapply to create frequency tables for each non-numeric variable\ndistribution_tables <- lapply(non_numeric_data, function(x) {\n  if (is.factor(x) || is.character(x) || is.logical(x) || is.integer(x)) {\n    counts <- table(x, useNA = \"ifany\")             # Frequency counts including NAs\n    percentages <- prop.table(counts) * 100         # Calculate percentages\n    result <- cbind(Count = counts, Percentage = percentages)  # Combine counts and percentages\n    return(result)\n  } else {\n    return(NULL)\n  }\n})\n\n# Display the tables for each variable\ndistribution_tables","id":11,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-11","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"ggplot(data, aes(x = age)) +\n  geom_histogram(binwidth = 5, fill = \"blue\", color = \"black\") +\n  labs(title = \"Distribution of Age\", x = \"Age\", y = \"Frequency\")","id":12,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-12","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data$r_age <- ifelse(data$age > 105, NA, data$age)","id":13,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-13","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(is.na(data$age))\ntable(is.na(data$r_age))","id":14,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-14","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — recreate r_age using mutate() + if_else(), call it r_age2","id":15,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-15","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(r_age2 = if_else(age > 105, NA_real_, age))\n\ntable(data$r_age == data$r_age2, useNA = \"ifany\")","id":16,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-16","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"ggplot(data, aes(x = r_age)) +\n  geom_histogram(binwidth = 5, fill = \"blue\", color = \"black\") +\n  labs(title = \"Distribution of Recoded Age\", x = \"Recoded Age\", y = \"Frequency\")","id":17,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-17","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"ggplot(data, aes(x = gender, y = age)) +\n  geom_boxplot(fill = \"orange\") +\n  labs(title = \"Age Distribution by Gender\", x = \"Gender\", y = \"Age\")","id":18,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-18","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"ggplot(data, aes(x = as.character(high_blood_pressure), y = hrlctree)) +\n  geom_boxplot(fill = \"orange\") +\n  labs(title = \"Tree canopy cover by high blood pressure status\", x = \"High blood pressure\", y = \"Tree canopy cover\")","id":19,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-19","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"ggplot(data, aes(x = gender, y = hrlctree)) +\n  geom_boxplot(fill = \"orange\") +\n  labs(title = \"Tree canopy cover by gender\", x = \"Gender\", y = \"Tree canopy cover\")","id":20,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-20","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"ggplot(data, aes(x = education, y = hrlctree)) +\n  geom_boxplot(fill = \"orange\") +\n  labs(title = \"Tree canopy cover by education\", x = \"Education\", y = \"Tree canopy cover\")","id":21,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-21","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"ggplot(data, aes(x = pov_allage, y = hrlctree)) +\n  geom_point(color = \"purple\") +\n  labs(title = \"% living in poverty vs. tree canopy cover\", x = \"% living in poverty\", y = \"% tree canopy\")","id":22,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-22","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"summary_table <- data %>%\n  group_by(gender) %>%\n  summarize(\n    avg_age = mean(age, na.rm = TRUE),\n    max_age = max(age, na.rm = TRUE),\n    min_age = min(age, na.rm = TRUE)\n  )\n\nprint(summary_table)","id":23,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-23","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — summary table of hrlctree by education, including the median","id":24,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-24","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"tree_by_education <- data %>%\n  group_by(education) %>%\n  summarize(\n    avg_tree = mean(hrlctree, na.rm = TRUE),\n    median_tree = median(hrlctree, na.rm = TRUE),\n    max_tree = max(hrlctree, na.rm = TRUE),\n    min_tree = min(hrlctree, na.rm = TRUE)\n  )\n\nprint(tree_by_education)","id":25,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-25","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}}];
+globalThis.qwebrCellDetails = [{"code":"library(tidyverse)","id":1,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-1","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data_base_url <- \"https://raw.githubusercontent.com/schinasi/EOH635/main/data/\"\n\ndir.create(\"data_processed\", showWarnings = FALSE)\n\ndownload.file(paste0(data_base_url, \"class_data_processed.csv\"), file.path(\"data_processed\", \"class_data_processed.csv\"))\n\ndata <- read.csv(file.path(\"data_processed\", \"class_data_processed.csv\"))","id":2,"options":{"autorun":"true","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-2","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Preview first few rows to verify data loading\nhead(data)","id":3,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-3","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Use the is.na() function with colSums() to count missing values in each column.\nmissing_values <- colSums(is.na(data))\nmissing_values","id":4,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-4","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(cut(data$age, breaks = c(-Inf, 39, Inf), labels = c(\"39 and under\", \"40+\")), data$gender)","id":5,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-5","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — two-way table of an age<22 split against education","id":6,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-6","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(cut(data$age, breaks = c(-Inf, 21, Inf), labels = c(\"Under 22\", \"22 and over\")), data$education)","id":7,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-7","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"summary(data)","id":8,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-8","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Select only numeric columns in the data\nnumeric_data <- data %>% select(where(is.double))\n\n# Get summary statistics for only the numeric columns\nsummary(numeric_data)","id":9,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-9","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Identify non-numeric columns (excluding double-precision numeric, id, and year)\nnon_numeric_data <- data %>% select(-where(is.double), -id, -year)","id":10,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-10","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(non_numeric_data$education)\ntable(non_numeric_data$stress)\ntable(non_numeric_data$employment_status)","id":11,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-11","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — distribution of race_ethnicity","id":12,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-12","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(data$race_ethnicity)\nprop.table(table(data$race_ethnicity)) * 100","id":13,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-13","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Use lapply to create frequency tables for each non-numeric variable\ndistribution_tables <- lapply(non_numeric_data, function(x) {\n  if (is.factor(x) || is.character(x) || is.logical(x) || is.integer(x)) {\n    counts <- table(x, useNA = \"ifany\")             # Frequency counts including NAs\n    percentages <- prop.table(counts) * 100         # Calculate percentages\n    result <- cbind(Count = counts, Percentage = percentages)  # Combine counts and percentages\n    return(result)\n  } else {\n    return(NULL)\n  }\n})\n\n# Display the tables for each variable\ndistribution_tables","id":14,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-14","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"ggplot(data, aes(x = age)) +\n  geom_histogram(binwidth = 5, fill = \"blue\", color = \"black\") +\n  labs(title = \"Distribution of Age\", x = \"Age\", y = \"Frequency\")","id":15,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-15","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — histogram of hrlctree","id":16,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-16","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"ggplot(data, aes(x = hrlctree)) +\n  geom_histogram(binwidth = 0.05, fill = \"forestgreen\", color = \"black\") +\n  labs(title = \"Distribution of Tree Canopy Cover\", x = \"Tree canopy cover (proportion)\", y = \"Frequency\")","id":17,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-17","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data$r_age <- ifelse(data$age > 105, NA, data$age)","id":18,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-18","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(is.na(data$age))\ntable(is.na(data$r_age))","id":19,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-19","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — recreate r_age using mutate() + if_else(), call it r_age2","id":20,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-20","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(r_age2 = if_else(age > 105, NA_real_, age))\n\ntable(data$r_age == data$r_age2, useNA = \"ifany\")","id":21,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-21","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"ggplot(data, aes(x = r_age)) +\n  geom_histogram(binwidth = 5, fill = \"blue\", color = \"black\") +\n  labs(title = \"Distribution of Recoded Age\", x = \"Recoded Age\", y = \"Frequency\")","id":22,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-22","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"ggplot(data, aes(x = gender, y = age)) +\n  geom_boxplot(fill = \"orange\") +\n  labs(title = \"Age Distribution by Gender\", x = \"Gender\", y = \"Age\")","id":23,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-23","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"ggplot(data, aes(x = as.character(high_blood_pressure), y = hrlctree)) +\n  geom_boxplot(fill = \"orange\") +\n  labs(title = \"Tree canopy cover by high blood pressure status\", x = \"High blood pressure\", y = \"Tree canopy cover\")","id":24,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-24","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"ggplot(data, aes(x = gender, y = hrlctree)) +\n  geom_boxplot(fill = \"orange\") +\n  labs(title = \"Tree canopy cover by gender\", x = \"Gender\", y = \"Tree canopy cover\")","id":25,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-25","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"ggplot(data, aes(x = education, y = hrlctree)) +\n  geom_boxplot(fill = \"orange\") +\n  labs(title = \"Tree canopy cover by education\", x = \"Education\", y = \"Tree canopy cover\")","id":26,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-26","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — boxplot of hrlctree by mental_health status","id":27,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-27","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"ggplot(data, aes(x = as.character(mental_health), y = hrlctree)) +\n  geom_boxplot(fill = \"orange\") +\n  labs(title = \"Tree canopy cover by mental health status\", x = \"Good mental health (1 = yes)\", y = \"Tree canopy cover\")","id":28,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-28","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"ggplot(data, aes(x = pov_allage, y = hrlctree)) +\n  geom_point(color = \"purple\") +\n  labs(title = \"% living in poverty vs. tree canopy cover\", x = \"% living in poverty\", y = \"% tree canopy\")","id":29,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-29","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — scatter plot of hrlctree vs. X2015_NDVI","id":30,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-30","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"ggplot(data, aes(x = hrlctree, y = X2015_NDVI)) +\n  geom_point(color = \"darkgreen\") +\n  labs(title = \"Tree canopy cover vs. NDVI\", x = \"Tree canopy cover\", y = \"NDVI\")","id":31,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-31","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"summary_table <- data %>%\n  group_by(gender) %>%\n  summarize(\n    avg_age = mean(age, na.rm = TRUE),\n    max_age = max(age, na.rm = TRUE),\n    min_age = min(age, na.rm = TRUE)\n  )\n\nprint(summary_table)","id":32,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-32","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — summary table of hrlctree by education, including the median","id":33,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-33","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"tree_by_education <- data %>%\n  group_by(education) %>%\n  summarize(\n    avg_tree = mean(hrlctree, na.rm = TRUE),\n    median_tree = median(hrlctree, na.rm = TRUE),\n    max_tree = max(hrlctree, na.rm = TRUE),\n    min_tree = min(hrlctree, na.rm = TRUE)\n  )\n\nprint(tree_by_education)","id":34,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-34","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}}];
 
 </script>
 <script type="module">
@@ -1715,9 +1715,10 @@ globalThis.qwebrExecuteCode = async function (
   <ul class="collapse">
   <li><a href="#lets-read-our-data-into-r" id="toc-lets-read-our-data-into-r" class="nav-link active" data-scroll-target="#lets-read-our-data-into-r">Let’s read our data into R</a></li>
   <li><a href="#data-check" id="toc-data-check" class="nav-link" data-scroll-target="#data-check">Data check</a></li>
-  <li><a href="#exploratory-data-analysis-eda-and-data-cleaning" id="toc-exploratory-data-analysis-eda-and-data-cleaning" class="nav-link" data-scroll-target="#exploratory-data-analysis-eda-and-data-cleaning">Exploratory Data Analysis (EDA) and Data Cleaning</a>
+  <li><a href="#why-explore-data-before-analyzing-it" id="toc-why-explore-data-before-analyzing-it" class="nav-link" data-scroll-target="#why-explore-data-before-analyzing-it">Why Explore Data Before Analyzing It?</a>
   <ul class="collapse">
   <li><a href="#checking-for-missing-values" id="toc-checking-for-missing-values" class="nav-link" data-scroll-target="#checking-for-missing-values">Checking for Missing Values</a></li>
+  <li><a href="#checking-for-logical-inconsistencies" id="toc-checking-for-logical-inconsistencies" class="nav-link" data-scroll-target="#checking-for-logical-inconsistencies">Checking for Logical Inconsistencies</a></li>
   <li><a href="#summary-statistics" id="toc-summary-statistics" class="nav-link" data-scroll-target="#summary-statistics">Summary Statistics</a></li>
   <li><a href="#frequency-tables" id="toc-frequency-tables" class="nav-link" data-scroll-target="#frequency-tables">Frequency Tables</a></li>
   <li><a href="#visual-exploration-of-data" id="toc-visual-exploration-of-data" class="nav-link" data-scroll-target="#visual-exploration-of-data">Visual Exploration of Data</a></li>
@@ -1725,6 +1726,9 @@ globalThis.qwebrExecuteCode = async function (
   <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section">======================================================</a></li>
   <li><a href="#next-steps" id="toc-next-steps" class="nav-link" data-scroll-target="#next-steps">🎉 Next Steps</a></li>
   <li><a href="#section-1" id="toc-section-1" class="nav-link" data-scroll-target="#section-1">======================================================</a></li>
+  <li><a href="#section-2" id="toc-section-2" class="nav-link" data-scroll-target="#section-2">======================================================</a></li>
+  <li><a href="#quick-start-script-for-your-own-project" id="toc-quick-start-script-for-your-own-project" class="nav-link" data-scroll-target="#quick-start-script-for-your-own-project">🚀 Quick-Start Script for Your Own Project</a></li>
+  <li><a href="#section-3" id="toc-section-3" class="nav-link" data-scroll-target="#section-3">======================================================</a></li>
   </ul>
 </nav>
     </div>
@@ -2035,7 +2039,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">September 2, 2026</p>
+      <p class="date">September 3, 2026</p>
     </div>
   </div>
   
@@ -2047,7 +2051,8 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </header>
 
 
-<p>In our last session (<a href="./lesson1.html">Lesson 1</a>), we read in and manipulated our data set, and merged in NDVI (greenness) data by census tract. In this session we continue to work with the data, doing some exploratory data analysis (EDA) and data cleaning. These are essential steps at the start of any new analysis.</p>
+<p>In our last session (<a href="./lesson1.html">Lesson 1</a>), we read in and manipulated our data set, and merged in NDVI (greenness) data by census tract. This week’s module is about <strong>research questions, conceptual frameworks, and descriptive analysis</strong> — you’ve already worked through hypothesis components (exposure, outcome, population, expected relationship) and the mediator-vs-modifier distinction in this week’s “Learn” material. This tutorial is the <strong>Practice</strong> half: hands-on descriptive statistics, data cleaning, and visualization in R.</p>
+<p>That’s not busywork. Every study population, exposure, and outcome needs to be <em>characterized</em> before it can be modeled — and this week’s skills are exactly what you’ll need for <strong>Project Milestone 1</strong> (research question, hypothesis, and conceptual framework), due this week. Milestone 1 asks you to start characterizing the exposure and outcome you’re considering for your own project, using this same class dataset. Everything below — checking distributions, spotting errors, visualizing a relationship — is directly reusable for that.</p>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -2058,8 +2063,10 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The gray boxes below are <strong>live R editors</strong> — the code runs in your browser (no install needed). Click <strong>Run Code</strong> to execute a chunk, or edit the code first and then run it.</p>
-<p>Sections marked <strong>🧠 Your Turn</strong> give you a task and a blank (or partially blank) code editor. Try writing the code yourself before revealing the solution, hidden in a collapsed box underneath.</p>
+<p>The gray boxes below are <strong>live R editors</strong> — the code actually runs in your browser (no install needed). In the top-left corner of each gray box, you’ll see a <strong>green arrow button labeled “Run Code.”</strong> Click that green arrow to run the code in that box. The output (whatever the code produces — a number, a table, a plot, etc.) will appear directly underneath the box a moment later.</p>
+<p>You can also edit the code first — click inside the box, change something, then click the green <strong>Run Code</strong> arrow to run your edited version. Nothing you do here can break anything; if you make a mess, just refresh the page to start that box over.</p>
+<p>Sections marked <strong>🧠 Your Turn</strong> give you a task and a blank (or partially blank) code editor. Try writing the code yourself before revealing the solution, hidden in a collapsed box underneath. Click it open only after a real attempt (or if you’re truly stuck) — the point is practice, not just reading the answer.</p>
+<p><strong>A note on browser vs.&nbsp;RStudio code:</strong> one chunk in this lesson runs automatically in the background (labeled <code>#| autorun: true</code>) — it fetches the class data file from the web so it’s available in your browser. <strong>When you write your own scripts in RStudio, you will not include this fetching code.</strong> Immediately after it, you’ll find a green box labeled <strong>“In your RStudio script”</strong> showing the simpler code you’ll actually use.</p>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -2073,9 +2080,10 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 <div class="callout-body-container callout-body">
 <p>This lesson picks up where Lesson 1 left off: reading in <strong><code>class_data_processed.csv</code></strong>, the merged file you (or this tutorial) saved to <code>data_processed/</code> at the end of Lesson 1. If you worked through Lesson 1 in RStudio and saved your own version there, use that file — it should match. If you skipped straight to this lesson, that’s fine too; a copy is fetched for you below. See the <a href="./codebook.html">Data Codebook</a> for variable definitions.</p>
+<p>As a reminder from Lesson 1: the web-fetch step below is a browser-only workaround. On your own computer, <code>class_data_processed.csv</code> is just a file sitting in your <code>data_processed/</code> folder — you read it directly, no downloading involved.</p>
 </div>
 </div>
-<p>Just as in Lesson 1, we first load any packages we need, then read in our data — using <code>file.path()</code> and the same <code>data_raw</code> / <code>data_processed</code> structure from your <code>EOH635_project</code>, not <code>setwd()</code>.</p>
+<p>Just as in Lesson 1, we first load any packages we need, then read in our data — using <code>file.path()</code> and the same <code>data_raw</code> / <code>data_processed</code> structure from your <code>EOH635_project</code>, not <code>setwd()</code>. (Recall from Lesson 1: on your own computer you’re responsible for <code>install.packages()</code> and <code>library()</code> for every package you use — this tutorial page loads <code>tidyverse</code> for you automatically, which your own script won’t do.)</p>
 <div id="qwebr-insertion-location-1"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <section id="lets-read-our-data-into-r" class="level1">
@@ -2094,9 +2102,35 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 <div id="qwebr-insertion-location-3"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 </section>
-<section id="exploratory-data-analysis-eda-and-data-cleaning" class="level1">
-<h1>Exploratory Data Analysis (EDA) and Data Cleaning</h1>
-<p>EDA is a valuable tool! Don’t underestimate it. It not only helps us better understand our data, but it also supports data cleaning.</p>
+<section id="why-explore-data-before-analyzing-it" class="level1">
+<h1>Why Explore Data Before Analyzing It?</h1>
+<p>It’s tempting to skip straight to the “real” analysis — but exploratory data analysis (EDA) isn’t a formality before the real work starts. <strong>It <em>is</em> part of the real work.</strong> Before you can trust any regression result later in the course, you need to know your data cold: what each variable looks like, where the errors are, and what a “normal” value even is for each one.</p>
+<p>This class dataset is a simulated example of something very real in environmental epidemiology: data assembled from <strong>multiple sources</strong>, each with its own error patterns. Here, individual-level answers came from a household survey, and neighborhood-level measures (tree canopy, traffic, poverty, crime) were <strong>linked in</strong> by census tract — the same kind of linkage you did yourself in Lesson 1. Every data-collection method has its own way of introducing error:</p>
+<ul>
+<li><strong>Surveys / interviewer-administered questionnaires</strong> — recall bias, misunderstood questions, data entry mistakes.</li>
+<li><strong>Monitors and administrative/electronic data</strong> — instrument drift, missing readings, records that were never meant for research use.</li>
+<li><strong>Linked data</strong> (like the tract-level variables here) — mismatched geographic identifiers, or a value that’s technically correct but describes the <em>neighborhood</em>, not the <em>person</em>.</li>
+</ul>
+<p>Broadly, the errors EDA is designed to catch fall into three buckets:</p>
+<ol type="1">
+<li><strong>Missing data</strong></li>
+<li><strong>Logical inconsistencies</strong> — combinations of values that can’t both be true</li>
+<li><strong>Outliers</strong> — values so extreme they’re more likely to be errors than reality</li>
+</ol>
+<p>We’ll work through each of these in turn.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>One more framing note before we start: everything in this lesson is <strong>descriptive</strong>, not <strong>inferential</strong>. We’re not running hypothesis tests or p-values here — we’re looking at distributions to understand the data and catch problems <em>before</em> any modeling starts. That distinction matters enough that it’s worth stating explicitly: descriptive analysis characterizes what’s in front of you; inferential analysis (coming later in the course) is what lets you draw conclusions and test hypotheses from it.</p>
+</div>
+</div>
 <section id="checking-for-missing-values" class="level2">
 <h2 class="anchored" data-anchor-id="checking-for-missing-values">Checking for Missing Values</h2>
 <p>Missing values can affect analysis, so it’s essential to check for them.</p>
@@ -2109,7 +2143,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 <li>Do you think this is a problem? Why or why not?</li>
 </ul>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Compare against the codebook — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2118,7 +2152,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>The <a href="./codebook.html#known-missingness-in-this-dataset">Data Codebook</a> lists the missingness that was deliberately built into this simulated dataset: <code>mental_health</code> (42), <code>current_smoker</code> (20), <code>high_blood_pressure</code> (12), <code>stress</code> (7), <code>has_park</code> (5), <code>age</code> (3), <code>gender</code> (2). If your <code>colSums(is.na(data))</code> output matches that, your merge from Lesson 1 didn’t introduce (or lose) any missingness — which is exactly the kind of check worth doing after any merge.</p>
 </div>
@@ -2127,14 +2161,56 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 <p>For now we will not recode any of our missing variables. In some cases it makes sense to recode missing variables — particularly if we can infer their values from other variables in the data frame — but for now we’ll proceed without doing that. It’s good to be aware of which variables have missing values, since we’ll need to think about this later when conducting analyses.</p>
 <p>Since you’ll be working with these data in your project analysis, be sure to take note of the variables that have missing values.</p>
 </section>
+<section id="checking-for-logical-inconsistencies" class="level2">
+<h2 class="anchored" data-anchor-id="checking-for-logical-inconsistencies">Checking for Logical Inconsistencies</h2>
+<p>Missing data is easy to spot — R shows you <code>NA</code> directly. <strong>Logical inconsistencies</strong> are sneakier: every individual value can look perfectly plausible on its own, but two variables <em>together</em> can’t both be true. A classic example from environmental health survey data: someone recorded as biological sex “male” who also reports an age at first menstruation. Neither value looks wrong in isolation — the problem only shows up when you look at both at once.</p>
+<p>The tool for catching this is one you already know: <code>table()</code>, applied to <em>two</em> variables instead of one, to see every combination that actually occurs in the data.</p>
+<p>As a quick illustration of the technique (not a real inconsistency — just showing the mechanics), here’s age broken into two rough bins, crossed with gender:</p>
+<div id="qwebr-insertion-location-5"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>Reading a two-way table like this: each cell is a count of people with <em>that</em> combination of both variables. If a cell that should be logically impossible has a nonzero count, that’s your signal to investigate.</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>🧠 Your Turn
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This dataset has a real logical constraint built in: nobody under 22 should be coded as having a <strong>Bachelor’s degree or higher</strong> (there simply hasn’t been time to finish one). Build a two-way table of an “under 22 / 22 and over” age split against <code>education</code> to check whether that holds. (Hint: adapt the <code>cut()</code> pattern above, using a breakpoint at 22 instead of 40, and cross it with <code>data$education</code> instead of <code>data$gender</code>.)</p>
+</div>
+</div>
+<div id="qwebr-insertion-location-6"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Solution — click to reveal
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div id="qwebr-insertion-location-7"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>The “Under 22” row should show <strong>0</strong> people with “Bachelor’s degree or higher” — if it does, this consistency check passes. (Not every check you run will fail — knowing <em>how</em> to check is the skill, whether or not this particular one turns anything up.)</p>
+</div>
+</div>
+</div>
+</section>
 <section id="summary-statistics" class="level2">
 <h2 class="anchored" data-anchor-id="summary-statistics">Summary Statistics</h2>
 <p>The <code>summary()</code> function provides a quick look at key statistics (e.g., min, max, median, mean).</p>
-<div id="qwebr-insertion-location-5"></div>
+<div id="qwebr-insertion-location-8"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p><strong>Question to consider:</strong> What descriptive statistics do we see for each of the variables? For what types of variables does the <code>summary()</code> function not provide good information?</p>
 <p>Now let’s redo this, looking only at the numeric variables.</p>
-<div id="qwebr-insertion-location-6"></div>
+<div id="qwebr-insertion-location-9"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -2146,7 +2222,7 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><strong>Note:</strong> <code>is.double()</code> selects only columns stored as double (continuous numeric variables). This avoids including integer columns (like <code>id</code> and <code>year</code>), which are used for identifiers or years rather than quantities we’d summarize with a mean. Use <code>is.numeric()</code> instead if you want to include both integer and double types — <code>is.double()</code> is appropriate here because we want to calculate means, medians, etc. on genuinely continuous measures.</p>
+<p><strong>Note:</strong> <code>is.double()</code> selects only columns stored as double (continuous numeric variables). This avoids including integer columns (like <code>id</code> and <code>year</code>), which are used for identifiers or years rather than quantities we’d summarize with a mean. Use <code>is.numeric()</code> instead if you want to include both integer and double types — <code>is.double()</code> is appropriate here because we want to calculate means, medians, etc. on genuinely continuous measures. It doesn’t make sense to compute a mean or median for a binary yes/no variable — for those, we need a different tool, which is exactly what the next section covers.</p>
 </div>
 </div>
 <p><strong>Questions to consider:</strong></p>
@@ -2156,7 +2232,7 @@ Note
 <li>What can you tell about percent living in poverty in participants’ neighborhoods, based on the distribution you see here?</li>
 </ul>
 <p>Now let’s create some tables to start looking at distributions for the other variables in the data set.</p>
-<div id="qwebr-insertion-location-7"></div>
+<div id="qwebr-insertion-location-10"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -2175,7 +2251,7 @@ Note
 <section id="frequency-tables" class="level2">
 <h2 class="anchored" data-anchor-id="frequency-tables">Frequency Tables</h2>
 <p>Now let’s create frequency tables to look at other variables:</p>
-<div id="qwebr-insertion-location-8"></div>
+<div id="qwebr-insertion-location-11"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn">
 <div class="callout-header d-flex align-content-center">
@@ -2190,10 +2266,10 @@ Note
 <p>Use the same approach (<code>table()</code>, and if you like, <code>prop.table()</code>) to look at the distribution of <strong><code>race_ethnicity</code></strong> in this newly merged dataset. Do the proportions look the same as what you found for <code>race_ethnicity</code> back in Lesson 1? They should — merging in NDVI shouldn’t have changed any of the original columns. If your numbers don’t match, that’s worth investigating!</p>
 </div>
 </div>
-<div id="qwebr-insertion-location-9"></div>
+<div id="qwebr-insertion-location-12"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2202,15 +2278,15 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div id="qwebr-insertion-location-10"></div>
+<div id="qwebr-insertion-location-13"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 </div>
 </div>
 </div>
 <p>We can also use a function to run this for <em>all</em> of the non-numeric variables at once:</p>
-<div id="qwebr-insertion-location-11"></div>
+<div id="qwebr-insertion-location-14"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -2225,6 +2301,7 @@ Note
 <p>You’re not expected to write a function like this on your own yet. Save this code (consider building yourself a small code library of “recipes” like this one) and reuse it whenever you need frequency tables for every categorical variable in a data set at once.</p>
 </div>
 </div>
+<p>Take a look at <code>asthma</code> in the output above. Its prevalence should look like a plausible proportion of the population — a small minority, not nearly everyone. That’s worth pausing on: a variable whose distribution looks <em>implausible</em> (way too common, way too rare, or suspiciously uniform) is itself a signal worth chasing down, the same way a missing-value count or a failed logical-consistency check is.</p>
 </section>
 <section id="visual-exploration-of-data" class="level2">
 <h2 class="anchored" data-anchor-id="visual-exploration-of-data">Visual Exploration of Data</h2>
@@ -2232,15 +2309,48 @@ Note
 <section id="example-1-histogram" class="level3">
 <h3 class="anchored" data-anchor-id="example-1-histogram">Example 1: Histogram</h3>
 <p>Histograms are useful for visualizing the distribution of a single numeric variable. Let’s look at age.</p>
-<div id="qwebr-insertion-location-12"></div>
+<div id="qwebr-insertion-location-15"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>Some of the values we see for age look suspicious — the ages &gt; 110 are very suspect. Let’s recode those with age &gt; 105 to be missing. (Another option would be to recode these to some high but plausible number, e.g.&nbsp;100.)</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>🧠 Your Turn
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Before we get to age’s outlier problem below, get a look at our primary <em>exposure</em> variable’s distribution. Build a histogram of <strong><code>hrlctree</code></strong> (tree canopy cover). A <code>binwidth</code> of <code>0.05</code> works well here, since <code>hrlctree</code> is a proportion between 0 and 1 rather than a variable measured in whole years like age.</p>
+</div>
+</div>
+<div id="qwebr-insertion-location-16"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-13-contents" aria-controls="callout-13" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Solution — click to reveal
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-13" class="callout-13-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div id="qwebr-insertion-location-17"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>Most tracts should cluster at fairly low canopy values with a long right tail toward a handful of much greener tracts — worth keeping in mind before you characterize this variable for your own project.</p>
+</div>
+</div>
+</div>
+<p>Some of the values we see for age look suspicious — the ages &gt; 110 are very suspect. This is the third error type from earlier: an <strong>outlier</strong>. Let’s recode those with age &gt; 105 to be missing. (Another option would be to recode these to some high but plausible number, e.g.&nbsp;100.)</p>
 <p>There’s a trade-off here: we gain more missing values, or we introduce more uncertainty. This is a balancing act you’ll have to consider as you move forward with your own data analysis. Like most things, there isn’t necessarily one “right” answer — just be thoughtful, and document your choice.</p>
 <p>Our new recoded age variable will be called <code>r_age</code>:</p>
-<div id="qwebr-insertion-location-13"></div>
+<div id="qwebr-insertion-location-18"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p>We can check the number of missing values in the recoded and original age variables:</p>
-<div id="qwebr-insertion-location-14"></div>
+<div id="qwebr-insertion-location-19"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p>Note: after recoding, we have a few additional observations with missing age — that makes sense given the distribution we saw earlier.</p>
 <div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn">
@@ -2256,10 +2366,10 @@ Note
 <p>Recall from Lesson 1 that <code>dplyr</code>’s <code>if_else()</code> (typically used inside <code>mutate()</code>) is another way to do the same recoding <code>ifelse()</code> just did. Recreate <code>r_age</code> using <code>mutate()</code> and <code>if_else()</code> instead, calling the new column <code>r_age2</code>, and confirm it matches <code>r_age</code> (hint: a table of <code>r_age == r_age2</code>, or <code>identical()</code>, can confirm this — remember that <code>NA == NA</code> is <code>NA</code>, not <code>TRUE</code>, so a simple <code>table()</code> of the comparison is often clearer than <code>identical()</code> here).</p>
 </div>
 </div>
-<div id="qwebr-insertion-location-15"></div>
+<div id="qwebr-insertion-location-20"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-15-contents" aria-controls="callout-15" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2268,16 +2378,16 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div id="callout-15" class="callout-15-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div id="qwebr-insertion-location-16"></div>
+<div id="qwebr-insertion-location-21"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p>(Note: <code>if_else()</code> is stricter than base R’s <code>ifelse()</code> about types — it needs <code>NA_real_</code> rather than a plain <code>NA</code> here, since <code>age</code> is a decimal/“double” column. This is a common <code>if_else()</code> gotcha worth remembering.)</p>
 </div>
 </div>
 </div>
 <p>Let’s recreate our histogram with the recoded age variable:</p>
-<div id="qwebr-insertion-location-17"></div>
+<div id="qwebr-insertion-location-22"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p>Our histogram no longer has the age outliers we observed earlier.</p>
 </section>
@@ -2285,15 +2395,15 @@ Note
 <h3 class="anchored" data-anchor-id="example-2-boxplot">Example 2: Boxplot</h3>
 <p>Boxplots are helpful for identifying outliers and comparing distributions across categories.</p>
 <p>Let’s look at the distribution of age by gender.</p>
-<div id="qwebr-insertion-location-18"></div>
+<div id="qwebr-insertion-location-23"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p><strong>Question to consider:</strong> What is the relationship between gender identity and age?</p>
 <p>Let’s look at high blood pressure, our primary outcome/dependent variable, by tree canopy cover (our primary exposure/independent variable):</p>
-<div id="qwebr-insertion-location-19"></div>
+<div id="qwebr-insertion-location-24"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p>Note the <code>as.character()</code> wrapped around <code>high_blood_pressure</code> in the code above. Why do we need it? (Hint: try running the code without that wrapper. Hint 2: recall from the <a href="./codebook.html">Data Codebook</a> how <code>high_blood_pressure</code> is coded/stored.)</p>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Why as.character()? — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-16-contents" aria-controls="callout-16" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2302,7 +2412,7 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-11" class="callout-11-contents callout-collapse collapse">
+<div id="callout-16" class="callout-16-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p><code>high_blood_pressure</code> is stored as an <strong>integer</strong> 0/1 flag, not a category. Without <code>as.character()</code>, <code>ggplot</code> treats it as a continuous numeric axis and tries to draw a single boxplot (or a strange, mostly-empty range of “groups” between 0 and 1) rather than two separate boxes for “0” and “1”. Wrapping it in <code>as.character()</code> (or <code>factor()</code>) tells <code>ggplot</code> to treat it as a categorical variable, so it draws one box per group as intended. This is the same integer-flags-that-are-really-categories issue you first ran into with <code>str(data)</code> back in Lesson 1.</p>
 </div>
@@ -2319,29 +2429,107 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Remember this is a <strong>crude</strong> estimate of the relationship. We’ll use regression models later in the course to estimate this association, with modeling methods intended to help reduce bias in our estimate.</p>
+<p>Remember this is a <strong>crude</strong> estimate of the relationship — and, per Week 1, an association (however real it looks here) is not the same thing as causation. Even if this boxplot shows a clear pattern, several other explanations besides “tree canopy directly affects blood pressure” are still on the table, including confounding by some third variable related to both. We’ll return to formal tools for evaluating that (regression models, and later in the course, confounding assessment with causal diagrams) — for now, just describe what you see.</p>
 </div>
 </div>
 <p>Let’s also look at tree canopy cover by gender:</p>
-<div id="qwebr-insertion-location-20"></div>
+<div id="qwebr-insertion-location-25"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p><strong>Question to consider:</strong> Based on what you see here, what is the relationship between gender identity and % tree canopy cover? Why might this matter within the context of our study question?</p>
 <p>Let’s also look at tree canopy cover by education:</p>
-<div id="qwebr-insertion-location-21"></div>
+<div id="qwebr-insertion-location-26"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p><strong>Question to consider:</strong> Based on what you see here, what is the relationship between personal educational attainment and % tree canopy cover? Why might this matter within the context of our study question?</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Keep these last two plots in mind. You just checked whether two different variables (gender, education) are related to our exposure of interest. That’s exactly the first step in thinking about <strong>confounding</strong> — a topic the course returns to formally in Week 5. A variable can only confound a relationship if it’s associated with <em>both</em> the exposure and the outcome; here you’ve just checked the “associated with the exposure” half for two candidates. Not every variable you check will turn out to matter — and that’s useful information too.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>🧠 Your Turn
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Let’s check one more candidate variable, this time against a different outcome. Build a boxplot of <strong><code>hrlctree</code></strong> by <strong><code>mental_health</code></strong> status (remember: you’ll need <code>as.character()</code> or <code>factor()</code> around <code>mental_health</code>, for the same reason as <code>high_blood_pressure</code> above).</p>
+</div>
+</div>
+<div id="qwebr-insertion-location-27"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-20-contents" aria-controls="callout-20" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Solution — click to reveal
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-20" class="callout-20-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div id="qwebr-insertion-location-28"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+</div>
+</div>
+</div>
 </section>
 <section id="example-3-scatter-plot" class="level3">
 <h3 class="anchored" data-anchor-id="example-3-scatter-plot">Example 3: Scatter Plot</h3>
 <p>Scatter plots are useful for exploring relationships between two numeric variables. Let’s look at the relationship between percentage of the census tract living in poverty and tree canopy cover:</p>
-<div id="qwebr-insertion-location-22"></div>
+<div id="qwebr-insertion-location-29"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p><strong>Question to consider:</strong> Based on what you see, what do you conclude about the overall relationship between living in a tract with higher % poverty and % tree canopy? Stated another way, what is the general shape and direction of this relationship?</p>
+<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>🧠 Your Turn
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Scatter plots are also a good sanity check when a dataset has two variables that <em>should</em> be related. This dataset has two different greenness measures: <code>hrlctree</code> (tree canopy cover, linked in during data creation) and <code>X2015_NDVI</code> (the NDVI value you yourself merged in during Lesson 1). Build a scatter plot of <code>hrlctree</code> (x-axis) against <code>X2015_NDVI</code> (y-axis). Do they move together the way you’d expect two measures of the same underlying thing to?</p>
+</div>
+</div>
+<div id="qwebr-insertion-location-30"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-22-contents" aria-controls="callout-22" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Solution — click to reveal
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-22" class="callout-22-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div id="qwebr-insertion-location-31"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>A clear positive relationship here is a reassuring sign — two independently sourced measures of “how green is this place” agreeing with each other is exactly the kind of cross-check worth doing before you build an argument around either one.</p>
+</div>
+</div>
+</div>
 </section>
 <section id="example-4-summary-table-of-key-metrics" class="level3">
 <h3 class="anchored" data-anchor-id="example-4-summary-table-of-key-metrics">Example 4: Summary Table of Key Metrics</h3>
 <p>We can also create summary tables that group data by a categorical variable. Suppose we want to summarize average age by gender:</p>
-<div id="qwebr-insertion-location-23"></div>
+<div id="qwebr-insertion-location-32"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p><strong>Question to consider:</strong> Compare the results from this summary table to the boxplot you made earlier (age stratified by gender). Do you find one more useful than the other? Why?</p>
 <div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn">
@@ -2357,10 +2545,10 @@ Note
 <p>Build a similar summary table, but (a) group by <strong><code>education</code></strong> instead of <code>gender</code>, (b) summarize <strong><code>hrlctree</code></strong> instead of <code>age</code>, and (c) add the <strong>median</strong> alongside the mean, max, and min.</p>
 </div>
 </div>
-<div id="qwebr-insertion-location-24"></div>
+<div id="qwebr-insertion-location-33"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-14-contents" aria-controls="callout-14" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-24-contents" aria-controls="callout-24" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2369,9 +2557,9 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-14" class="callout-14-contents callout-collapse collapse">
+<div id="callout-24" class="callout-24-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div id="qwebr-insertion-location-25"></div>
+<div id="qwebr-insertion-location-34"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 </div>
 </div>
@@ -2387,7 +2575,100 @@ Note
 </section>
 <section id="section-1" class="level1">
 <h1>======================================================</h1>
-<p>Next session we’ll build on this work by creating descriptive tables and figures for our main analysis — think of these as our “Table 1” and “Figure 1” for a manuscript.</p>
+<p>You now have a working toolkit for characterizing a dataset: checking for missing values and logical inconsistencies, summarizing distributions, building frequency tables, and visualizing relationships with histograms, boxplots, scatter plots, and grouped summary tables. That’s exactly what <strong>Project Milestone 1</strong> (due this week) asks you to start doing for your own chosen exposure and outcome — pick your pair from this dataset, and run them through the same steps you just practiced here.</p>
+<p>Next week, we turn to <strong>exposure assessment and misclassification</strong> — how exposure gets measured and coded, and what happens when that measurement isn’t perfect. Before then, take a closer look at the environmental exposure variables in the <a href="./codebook.html">Data Codebook</a> (tree canopy, traffic density, crime, air/greenness measures) as you think about which one you want to build your project around.</p>
+</section>
+<section id="section-2" class="level1">
+<h1>======================================================</h1>
+</section>
+<section id="quick-start-script-for-your-own-project" class="level1">
+<h1>🚀 Quick-Start Script for Your Own Project</h1>
+</section>
+<section id="section-3" class="level1">
+<h1>======================================================</h1>
+<p>Everything above walked through each step one at a time, with the browser-only fetching code mixed in. Below is a <strong>single reusable script</strong> — this is what you’d paste into a new <code>.R</code> or <code>.qmd</code> file inside <code>EOH635_project/scripts/</code>, running on your own computer with <code>class_data_processed.csv</code> already sitting in <code>data_processed/</code> (from Lesson 1). Swap in your own variable names wherever you see <code># &lt;- CHANGE THIS</code>, and use it as a starting checklist for Milestone 1.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>💻 In your RStudio script
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Setup ----</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Read in your data ----</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>))</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 1. Missing data: check every column at once ----</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">colSums</span>(<span class="fu">is.na</span>(data))</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 2. Logical inconsistencies: cross-tabulate variables that should agree ----</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Example template -- replace both variables with a pair relevant to your own project</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(<span class="fu">cut</span>(data<span class="sc">$</span>age, <span class="at">breaks =</span> <span class="fu">c</span>(<span class="sc">-</span><span class="cn">Inf</span>, <span class="dv">21</span>, <span class="cn">Inf</span>), <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Under 22"</span>, <span class="st">"22 and over"</span>)),</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>      data<span class="sc">$</span>education)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 3. Outliers + summary statistics ----</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(data)                                    <span class="co"># all variables</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(data <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="fu">where</span>(is.double)))       <span class="co"># numeric variables only</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 4. Frequency tables for categorical variables ----</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(data<span class="sc">$</span>education)                            <span class="co"># &lt;- CHANGE THIS to your own categorical variables</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="fu">prop.table</span>(<span class="fu">table</span>(data<span class="sc">$</span>education)) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Every non-numeric variable at once:</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>non_numeric_data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">select</span>(<span class="sc">-</span><span class="fu">where</span>(is.double), <span class="sc">-</span>id, <span class="sc">-</span>year)</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="fu">lapply</span>(non_numeric_data, <span class="cf">function</span>(x) {</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> (<span class="fu">is.factor</span>(x) <span class="sc">||</span> <span class="fu">is.character</span>(x) <span class="sc">||</span> <span class="fu">is.logical</span>(x) <span class="sc">||</span> <span class="fu">is.integer</span>(x)) {</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    counts <span class="ot">&lt;-</span> <span class="fu">table</span>(x, <span class="at">useNA =</span> <span class="st">"ifany"</span>)</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    percentages <span class="ot">&lt;-</span> <span class="fu">prop.table</span>(counts) <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">cbind</span>(<span class="at">Count =</span> counts, <span class="at">Percentage =</span> percentages)</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>  } <span class="cf">else</span> {</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    <span class="cn">NULL</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>  }</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>})</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 5. Recode an implausible value once you've found one ----</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Template, following the age &gt; 105 example above:</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>r_age <span class="ot">&lt;-</span> <span class="fu">ifelse</span>(data<span class="sc">$</span>age <span class="sc">&gt;</span> <span class="dv">105</span>, <span class="cn">NA</span>, data<span class="sc">$</span>age)   <span class="co"># &lt;- CHANGE THIS to your own variable/cutoff</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 6. Visualize a single continuous variable ----</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> age)) <span class="sc">+</span>                                    <span class="co"># &lt;- CHANGE THIS to your exposure or outcome</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_histogram</span>(<span class="at">binwidth =</span> <span class="dv">5</span>, <span class="at">fill =</span> <span class="st">"blue"</span>, <span class="at">color =</span> <span class="st">"black"</span>) <span class="sc">+</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Distribution of Age"</span>, <span class="at">x =</span> <span class="st">"Age"</span>, <span class="at">y =</span> <span class="st">"Frequency"</span>)</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 7. Visualize your exposure-outcome relationship ----</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a><span class="co"># If your outcome is a 0/1 flag, wrap it in as.character() so ggplot treats it as a category:</span></span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">as.character</span>(high_blood_pressure), <span class="at">y =</span> hrlctree)) <span class="sc">+</span>  <span class="co"># &lt;- CHANGE THIS</span></span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">fill =</span> <span class="st">"orange"</span>) <span class="sc">+</span></span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Tree canopy cover by high blood pressure status"</span>,</span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"High blood pressure"</span>, <span class="at">y =</span> <span class="st">"Tree canopy cover"</span>)</span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a><span class="co"># If both your exposure and outcome are continuous, use a scatter plot instead:</span></span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> pov_allage, <span class="at">y =</span> hrlctree)) <span class="sc">+</span>                <span class="co"># &lt;- CHANGE THIS</span></span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">color =</span> <span class="st">"purple"</span>) <span class="sc">+</span></span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"% living in poverty vs. tree canopy cover"</span>,</span>
+<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a>       <span class="at">x =</span> <span class="st">"% living in poverty"</span>, <span class="at">y =</span> <span class="st">"% tree canopy"</span>)</span>
+<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 8. Check a candidate confounder against your exposure ----</span></span>
+<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> education, <span class="at">y =</span> hrlctree)) <span class="sc">+</span>                 <span class="co"># &lt;- CHANGE THIS</span></span>
+<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">fill =</span> <span class="st">"orange"</span>) <span class="sc">+</span></span>
+<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">title =</span> <span class="st">"Tree canopy cover by education"</span>, <span class="at">x =</span> <span class="st">"Education"</span>, <span class="at">y =</span> <span class="st">"Tree canopy cover"</span>)</span>
+<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 9. Grouped summary table ----</span></span>
+<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a>data <span class="sc">%&gt;%</span></span>
+<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(education) <span class="sc">%&gt;%</span>                                       <span class="co"># &lt;- CHANGE THIS</span></span>
+<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(</span>
+<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a>    <span class="at">avg =</span> <span class="fu">mean</span>(hrlctree, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),                          <span class="co"># &lt;- CHANGE THIS</span></span>
+<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a>    <span class="at">median =</span> <span class="fu">median</span>(hrlctree, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a>    <span class="at">max =</span> <span class="fu">max</span>(hrlctree, <span class="at">na.rm =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a>    <span class="at">min =</span> <span class="fu">min</span>(hrlctree, <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
 
 
 </section>

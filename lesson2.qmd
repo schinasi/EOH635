@@ -19,18 +19,42 @@ filters:
 ---
 
 In our last session ([Lesson 1](lesson1.qmd)), we read in and manipulated our data set, and merged
-in NDVI (greenness) data by census tract. In this session we continue to work with the data,
-doing some exploratory data analysis (EDA) and data cleaning. These are essential steps at the
-start of any new analysis.
+in NDVI (greenness) data by census tract. This week's module is about **research questions,
+conceptual frameworks, and descriptive analysis** — you've already worked through hypothesis
+components (exposure, outcome, population, expected relationship) and the mediator-vs-modifier
+distinction in this week's "Learn" material. This tutorial is the **Practice** half: hands-on
+descriptive statistics, data cleaning, and visualization in R.
+
+That's not busywork. Every study population, exposure, and outcome needs to be *characterized*
+before it can be modeled — and this week's skills are exactly what you'll need for **Project
+Milestone 1** (research question, hypothesis, and conceptual framework), due this week. Milestone 1
+asks you to start characterizing the exposure and outcome you're considering for your own project,
+using this same class dataset. Everything below — checking distributions, spotting errors,
+visualizing a relationship — is directly reusable for that.
 
 ::: {.callout-important}
 ## How to use this tutorial
 
-The gray boxes below are **live R editors** — the code runs in your browser (no install needed).
-Click **Run Code** to execute a chunk, or edit the code first and then run it.
+The gray boxes below are **live R editors** — the code actually runs in your browser (no install
+needed). In the top-left corner of each gray box, you'll see a **green arrow button labeled "Run
+Code."** Click that green arrow to run the code in that box. The output (whatever the code
+produces — a number, a table, a plot, etc.) will appear directly underneath the box a moment
+later.
 
-Sections marked **🧠 Your Turn** give you a task and a blank (or partially blank) code editor.
-Try writing the code yourself before revealing the solution, hidden in a collapsed box underneath.
+You can also edit the code first — click inside the box, change something, then click the green
+**Run Code** arrow to run your edited version. Nothing you do here can break anything; if you make
+a mess, just refresh the page to start that box over.
+
+Sections marked **🧠 Your Turn** give you a task and a blank (or partially blank) code editor. Try
+writing the code yourself before revealing the solution, hidden in a collapsed box underneath.
+Click it open only after a real attempt (or if you're truly stuck) — the point is practice, not
+just reading the answer.
+
+**A note on browser vs. RStudio code:** one chunk in this lesson runs automatically in the
+background (labeled `#| autorun: true`) — it fetches the class data file from the web so it's
+available in your browser. **When you write your own scripts in RStudio, you will not include
+this fetching code.** Immediately after it, you'll find a green box labeled **"In your RStudio
+script"** showing the simpler code you'll actually use.
 :::
 
 ::: {.callout-note}
@@ -41,11 +65,17 @@ merged file you (or this tutorial) saved to `data_processed/` at the end of Less
 worked through Lesson 1 in RStudio and saved your own version there, use that file — it should
 match. If you skipped straight to this lesson, that's fine too; a copy is fetched for you below.
 See the [Data Codebook](codebook.qmd) for variable definitions.
+
+As a reminder from Lesson 1: the web-fetch step below is a browser-only workaround. On your own
+computer, `class_data_processed.csv` is just a file sitting in your `data_processed/` folder —
+you read it directly, no downloading involved.
 :::
 
 Just as in Lesson 1, we first load any packages we need, then read in our data — using
 `file.path()` and the same `data_raw` / `data_processed` structure from your `EOH635_project`,
-not `setwd()`.
+not `setwd()`. (Recall from Lesson 1: on your own computer you're responsible for
+`install.packages()` and `library()` for every package you use — this tutorial page loads
+`tidyverse` for you automatically, which your own script won't do.)
 
 ```{webr-r}
 library(tidyverse)
@@ -89,10 +119,42 @@ first few rows of the dataset.
 head(data)
 ```
 
-# Exploratory Data Analysis (EDA) and Data Cleaning
+# Why Explore Data Before Analyzing It?
 
-EDA is a valuable tool! Don't underestimate it. It not only helps us better understand our data,
-but it also supports data cleaning.
+It's tempting to skip straight to the "real" analysis — but exploratory data analysis (EDA) isn't
+a formality before the real work starts. **It *is* part of the real work.** Before you can trust
+any regression result later in the course, you need to know your data cold: what each variable
+looks like, where the errors are, and what a "normal" value even is for each one.
+
+This class dataset is a simulated example of something very real in environmental epidemiology:
+data assembled from **multiple sources**, each with its own error patterns. Here, individual-level
+answers came from a household survey, and neighborhood-level measures (tree canopy, traffic,
+poverty, crime) were **linked in** by census tract — the same kind of linkage you did yourself in
+Lesson 1. Every data-collection method has its own way of introducing error:
+
+* **Surveys / interviewer-administered questionnaires** — recall bias, misunderstood questions,
+  data entry mistakes.
+* **Monitors and administrative/electronic data** — instrument drift, missing readings,
+  records that were never meant for research use.
+* **Linked data** (like the tract-level variables here) — mismatched geographic identifiers, or a
+  value that's technically correct but describes the *neighborhood*, not the *person*.
+
+Broadly, the errors EDA is designed to catch fall into three buckets:
+
+1. **Missing data**
+2. **Logical inconsistencies** — combinations of values that can't both be true
+3. **Outliers** — values so extreme they're more likely to be errors than reality
+
+We'll work through each of these in turn.
+
+::: {.callout-note}
+One more framing note before we start: everything in this lesson is **descriptive**, not
+**inferential**. We're not running hypothesis tests or p-values here — we're looking at
+distributions to understand the data and catch problems *before* any modeling starts. That
+distinction matters enough that it's worth stating explicitly: descriptive analysis characterizes
+what's in front of you; inferential analysis (coming later in the course) is what lets you draw
+conclusions and test hypotheses from it.
+:::
 
 ## Checking for Missing Values
 
@@ -126,6 +188,51 @@ have missing values, since we'll need to think about this later when conducting 
 Since you'll be working with these data in your project analysis, be sure to take note of the
 variables that have missing values.
 
+## Checking for Logical Inconsistencies
+
+Missing data is easy to spot — R shows you `NA` directly. **Logical inconsistencies** are sneakier:
+every individual value can look perfectly plausible on its own, but two variables *together* can't
+both be true. A classic example from environmental health survey data: someone recorded as
+biological sex "male" who also reports an age at first menstruation. Neither value looks wrong in
+isolation — the problem only shows up when you look at both at once.
+
+The tool for catching this is one you already know: `table()`, applied to *two* variables instead
+of one, to see every combination that actually occurs in the data.
+
+As a quick illustration of the technique (not a real inconsistency — just showing the mechanics),
+here's age broken into two rough bins, crossed with gender:
+
+```{webr-r}
+table(cut(data$age, breaks = c(-Inf, 39, Inf), labels = c("39 and under", "40+")), data$gender)
+```
+
+Reading a two-way table like this: each cell is a count of people with *that* combination of both
+variables. If a cell that should be logically impossible has a nonzero count, that's your signal
+to investigate.
+
+::: {.callout-tip title="🧠 Your Turn"}
+This dataset has a real logical constraint built in: nobody under 22 should be coded as having a
+**Bachelor's degree or higher** (there simply hasn't been time to finish one). Build a two-way
+table of an "under 22 / 22 and over" age split against `education` to check whether that holds.
+(Hint: adapt the `cut()` pattern above, using a breakpoint at 22 instead of 40, and cross it with
+`data$education` instead of `data$gender`.)
+:::
+
+```{webr-r}
+# Your code here — two-way table of an age<22 split against education
+
+```
+
+::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
+```{webr-r}
+table(cut(data$age, breaks = c(-Inf, 21, Inf), labels = c("Under 22", "22 and over")), data$education)
+```
+
+The "Under 22" row should show **0** people with "Bachelor's degree or higher" — if it does, this
+consistency check passes. (Not every check you run will fail — knowing *how* to check is the
+skill, whether or not this particular one turns anything up.)
+:::
+
 ## Summary Statistics
 
 The `summary()` function provides a quick look at key statistics (e.g., min, max, median, mean).
@@ -152,7 +259,9 @@ summary(numeric_data)
 avoids including integer columns (like `id` and `year`), which are used for identifiers or years
 rather than quantities we'd summarize with a mean. Use `is.numeric()` instead if you want to
 include both integer and double types — `is.double()` is appropriate here because we want to
-calculate means, medians, etc. on genuinely continuous measures.
+calculate means, medians, etc. on genuinely continuous measures. It doesn't make sense to compute
+a mean or median for a binary yes/no variable — for those, we need a different tool, which is
+exactly what the next section covers.
 :::
 
 **Questions to consider:**
@@ -233,6 +342,12 @@ building yourself a small code library of "recipes" like this one) and reuse it 
 frequency tables for every categorical variable in a data set at once.
 :::
 
+Take a look at `asthma` in the output above. Its prevalence should look like a plausible
+proportion of the population — a small minority, not nearly everyone. That's worth pausing on: a
+variable whose distribution looks *implausible* (way too common, way too rare, or suspiciously
+uniform) is itself a signal worth chasing down, the same way a missing-value count or a failed
+logical-consistency check is.
+
 ## Visual Exploration of Data
 
 Let's plot some key variables to understand their distributions and relationships.
@@ -248,9 +363,32 @@ ggplot(data, aes(x = age)) +
   labs(title = "Distribution of Age", x = "Age", y = "Frequency")
 ```
 
-Some of the values we see for age look suspicious — the ages > 110 are very suspect. Let's recode
-those with age > 105 to be missing. (Another option would be to recode these to some high but
-plausible number, e.g. 100.)
+::: {.callout-tip title="🧠 Your Turn"}
+Before we get to age's outlier problem below, get a look at our primary *exposure* variable's
+distribution. Build a histogram of **`hrlctree`** (tree canopy cover). A `binwidth` of `0.05`
+works well here, since `hrlctree` is a proportion between 0 and 1 rather than a variable measured
+in whole years like age.
+:::
+
+```{webr-r}
+# Your code here — histogram of hrlctree
+
+```
+
+::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
+```{webr-r}
+ggplot(data, aes(x = hrlctree)) +
+  geom_histogram(binwidth = 0.05, fill = "forestgreen", color = "black") +
+  labs(title = "Distribution of Tree Canopy Cover", x = "Tree canopy cover (proportion)", y = "Frequency")
+```
+Most tracts should cluster at fairly low canopy values with a long right tail toward a handful of
+much greener tracts — worth keeping in mind before you characterize this variable for your own
+project.
+:::
+
+Some of the values we see for age look suspicious — the ages > 110 are very suspect. This is the
+third error type from earlier: an **outlier**. Let's recode those with age > 105 to be missing.
+(Another option would be to recode these to some high but plausible number, e.g. 100.)
 
 There's a trade-off here: we gain more missing values, or we introduce more uncertainty. This is a
 balancing act you'll have to consider as you move forward with your own data analysis. Like most
@@ -349,9 +487,12 @@ Lesson 1.
 pressure and % tree canopy cover?
 
 ::: {.callout-note}
-Remember this is a **crude** estimate of the relationship. We'll use regression models later in
-the course to estimate this association, with modeling methods intended to help reduce bias in
-our estimate.
+Remember this is a **crude** estimate of the relationship — and, per Week 1, an association
+(however real it looks here) is not the same thing as causation. Even if this boxplot shows a
+clear pattern, several other explanations besides "tree canopy directly affects blood pressure"
+are still on the table, including confounding by some third variable related to both. We'll
+return to formal tools for evaluating that (regression models, and later in the course,
+confounding assessment with causal diagrams) — for now, just describe what you see.
 :::
 
 Let's also look at tree canopy cover by gender:
@@ -377,6 +518,34 @@ ggplot(data, aes(x = education, y = hrlctree)) +
 educational attainment and % tree canopy cover? Why might this matter within the context of our
 study question?
 
+::: {.callout-note}
+Keep these last two plots in mind. You just checked whether two different variables (gender,
+education) are related to our exposure of interest. That's exactly the first step in thinking
+about **confounding** — a topic the course returns to formally in Week 5. A variable can only
+confound a relationship if it's associated with *both* the exposure and the outcome; here you've
+just checked the "associated with the exposure" half for two candidates. Not every variable you
+check will turn out to matter — and that's useful information too.
+:::
+
+::: {.callout-tip title="🧠 Your Turn"}
+Let's check one more candidate variable, this time against a different outcome. Build a boxplot of
+**`hrlctree`** by **`mental_health`** status (remember: you'll need `as.character()` or `factor()`
+around `mental_health`, for the same reason as `high_blood_pressure` above).
+:::
+
+```{webr-r}
+# Your code here — boxplot of hrlctree by mental_health status
+
+```
+
+::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
+```{webr-r}
+ggplot(data, aes(x = as.character(mental_health), y = hrlctree)) +
+  geom_boxplot(fill = "orange") +
+  labs(title = "Tree canopy cover by mental health status", x = "Good mental health (1 = yes)", y = "Tree canopy cover")
+```
+:::
+
 ### Example 3: Scatter Plot
 
 Scatter plots are useful for exploring relationships between two numeric variables. Let's look at
@@ -391,6 +560,30 @@ ggplot(data, aes(x = pov_allage, y = hrlctree)) +
 **Question to consider:** Based on what you see, what do you conclude about the overall
 relationship between living in a tract with higher % poverty and % tree canopy? Stated another
 way, what is the general shape and direction of this relationship?
+
+::: {.callout-tip title="🧠 Your Turn"}
+Scatter plots are also a good sanity check when a dataset has two variables that *should* be
+related. This dataset has two different greenness measures: `hrlctree` (tree canopy cover, linked
+in during data creation) and `X2015_NDVI` (the NDVI value you yourself merged in during Lesson 1).
+Build a scatter plot of `hrlctree` (x-axis) against `X2015_NDVI` (y-axis). Do they move together
+the way you'd expect two measures of the same underlying thing to?
+:::
+
+```{webr-r}
+# Your code here — scatter plot of hrlctree vs. X2015_NDVI
+
+```
+
+::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
+```{webr-r}
+ggplot(data, aes(x = hrlctree, y = X2015_NDVI)) +
+  geom_point(color = "darkgreen") +
+  labs(title = "Tree canopy cover vs. NDVI", x = "Tree canopy cover", y = "NDVI")
+```
+A clear positive relationship here is a reassuring sign — two independently sourced measures of
+"how green is this place" agreeing with each other is exactly the kind of cross-check worth doing
+before you build an argument around either one.
+:::
 
 ### Example 4: Summary Table of Key Metrics
 
@@ -441,5 +634,102 @@ print(tree_by_education)
 # 🎉 Next Steps
 # ======================================================
 
-Next session we'll build on this work by creating descriptive tables and figures for our main
-analysis — think of these as our "Table 1" and "Figure 1" for a manuscript.
+You now have a working toolkit for characterizing a dataset: checking for missing values and
+logical inconsistencies, summarizing distributions, building frequency tables, and visualizing
+relationships with histograms, boxplots, scatter plots, and grouped summary tables. That's exactly
+what **Project Milestone 1** (due this week) asks you to start doing for your own chosen exposure
+and outcome — pick your pair from this dataset, and run them through the same steps you just
+practiced here.
+
+Next week, we turn to **exposure assessment and misclassification** — how exposure gets measured
+and coded, and what happens when that measurement isn't perfect. Before then, take a closer look
+at the environmental exposure variables in the [Data Codebook](codebook.qmd) (tree canopy,
+traffic density, crime, air/greenness measures) as you think about which one you want to build
+your project around.
+
+# ======================================================
+# 🚀 Quick-Start Script for Your Own Project
+# ======================================================
+
+Everything above walked through each step one at a time, with the browser-only fetching code mixed
+in. Below is a **single reusable script** — this is what you'd paste into a new `.R` or `.qmd`
+file inside `EOH635_project/scripts/`, running on your own computer with `class_data_processed.csv`
+already sitting in `data_processed/` (from Lesson 1). Swap in your own variable names wherever
+you see `# <- CHANGE THIS`, and use it as a starting checklist for Milestone 1.
+
+::: {.callout-tip}
+## 💻 In your RStudio script
+
+```r
+# ---- Setup ----
+library(tidyverse)
+
+# ---- Read in your data ----
+data <- read.csv(file.path("data_processed", "class_data_processed.csv"))
+
+# ---- 1. Missing data: check every column at once ----
+colSums(is.na(data))
+
+# ---- 2. Logical inconsistencies: cross-tabulate variables that should agree ----
+# Example template -- replace both variables with a pair relevant to your own project
+table(cut(data$age, breaks = c(-Inf, 21, Inf), labels = c("Under 22", "22 and over")),
+      data$education)
+
+# ---- 3. Outliers + summary statistics ----
+summary(data)                                    # all variables
+summary(data %>% select(where(is.double)))       # numeric variables only
+
+# ---- 4. Frequency tables for categorical variables ----
+table(data$education)                            # <- CHANGE THIS to your own categorical variables
+prop.table(table(data$education)) * 100
+
+# Every non-numeric variable at once:
+non_numeric_data <- data %>% select(-where(is.double), -id, -year)
+lapply(non_numeric_data, function(x) {
+  if (is.factor(x) || is.character(x) || is.logical(x) || is.integer(x)) {
+    counts <- table(x, useNA = "ifany")
+    percentages <- prop.table(counts) * 100
+    cbind(Count = counts, Percentage = percentages)
+  } else {
+    NULL
+  }
+})
+
+# ---- 5. Recode an implausible value once you've found one ----
+# Template, following the age > 105 example above:
+data$r_age <- ifelse(data$age > 105, NA, data$age)   # <- CHANGE THIS to your own variable/cutoff
+
+# ---- 6. Visualize a single continuous variable ----
+ggplot(data, aes(x = age)) +                                    # <- CHANGE THIS to your exposure or outcome
+  geom_histogram(binwidth = 5, fill = "blue", color = "black") +
+  labs(title = "Distribution of Age", x = "Age", y = "Frequency")
+
+# ---- 7. Visualize your exposure-outcome relationship ----
+# If your outcome is a 0/1 flag, wrap it in as.character() so ggplot treats it as a category:
+ggplot(data, aes(x = as.character(high_blood_pressure), y = hrlctree)) +  # <- CHANGE THIS
+  geom_boxplot(fill = "orange") +
+  labs(title = "Tree canopy cover by high blood pressure status",
+       x = "High blood pressure", y = "Tree canopy cover")
+
+# If both your exposure and outcome are continuous, use a scatter plot instead:
+ggplot(data, aes(x = pov_allage, y = hrlctree)) +                # <- CHANGE THIS
+  geom_point(color = "purple") +
+  labs(title = "% living in poverty vs. tree canopy cover",
+       x = "% living in poverty", y = "% tree canopy")
+
+# ---- 8. Check a candidate confounder against your exposure ----
+ggplot(data, aes(x = education, y = hrlctree)) +                 # <- CHANGE THIS
+  geom_boxplot(fill = "orange") +
+  labs(title = "Tree canopy cover by education", x = "Education", y = "Tree canopy cover")
+
+# ---- 9. Grouped summary table ----
+data %>%
+  group_by(education) %>%                                       # <- CHANGE THIS
+  summarize(
+    avg = mean(hrlctree, na.rm = TRUE),                          # <- CHANGE THIS
+    median = median(hrlctree, na.rm = TRUE),
+    max = max(hrlctree, na.rm = TRUE),
+    min = min(hrlctree, na.rm = TRUE)
+  )
+```
+:::
