@@ -427,6 +427,10 @@ Based on this, we see that `education` is a character variable — we know that 
 
 Right now, `education` is a character variable — useful for reading and for `table()`, but not for most quantitative work. **Regression models, correlations, and most statistical functions in R need numeric input** — they can't compute something like a mean, a correlation coefficient, or a regression slope on the text strings `"< Bachelor's"` and `"Bachelor's degree or higher"`. To use education status as a predictor or outcome in that kind of analysis later in the course, we first need a consistently coded numeric (here, binary 0/1) version. Let's do this now, using base R's `ifelse()`:
 
+::: {.callout-note}
+**A note for later in the course:** if you only ever plan to use `education` as an *explanatory* variable (a predictor) in a regression model — not as the outcome — converting it to a numeric 0/1 variable isn't your only option. R's regression functions (like `lm()` and `glm()`) can also take a **factor** variable directly as a predictor, and will automatically create the 0/1 coding behind the scenes (this is called "dummy coding"). For a variable with just two categories like this one, numeric 0/1 and factor give you the same result either way. The numeric approach shown here is worth learning first because it makes that dummy-coding step explicit rather than hidden — but once you're comfortable with what's happening, `factor()` is often the more natural choice for a categorical predictor, especially one with more than two levels.
+:::
+
 ```{webr-r}
 data$num_education <- ifelse(data$education == "< Bachelor's", 0, 1)
 ```

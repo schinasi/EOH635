@@ -2552,6 +2552,19 @@ Note
 <section id="creating-a-numeric-version-of-the-education-variable" class="level2">
 <h2 class="anchored" data-anchor-id="creating-a-numeric-version-of-the-education-variable">Creating a numeric version of the education variable</h2>
 <p>Right now, <code>education</code> is a character variable — useful for reading and for <code>table()</code>, but not for most quantitative work. <strong>Regression models, correlations, and most statistical functions in R need numeric input</strong> — they can’t compute something like a mean, a correlation coefficient, or a regression slope on the text strings <code>"&lt; Bachelor's"</code> and <code>"Bachelor's degree or higher"</code>. To use education status as a predictor or outcome in that kind of analysis later in the course, we first need a consistently coded numeric (here, binary 0/1) version. Let’s do this now, using base R’s <code>ifelse()</code>:</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+Note
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>A note for later in the course:</strong> if you only ever plan to use <code>education</code> as an <em>explanatory</em> variable (a predictor) in a regression model — not as the outcome — converting it to a numeric 0/1 variable isn’t your only option. R’s regression functions (like <code>lm()</code> and <code>glm()</code>) can also take a <strong>factor</strong> variable directly as a predictor, and will automatically create the 0/1 coding behind the scenes (this is called “dummy coding”). For a variable with just two categories like this one, numeric 0/1 and factor give you the same result either way. The numeric approach shown here is worth learning first because it makes that dummy-coding step explicit rather than hidden — but once you’re comfortable with what’s happening, <code>factor()</code> is often the more natural choice for a categorical predictor, especially one with more than two levels.</p>
+</div>
+</div>
 <div id="qwebr-insertion-location-19"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p><strong>What happened here?</strong> This line creates a new variable called <code>num_education</code>, a numeric version of <code>education</code>, using <code>ifelse()</code>:</p>
@@ -2585,7 +2598,7 @@ Note
 <div id="qwebr-insertion-location-20"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-14-contents" aria-controls="callout-14" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-15-contents" aria-controls="callout-15" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2594,7 +2607,7 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-14" class="callout-14-contents callout-collapse collapse">
+<div id="callout-15" class="callout-15-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div id="qwebr-insertion-location-21"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
@@ -2729,7 +2742,7 @@ Note
 <div id="qwebr-insertion-location-33"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-17-contents" aria-controls="callout-17" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-18-contents" aria-controls="callout-18" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2738,7 +2751,7 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-17" class="callout-17-contents callout-collapse collapse">
+<div id="callout-18" class="callout-18-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div id="qwebr-insertion-location-34"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
