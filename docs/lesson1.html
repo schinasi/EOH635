@@ -407,7 +407,7 @@ globalThis.qwebrCustomizedWebROptions = {
 };
 
 // Store cell data
-globalThis.qwebrCellDetails = [{"code":"x <- 10  # Assigns the value 10 to x\n\nprint(x)  # Prints x\n\nx  # Also prints x","id":1,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-1","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"my_data <- data.frame(name = c(\"Alice\", \"Bob\"), age = c(25, 30))\n\nprint(my_data)","id":2,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-2","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Extracts the \"name\" column\nmy_data$name","id":3,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-3","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"my_data[1, 2]  # First row, second column\nmy_data[, 1]   # First column (all rows)","id":4,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-4","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here","id":5,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-5","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"my_data$age[2]","id":6,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-6","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"library(tidyverse)","id":7,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-7","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data_base_url <- \"https://raw.githubusercontent.com/schinasi/EOH635/main/data/\"\n\ndir.create(\"data_raw\", showWarnings = FALSE)\n\ndownload.file(paste0(data_base_url, \"class_data_raw.csv\"), file.path(\"data_raw\", \"class_data_raw.csv\"))\n\ndata <- read.csv(file.path(\"data_raw\", \"class_data_raw.csv\"))","id":8,"options":{"autorun":"true","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-8","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"head(data)","id":9,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-9","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"str(data)","id":10,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-10","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"dim(data)","id":11,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-11","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"summary(data)","id":12,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-12","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data$education","id":13,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-13","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(data$education)\n\nprop.table(table(data$education))\n\nprop.table(table(data$education)) * 100","id":14,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-14","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — counts, proportions, and percentages for race_ethnicity","id":15,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-15","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(data$race_ethnicity)\n\nprop.table(table(data$race_ethnicity))\n\nprop.table(table(data$race_ethnicity)) * 100","id":16,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-16","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"str(data$education)","id":17,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-17","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data$num_education <- ifelse(data$education == \"< Bachelor's\", 0, 1)","id":18,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-18","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — recreate num_education using mutate() + if_else(), call it num_education2","id":19,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-19","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(num_education2 = if_else(education == \"< Bachelor's\", 0, 1))","id":20,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-20","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(data$num_education, data$education)","id":21,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-21","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"download.file(paste0(data_base_url, \"PHL_NDVI_summer_annual.csv\"), file.path(\"data_raw\", \"PHL_NDVI_summer_annual.csv\"))\n\nPHL_NDVI_summer_annual <- read.csv(file.path(\"data_raw\", \"PHL_NDVI_summer_annual.csv\"))","id":22,"options":{"autorun":"true","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-22","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"names(PHL_NDVI_summer_annual)\nstr(PHL_NDVI_summer_annual)\nhead(PHL_NDVI_summer_annual)","id":23,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-23","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"summary(PHL_NDVI_summer_annual$X2015_NDVI)","id":24,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-24","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"str(data$geoid10)\nstr(PHL_NDVI_summer_annual$GEOID10)","id":25,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-25","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data$geoid10 <- as.character(data$geoid10)\nPHL_NDVI_summer_annual$GEOID10 <- as.character(PHL_NDVI_summer_annual$GEOID10)","id":26,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-26","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data2 <- merge(data, PHL_NDVI_summer_annual, by.x = 'geoid10', by.y = 'GEOID10', all.x = TRUE)","id":27,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-27","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"num_rows <- nrow(data2)\n\nprint(num_rows)","id":28,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-28","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"dim(data2)","id":29,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-29","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"names(data2)","id":30,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-30","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"head(data2)","id":31,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-31","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — check that every geoid10 tract has exactly one unique NDVI value","id":32,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-32","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data2 %>%\n  group_by(geoid10) %>%\n  summarize(n_unique_ndvi = n_distinct(X2015_NDVI)) %>%\n  count(n_unique_ndvi)","id":33,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-33","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"dir.create(\"data_processed\", showWarnings = FALSE)\n\n# Save dataset\nwrite.csv(data2, file.path(\"data_processed\", \"class_data_processed.csv\"), row.names = FALSE)","id":34,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-34","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}}];
+globalThis.qwebrCellDetails = [{"code":"x <- 10  # Assigns the value 10 to x\n\nprint(x)  # Prints x\n\nx  # Also prints x","id":1,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-1","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"my_data <- data.frame(name = c(\"Alice\", \"Bob\"), age = c(25, 30))\n\nprint(my_data)","id":2,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-2","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Extracts the \"name\" column\nmy_data$name","id":3,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-3","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"my_data[1, 2]  # First row, second column\nmy_data[, 1]   # First column (all rows)","id":4,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-4","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here","id":5,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-5","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"my_data$age[2]","id":6,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-6","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"library(tidyverse)","id":7,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-7","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data_base_url <- \"https://raw.githubusercontent.com/schinasi/EOH635/main/data/\"\n\ndir.create(\"data_raw\", showWarnings = FALSE)\n\ndownload.file(paste0(data_base_url, \"class_data_raw.csv\"), file.path(\"data_raw\", \"class_data_raw.csv\"))\n\ndata <- read.csv(file.path(\"data_raw\", \"class_data_raw.csv\"))","id":8,"options":{"autorun":"true","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-8","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"head(data)","id":9,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-9","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"str(data)","id":10,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-10","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data$geoid10 <- as.character(data$geoid10)","id":11,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-11","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"dim(data)","id":12,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-12","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"summary(data)","id":13,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-13","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data$education","id":14,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-14","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(data$education)\n\nprop.table(table(data$education))\n\nprop.table(table(data$education)) * 100","id":15,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-15","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — counts, proportions, and percentages for race_ethnicity\n\n\n# Your answers:\n# 1. Hispanic or Latino (of any race), count =\n# 2. White alone, not Hispanic or Latino, proportion =\n# 3. Asian alone, not Hispanic or Latino, percentage =","id":16,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-16","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(data$race_ethnicity)\n\nprop.table(table(data$race_ethnicity))\n\nprop.table(table(data$race_ethnicity)) * 100","id":17,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-17","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"str(data$education)","id":18,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-18","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data$num_education <- ifelse(data$education == \"< Bachelor's\", 0, 1)","id":19,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-19","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — recreate num_education using mutate() + if_else(), call it num_education2","id":20,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-20","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(num_education2 = if_else(education == \"< Bachelor's\", 0, 1))","id":21,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-21","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(data$num_education, data$education)","id":22,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-22","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"download.file(paste0(data_base_url, \"PHL_NDVI_summer_annual.csv\"), file.path(\"data_raw\", \"PHL_NDVI_summer_annual.csv\"))\n\nPHL_NDVI_summer_annual <- read.csv(file.path(\"data_raw\", \"PHL_NDVI_summer_annual.csv\"))","id":23,"options":{"autorun":"true","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-23","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"names(PHL_NDVI_summer_annual)\nstr(PHL_NDVI_summer_annual)\nhead(PHL_NDVI_summer_annual)","id":24,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-24","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"summary(PHL_NDVI_summer_annual$X2015_NDVI)","id":25,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-25","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"str(data$geoid10)\nstr(PHL_NDVI_summer_annual$GEOID10)","id":26,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-26","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"PHL_NDVI_summer_annual$GEOID10 <- as.character(PHL_NDVI_summer_annual$GEOID10)","id":27,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-27","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data2 <- merge(data, PHL_NDVI_summer_annual, by.x = 'geoid10', by.y = 'GEOID10', all.x = TRUE)","id":28,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-28","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"num_rows <- nrow(data2)\n\nprint(num_rows)","id":29,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-29","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"dim(data2)","id":30,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-30","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"names(data2)","id":31,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-31","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"head(data2)","id":32,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-32","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — check that every geoid10 tract has exactly one unique NDVI value","id":33,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-33","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data2 %>%\n  group_by(geoid10) %>%\n  summarize(n_unique_ndvi = n_distinct(X2015_NDVI)) %>%\n  count(n_unique_ndvi)","id":34,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-34","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"dir.create(\"data_processed\", showWarnings = FALSE)\n\n# Save dataset\nwrite.csv(data2, file.path(\"data_processed\", \"class_data_processed.csv\"), row.names = FALSE)","id":35,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-35","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}}];
 
 </script>
 <script type="module">
@@ -2363,26 +2363,65 @@ Note
 </div>
 </div>
 </div>
+<p>One more thing worth noticing in <code>str(data)</code>: <strong><code>geoid10</code></strong> — the census tract identifier for each participant — shows up as <code>num</code> (numeric), even though it functions as a <em>label</em>, not a quantity. It would never make sense to compute an “average <code>geoid10</code>,” the way it might for <code>age</code>. Because it happens to look like a number, R read it in as one — but ID variables like this are safer to store as <strong>character</strong>, so nothing downstream ever accidentally tries to do math with them. Let’s fix that now:</p>
+<div id="qwebr-insertion-location-11"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>Hang onto this — it’ll matter again later in this lesson, when we merge in a second dataset.</p>
 <p>We can also view the dimensions of the data frame (rows × columns):</p>
 <ul>
 <li>Rows show us the number of observations (in this case, people)</li>
 <li>Columns show us the number of variables</li>
 </ul>
-<div id="qwebr-insertion-location-11"></div>
+<div id="qwebr-insertion-location-12"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <blockquote class="blockquote">
 <p>How many rows and columns are in our data frame? Based on this, how many people are in our data frame?</p>
 </blockquote>
+<p>Take a moment to actually answer this from the output above before revealing it below.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answer — click to reveal">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answer — click to reveal
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><code>dim(data)</code> returns <code>2000  38</code>: <strong>2,000 rows</strong> and <strong>38 columns</strong>. Since each row is one participant, that means our data frame contains <strong>2,000 people</strong>, each described by 38 variables (columns).</p>
+</div>
+</div>
+</div>
 <hr>
 <section id="summary-of-numerical-variables" class="level2">
 <h2 class="anchored" data-anchor-id="summary-of-numerical-variables">Summary of numerical variables</h2>
-<div id="qwebr-insertion-location-12"></div>
+<div id="qwebr-insertion-location-13"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <ul>
 <li>What summary statistics does this function produce?</li>
 <li>What do you observe about key variables?</li>
 <li>Are there particular variables for which these summary statistics do not make sense? (Hint: think about what <code>summary()</code> does with a 0/1 variable versus a truly continuous one like <code>age</code>.)</li>
 </ul>
+<p>Think through these for a couple of variables yourself before checking below.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Two worked examples — click to reveal">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Two worked examples — click to reveal
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p><strong><code>age</code></strong> (a genuinely continuous variable): <code>summary()</code> gives six numbers — Min. <code>18.02</code>, 1st Qu. <code>29.99</code>, Median <code>40.36</code>, Mean <code>44.99</code>, 3rd Qu. <code>56.24</code>, Max. <code>116.00</code> — plus a count of missing values (<code>NA's 3</code>). These are all meaningful here: the middle 50% of participants (between the 1st and 3rd quartiles) are roughly 30 to 56 years old. But that <strong>Max. of 116</strong> should catch your eye immediately — a plausible age tops out well below that. That’s exactly the kind of thing <code>summary()</code> is good for catching early, before it quietly distorts an analysis later. (We’ll deal with this specific outlier in Lesson 2.)</p>
+<p><strong><code>high_blood_pressure</code></strong> (a binary 0/1 flag, not a continuous quantity): <code>summary()</code> reports Min. <code>0</code>, Median <code>0</code>, Mean <code>0.3048</code>, Max. <code>1</code>. The Min./Median/Max. here aren’t wrong, exactly, but they’re not very <em>useful</em> — a variable that can only be 0 or 1 doesn’t have a meaningful “middle” or “spread” the way age does. The one number worth keeping from this output is the <strong>Mean, <code>0.3048</code></strong> — for a 0/1 variable, the mean is just the proportion coded <code>1</code>, so about 30.5% of participants have high blood pressure. For everything else about a binary variable’s distribution, a frequency count (<code>table()</code>, coming up in Section 6) is the right tool, not <code>summary()</code>.</p>
+</div>
+</div>
+</div>
 <hr>
 </section>
 </section>
@@ -2396,17 +2435,18 @@ Note
 <h1>======================================================</h1>
 <p>Let’s practice looking at particular variables in our data frame.</p>
 <p>Access the <code>education</code> column:</p>
-<div id="qwebr-insertion-location-13"></div>
+<div id="qwebr-insertion-location-14"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>OK, we accessed it, but that looks pretty messy and it’s hard to glean much information!</p>
+<p>OK, we accessed it, but that looks pretty messy and it’s hard to glean much information! We’re just seeing the raw value of <code>education</code> for every single participant, one after another — technically correct, but far too much to scan by eye and make sense of.</p>
 <p>Instead, it can be helpful to create summary counts.</p>
 <ul>
 <li><code>education</code> is a categorical variable, so we can count the number of participants that fall into each level (category).</li>
 <li>We use the <code>table()</code> function to do this.</li>
 <li>We can also look at the proportion and percentage of participants in each category.</li>
 </ul>
-<div id="qwebr-insertion-location-14"></div>
+<div id="qwebr-insertion-location-15"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p><strong>Putting this together:</strong> the first line, <code>table()</code>, gives raw counts — 1,066 participants coded <code>"&lt; Bachelor's"</code> and 934 coded <code>"Bachelor's degree or higher"</code>. <code>prop.table()</code> takes that same table and converts it to proportions of the total (each cell divided by 2,000), and multiplying by 100 turns those proportions into percentages: about 53.3% of participants have less than a bachelor’s degree, and about 46.7% have a bachelor’s degree or higher. All three lines describe the exact same underlying counts — they’re just three different units (counts, proportions, percentages) for reporting the same distribution, and which one you’d report depends on your audience (a raw count is often more useful in a table you’re building for yourself; a percentage usually reads more naturally in written text).</p>
 <div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -2417,13 +2457,19 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>See if you can do the same thing (raw counts, proportions, and percentages) with the <strong><code>race_ethnicity</code></strong> variable.</p>
+<p>See if you can do the same thing (raw counts, proportions, and percentages) with the <strong><code>race_ethnicity</code></strong> variable. Then answer these three questions using your output:</p>
+<ol type="1">
+<li>How many people identify as <strong>Hispanic or Latino (of any race)</strong>?</li>
+<li>What <strong>proportion</strong> of the study population identifies as <strong>White alone, not Hispanic or Latino</strong>?</li>
+<li>What <strong>percentage</strong> of the study population identifies as <strong>Asian alone, not Hispanic or Latino</strong>?</li>
+</ol>
+<p>Type your three answers as comments in the code box below before checking the solution.</p>
 </div>
 </div>
-<div id="qwebr-insertion-location-15"></div>
+<div id="qwebr-insertion-location-16"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2432,10 +2478,16 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div id="callout-12" class="callout-12-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div id="qwebr-insertion-location-16"></div>
+<div id="qwebr-insertion-location-17"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p><strong>Answers:</strong></p>
+<ol type="1">
+<li><strong>275</strong> people identify as Hispanic or Latino (of any race).</li>
+<li><strong>0.61</strong> (about 61%) of the study population identifies as White alone, not Hispanic or Latino.</li>
+<li><strong>4.7%</strong> of the study population identifies as Asian alone, not Hispanic or Latino.</li>
+</ol>
 </div>
 </div>
 </div>
@@ -2452,13 +2504,55 @@ Note
 <ul>
 <li>What type of variable is <code>education</code>? Let’s use <code>str()</code> to check how it’s coded in our data frame.</li>
 </ul>
-<div id="qwebr-insertion-location-17"></div>
+<div id="qwebr-insertion-location-18"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>Based on this, we see that <code>education</code> is a character variable.</p>
+<p>Based on this, we see that <code>education</code> is a character variable — we know that because <code>str()</code> labels it <strong><code>chr</code></strong> right at the start of the output.</p>
+<p><code>str()</code> uses a short abbreviation for every variable type, and it’s worth being able to recognize the common ones at a glance:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Abbreviation</th>
+<th>Type</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>chr</code></td>
+<td>character (text/string)</td>
+<td><code>education</code>, <code>gender</code></td>
+</tr>
+<tr class="even">
+<td><code>int</code></td>
+<td>integer (whole numbers)</td>
+<td><code>id</code>, <code>year</code></td>
+</tr>
+<tr class="odd">
+<td><code>num</code></td>
+<td>numeric (double — can hold decimals)</td>
+<td><code>age</code>, <code>hrlctree</code></td>
+</tr>
+<tr class="even">
+<td><code>logi</code></td>
+<td>logical (<code>TRUE</code>/<code>FALSE</code>)</td>
+<td>rare in survey data, but common after a comparison like <code>age &gt; 65</code></td>
+</tr>
+<tr class="odd">
+<td><code>Factor</code></td>
+<td>factor (categorical, with defined levels)</td>
+<td>not currently used in this dataset — R reads categories in as <code>chr</code> by default, but some analyses expect <code>Factor</code> instead</td>
+</tr>
+</tbody>
+</table>
 <section id="creating-a-numeric-version-of-the-education-variable" class="level2">
 <h2 class="anchored" data-anchor-id="creating-a-numeric-version-of-the-education-variable">Creating a numeric version of the education variable</h2>
-<p>Sometimes it’s helpful to convert a character variable into a numeric variable — this can be very helpful when conducting quantitative analysis. Let’s do this now, using base R’s <code>ifelse()</code>:</p>
-<div id="qwebr-insertion-location-18"></div>
+<p>Right now, <code>education</code> is a character variable — useful for reading and for <code>table()</code>, but not for most quantitative work. <strong>Regression models, correlations, and most statistical functions in R need numeric input</strong> — they can’t compute something like a mean, a correlation coefficient, or a regression slope on the text strings <code>"&lt; Bachelor's"</code> and <code>"Bachelor's degree or higher"</code>. To use education status as a predictor or outcome in that kind of analysis later in the course, we first need a consistently coded numeric (here, binary 0/1) version. Let’s do this now, using base R’s <code>ifelse()</code>:</p>
+<div id="qwebr-insertion-location-19"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p><strong>What happened here?</strong> This line creates a new variable called <code>num_education</code>, a numeric version of <code>education</code>, using <code>ifelse()</code>:</p>
 <ul>
@@ -2472,6 +2566,9 @@ Note
 <li><code>1</code> = bachelor’s degree or higher</li>
 </ul>
 <p><strong>Note:</strong> in R there are lots of ways to do the same thing. Another way to recode this variable is with the <code>dplyr</code> package (loaded as part of <code>tidyverse</code>) instead of base R’s <code>ifelse()</code>.</p>
+<p>Quick reminder of the syntax before you try it: <code>mutate()</code> adds (or changes) a column in a data frame, and <code>if_else()</code> works like <code>ifelse()</code> — a condition, then the value to use when it’s <code>TRUE</code>, then the value to use when it’s <code>FALSE</code>. Put together, the general pattern looks like:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">new_column_name =</span> <span class="fu">if_else</span>(some_condition, value_if_true, value_if_false))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -2485,10 +2582,10 @@ Note
 <p><code>dplyr</code>’s equivalent of <code>ifelse()</code> is <code>if_else()</code>, typically used inside <code>mutate()</code>. Try rewriting the <code>num_education</code> recode above using <code>data %&gt;% mutate(...)</code> and <code>if_else()</code> instead of base R. Call the new column <code>num_education2</code> so you can compare it to the original.</p>
 </div>
 </div>
-<div id="qwebr-insertion-location-19"></div>
+<div id="qwebr-insertion-location-20"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-14-contents" aria-controls="callout-14" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2497,15 +2594,15 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-12" class="callout-12-contents callout-collapse collapse">
+<div id="callout-14" class="callout-14-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div id="qwebr-insertion-location-20"></div>
+<div id="qwebr-insertion-location-21"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 </div>
 </div>
 </div>
 <p>Verify that the coding of the new variable worked as we wanted, by creating a two-by-two table looking at the distribution of the numeric education variable against the character one:</p>
-<div id="qwebr-insertion-location-21"></div>
+<div id="qwebr-insertion-location-22"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <hr>
 </section>
@@ -2527,9 +2624,10 @@ Note
 <li>Crime data</li>
 </ul>
 <p>You can probably think of additional types of data we might want to link in.</p>
+<p>Why would we want to do this? Here’s a concrete example: if we’re interested in studying the association between residential air pollution exposure and asthma diagnosis, our survey data alone won’t have an air pollution measurement for each participant — so we’d want to link in a separate data source that does have it, matched to where each participant lives.</p>
 <p>We can do this by <strong>merging</strong> a second data frame — which has the environmental information of interest — into our primary data frame, by combining them using a common variable or variables.</p>
 <ul>
-<li>Often, we use information about participants’ neighborhoods (e.g., census tracts) to merge in environmental data.</li>
+<li>Often, we use information about participants’ neighborhoods (e.g., census tracts) to merge in environmental data. A <strong>census tract</strong> is a small, relatively permanent geographic area defined by the U.S. Census Bureau — roughly neighborhood-sized, typically a few thousand residents — that’s commonly used in public health research as a proxy for someone’s local environment, since exact addresses usually aren’t available (or shared) for privacy reasons.</li>
 </ul>
 <p>Let’s do that now.</p>
 <hr>
@@ -2544,7 +2642,7 @@ Note
 </ul>
 <p><a href="https://gisgeography.com/ndvi-normalized-difference-vegetation-index/">This page</a> tells us a bit more about NDVI.</p>
 <p>Let’s read in that data (again, in the browser we first fetch it from the web; in RStudio you’d just need it in your working directory):</p>
-<div id="qwebr-insertion-location-22"></div>
+<div id="qwebr-insertion-location-23"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
@@ -2557,11 +2655,11 @@ Note
 </div>
 <div class="callout-body-container callout-body">
 <p>The chunk above fetches the NDVI file from the web for the browser. <strong>In your own RStudio script</strong>, with <code>PHL_NDVI_summer_annual.csv</code> already in your <code>data_raw/</code> folder, all you need is:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>PHL_NDVI_summer_annual <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"PHL_NDVI_summer_annual.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>PHL_NDVI_summer_annual <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"PHL_NDVI_summer_annual.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 <p>Inspect the dataset using the <code>names</code>, <code>str</code>, and <code>head</code> functions. Do you remember what each of these shows you?</p>
-<div id="qwebr-insertion-location-23"></div>
+<div id="qwebr-insertion-location-24"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p><strong>Questions:</strong></p>
 <ul>
@@ -2578,7 +2676,7 @@ Note
 <li>What is the minimum NDVI value? What does this tell you?</li>
 <li>What’s the median? What’s the max?</li>
 </ul>
-<div id="qwebr-insertion-location-24"></div>
+<div id="qwebr-insertion-location-25"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <ul>
 <li>But we want to know how green the neighborhoods of our study participants are.</li>
@@ -2586,29 +2684,31 @@ Note
 </ul>
 <p>The common variable is called <strong>geoid10</strong>. In our class data frame, <code>geoid10</code> refers to the census tract in which the study participant lives. In the NDVI data frame, <code>GEOID10</code> refers to each unique Philadelphia census tract.</p>
 <p>In order for the merge/linkage to work, both variables have to be in the <strong>same format</strong> (both character, or both numeric, etc.). Let’s check on this now.</p>
-<div id="qwebr-insertion-location-25"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>Let’s convert both to character type, using the <code>as.character()</code> function:</p>
 <div id="qwebr-insertion-location-26"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>Now let’s merge the datasets, using a left join:</p>
+<p>Notice these <strong>don’t match</strong>: <code>data$geoid10</code> shows up as <code>chr</code>, because we deliberately converted it back in Section 5 (it’s a label, not a quantity, remember?) — but <code>PHL_NDVI_summer_annual$GEOID10</code> is freshly read in from its own file and is still <code>num</code>. This is exactly the situation the earlier conversion was setting up: without it, both would have looked numeric and matched by coincidence, hiding the fact that ID columns need this treatment at all. Since they don’t match now, let’s convert <code>GEOID10</code> to character too:</p>
 <div id="qwebr-insertion-location-27"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>(Re-running <code>data$geoid10 &lt;- as.character(data$geoid10)</code> here as well wouldn’t hurt anything — converting an already-character column to character is a harmless no-op — but it’s only <em>necessary</em> for the one that’s still numeric.)</p>
+<p>Now let’s merge the datasets, using a left join:</p>
+<div id="qwebr-insertion-location-28"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p>Now the data frame called <code>data2</code> should have all of our original variables, plus the variables from the NDVI data frame.</p>
 <p>As a check, think about how many variables were in each separate data frame.</p>
 <ul>
 <li>How many rows are in <code>data2</code>?</li>
 </ul>
-<div id="qwebr-insertion-location-28"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>Or we can use <code>dim()</code>, which shows us rows and columns:</p>
+<p>We’re specifically checking this because a left join (<code>all.x = TRUE</code>) is supposed to keep <strong>every</strong> row from <code>data</code> — one row per participant, no more and no fewer — while just adding columns from <code>PHL_NDVI_summer_annual</code> onto each one. If the row count in <code>data2</code> doesn’t match the row count in <code>data</code> (2,000), that’s a red flag: it would mean the merge either dropped some participants, or duplicated some (which happens if the NDVI file accidentally has more than one row per <code>geoid10</code> — each extra match creates an extra output row). Checking <code>nrow()</code> before and after any merge is one of the simplest, most important habits for confirming a merge did what you expected.</p>
 <div id="qwebr-insertion-location-29"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>We can also look at the names of the variables in the merged data frame — is everything in there?</p>
+<p>Or we can use <code>dim()</code>, which shows us rows and columns:</p>
 <div id="qwebr-insertion-location-30"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>It’s also helpful to look at the top rows of the merged data frame, to be sure we don’t have a bunch of missing values (coded <code>NA</code>) — if we see missings in the NDVI variables, that likely means something went wrong with our merge!</p>
+<p>We can also look at the names of the variables in the merged data frame — is everything in there?</p>
 <div id="qwebr-insertion-location-31"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>It’s also helpful to look at the top rows of the merged data frame, to be sure we don’t have a bunch of missing values (coded <code>NA</code>) — if we see missings in the NDVI variables, that likely means something went wrong with our merge!</p>
+<div id="qwebr-insertion-location-32"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p>We can also do some logic checks to be sure everything checks out.</p>
 <div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn">
@@ -2622,13 +2722,14 @@ Note
 </div>
 <div class="callout-body-container callout-body">
 <p>Do participants living in the identical census tract get assigned the <strong>same</strong> NDVI value? Write code to check this — for example, group <code>data2</code> by <code>geoid10</code> and count the number of <em>distinct</em> <code>X2015_NDVI</code> values within each tract. If the merge worked correctly, every tract should have exactly 1 distinct NDVI value.</p>
+<p><strong>Why should that be true?</strong> <code>X2015_NDVI</code> is a <em>tract-level</em> measurement — it describes the neighborhood, not the individual person. A left join doesn’t create new NDVI values; it just looks up the one value that belongs to each participant’s <code>geoid10</code> and copies it onto every row that matches. So everyone sharing a tract should end up with the identical copied value. If any tract shows more than one distinct value, something’s wrong — most likely a formatting issue (like the one we just fixed) that caused some participants to match the wrong row, or a duplicate tract entry in the NDVI file itself.</p>
 <p>(Hint: <code>dplyr</code>’s <code>group_by()</code>, <code>summarize()</code>, and <code>n_distinct()</code> are useful here.)</p>
 </div>
 </div>
-<div id="qwebr-insertion-location-32"></div>
+<div id="qwebr-insertion-location-33"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-15-contents" aria-controls="callout-15" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-17-contents" aria-controls="callout-17" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2637,11 +2738,11 @@ Note
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-15" class="callout-15-contents callout-collapse collapse">
+<div id="callout-17" class="callout-17-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div id="qwebr-insertion-location-33"></div>
+<div id="qwebr-insertion-location-34"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>If this worked correctly, you should see that <code>n_unique_ndvi</code> is <code>1</code> for every tract — i.e., everyone in the same census tract got the same NDVI value, as expected.</p>
+<p><strong>What this output is telling you:</strong> the <code>summarize()</code> step produces one row per tract, giving the number of distinct NDVI values found within it (<code>n_unique_ndvi</code>) — then <code>count(n_unique_ndvi)</code> collapses <em>that</em> down into a small frequency table, showing how many tracts (<code>n</code>) had each possible value of <code>n_unique_ndvi</code>. What you’re looking for is a <strong>single row</strong>: <code>n_unique_ndvi = 1</code>, with <code>n</code> equal to the total number of tracts (384) — meaning every tract, without exception, has exactly one NDVI value. If you instead saw a second row (e.g., <code>n_unique_ndvi = 2</code> with some nonzero <code>n</code>), that would tell you exactly how many tracts have the problem, which is your starting point for troubleshooting.</p>
 </div>
 </div>
 </div>
@@ -2659,6 +2760,7 @@ Note
 <h1>======================================================</h1>
 <p>Currently, our new data frame just lives in our R environment (or, on this page, in your browser’s temporary in-browser R session). Once we close R (or this browser tab), we lose our changes unless we save them. We can either rerun this code again, or save our new data frame with any changes we made. Let’s do this now.</p>
 <p><strong>Note:</strong> it’s good practice to save your data frame using a <strong>new</strong> name, and — per this course’s project convention — into <code>data_processed/</code>, not <code>data_raw/</code>. That way <code>data_raw/class_data_raw.csv</code> stays untouched as your original source, and anyone (including you, later) can tell at a glance that <code>data_processed/</code> files were generated by a script rather than hand-edited.</p>
+<p>Why does that separation matter so much? Think about reproducibility (recall this from Week 1): the whole point of the <code>data_raw/</code> → script → <code>data_processed/</code> pattern is that your <strong>script</strong>, not a person clicking around in a spreadsheet, is the record of every transformation applied to the data. If <code>class_data_raw.csv</code> ever got hand-edited directly, there would be no way to tell what changed or why — the original data would effectively be lost, and nobody (including future you) could regenerate it from scratch. Keeping <code>data_raw/</code> untouched means you can always delete <code>data_processed/</code> entirely and rebuild it by just re-running your script — which is exactly what “reproducible” means in practice.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -2670,12 +2772,12 @@ Note
 </div>
 <div class="callout-body-container callout-body">
 <p>This is the line to use in your own script to save the processed dataset. The <code>data_processed/</code> folder already exists in your <code>EOH635_project</code> from the setup assignment:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(data2, <span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(data2, <span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>This saves <code>class_data_processed.csv</code> into <code>data_processed/</code> inside your project, where it will persist between sessions.</p>
 </div>
 </div>
-<p>You can also run the chunk below in the browser to see how it works — but note that in the browser the file is only saved temporarily and disappears when you close the tab.</p>
-<div id="qwebr-insertion-location-34"></div>
+<p>You can also run the chunk below in the browser to see how it works — but note that in the browser the file is only saved temporarily and disappears when you close the tab. <strong>To actually save this file permanently to your hard drive, run the single line shown in the green “In your RStudio script” box just above, inside RStudio</strong> — with <code>data2</code> in your R environment and <code>data_processed/</code> already existing in your <code>EOH635_project</code>, that <code>write.csv(...)</code> line writes the file to your computer’s disk, where it will still be there the next time you open RStudio.</p>
+<div id="qwebr-insertion-location-35"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 </section>
 <section id="section-18" class="level1">
@@ -2686,7 +2788,7 @@ Note
 </section>
 <section id="section-19" class="level1">
 <h1>======================================================</h1>
-<p>Everything above walked through each step one at a time, with the browser-only fetching code mixed in. Below is everything put together as a <strong>single clean script</strong> — this is what actually goes in your <code>.R</code> or <code>.qmd</code> file inside <code>EOH635_project/scripts/</code>, running on your own computer with <code>class_data_raw.csv</code> and <code>PHL_NDVI_summer_annual.csv</code> already sitting in <code>data_raw/</code>.</p>
+<p>This script covers only the <strong>data preparation</strong> work we did in this lesson — reading in the NDVI data, merging it with our primary dataset, and recoding the <code>education</code> variable. It’s not a full analysis; think of it as getting your dataset ready for one. Everything above walked through each of those steps one at a time, with the browser-only fetching code mixed in. Below is everything put together as a <strong>single clean script</strong> — this is what actually goes in your <code>.R</code> or <code>.qmd</code> file inside <code>EOH635_project/scripts/</code>, running on your own computer with <code>class_data_raw.csv</code> and <code>PHL_NDVI_summer_annual.csv</code> already sitting in <code>data_raw/</code>.</p>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -2698,37 +2800,37 @@ Note
 </div>
 <div class="callout-body-container callout-body">
 <p>Copy the whole block below into a new script in RStudio to get started on your own computer. There’s no downloading step here — R just reads the files straight from your <code>data_raw/</code> folder.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Setup ----</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Read in your data ----</span></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"class_data_raw.csv"</span>))</span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>PHL_NDVI_summer_annual <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"PHL_NDVI_summer_annual.csv"</span>))</span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Take a first look ----</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data)</span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(data)</span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(data)</span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(data)</span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Recode education into a numeric 0/1 variable ----</span></span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">num_education =</span> <span class="fu">if_else</span>(education <span class="sc">==</span> <span class="st">"&lt; Bachelor's"</span>, <span class="dv">0</span>, <span class="dv">1</span>))</span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Match variable types before merging ----</span></span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>geoid10 <span class="ot">&lt;-</span> <span class="fu">as.character</span>(data<span class="sc">$</span>geoid10)</span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a>PHL_NDVI_summer_annual<span class="sc">$</span>GEOID10 <span class="ot">&lt;-</span> <span class="fu">as.character</span>(PHL_NDVI_summer_annual<span class="sc">$</span>GEOID10)</span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Merge in the NDVI (greenness) data ----</span></span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>data2 <span class="ot">&lt;-</span> <span class="fu">merge</span>(data, PHL_NDVI_summer_annual,</span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a>                <span class="at">by.x =</span> <span class="st">"geoid10"</span>, <span class="at">by.y =</span> <span class="st">"GEOID10"</span>, <span class="at">all.x =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Check that the merge worked ----</span></span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(data2)</span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data2)</span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Save your processed dataset ----</span></span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(data2, <span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Setup ----</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Read in your data ----</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"class_data_raw.csv"</span>))</span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>PHL_NDVI_summer_annual <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"PHL_NDVI_summer_annual.csv"</span>))</span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Take a first look ----</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data)</span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(data)</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(data)</span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(data)</span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Recode education into a numeric 0/1 variable ----</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">num_education =</span> <span class="fu">if_else</span>(education <span class="sc">==</span> <span class="st">"&lt; Bachelor's"</span>, <span class="dv">0</span>, <span class="dv">1</span>))</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Match variable types before merging ----</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>geoid10 <span class="ot">&lt;-</span> <span class="fu">as.character</span>(data<span class="sc">$</span>geoid10)</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>PHL_NDVI_summer_annual<span class="sc">$</span>GEOID10 <span class="ot">&lt;-</span> <span class="fu">as.character</span>(PHL_NDVI_summer_annual<span class="sc">$</span>GEOID10)</span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Merge in the NDVI (greenness) data ----</span></span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>data2 <span class="ot">&lt;-</span> <span class="fu">merge</span>(data, PHL_NDVI_summer_annual,</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>                <span class="at">by.x =</span> <span class="st">"geoid10"</span>, <span class="at">by.y =</span> <span class="st">"GEOID10"</span>, <span class="at">all.x =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Check that the merge worked ----</span></span>
+<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(data2)</span>
+<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data2)</span>
+<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Save your processed dataset ----</span></span>
+<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(data2, <span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </section>

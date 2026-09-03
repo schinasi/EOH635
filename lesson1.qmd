@@ -286,6 +286,14 @@ str(data)
 Most of the individual-level variables (`gender`, `education`, `race_ethnicity`, `employment_status`) come in as **character** strings rather than factors, and many of the health/behavior indicators (`stress`, `current_smoker`, `obese`, `high_blood_pressure`, etc.) are stored as **numeric 0/1 flags** even though they're conceptually categorical (binary). That's common in survey data, and it's exactly the kind of thing `str()` is good for catching *before* you run an analysis that assumes the wrong type.
 :::
 
+One more thing worth noticing in `str(data)`: **`geoid10`** — the census tract identifier for each participant — shows up as `num` (numeric), even though it functions as a *label*, not a quantity. It would never make sense to compute an "average `geoid10`," the way it might for `age`. Because it happens to look like a number, R read it in as one — but ID variables like this are safer to store as **character**, so nothing downstream ever accidentally tries to do math with them. Let's fix that now:
+
+```{webr-r}
+data$geoid10 <- as.character(data$geoid10)
+```
+
+Hang onto this — it'll matter again later in this lesson, when we merge in a second dataset.
+
 We can also view the dimensions of the data frame (rows × columns):
 
 * Rows show us the number of observations (in this case, people)
@@ -296,6 +304,12 @@ dim(data)
 ```
 
 > How many rows and columns are in our data frame? Based on this, how many people are in our data frame?
+
+Take a moment to actually answer this from the output above before revealing it below.
+
+::: {.callout-note collapse="true" title="💡 Answer — click to reveal"}
+`dim(data)` returns `2000  38`: **2,000 rows** and **38 columns**. Since each row is one participant, that means our data frame contains **2,000 people**, each described by 38 variables (columns).
+:::
 
 ******
 
@@ -308,6 +322,14 @@ summary(data)
 * What summary statistics does this function produce?
 * What do you observe about key variables?
 * Are there particular variables for which these summary statistics do not make sense? (Hint: think about what `summary()` does with a 0/1 variable versus a truly continuous one like `age`.)
+
+Think through these for a couple of variables yourself before checking below.
+
+::: {.callout-note collapse="true" title="💡 Two worked examples — click to reveal"}
+**`age`** (a genuinely continuous variable): `summary()` gives six numbers — Min. `18.02`, 1st Qu. `29.99`, Median `40.36`, Mean `44.99`, 3rd Qu. `56.24`, Max. `116.00` — plus a count of missing values (`NA's 3`). These are all meaningful here: the middle 50% of participants (between the 1st and 3rd quartiles) are roughly 30 to 56 years old. But that **Max. of 116** should catch your eye immediately — a plausible age tops out well below that. That's exactly the kind of thing `summary()` is good for catching early, before it quietly distorts an analysis later. (We'll deal with this specific outlier in Lesson 2.)
+
+**`high_blood_pressure`** (a binary 0/1 flag, not a continuous quantity): `summary()` reports Min. `0`, Median `0`, Mean `0.3048`, Max. `1`. The Min./Median/Max. here aren't wrong, exactly, but they're not very *useful* — a variable that can only be 0 or 1 doesn't have a meaningful "middle" or "spread" the way age does. The one number worth keeping from this output is the **Mean, `0.3048`** — for a 0/1 variable, the mean is just the proportion coded `1`, so about 30.5% of participants have high blood pressure. For everything else about a binary variable's distribution, a frequency count (`table()`, coming up in Section 6) is the right tool, not `summary()`.
+:::
 
 ******
 
@@ -323,7 +345,7 @@ Access the `education` column:
 data$education
 ```
 
-OK, we accessed it, but that looks pretty messy and it's hard to glean much information!
+OK, we accessed it, but that looks pretty messy and it's hard to glean much information! We're just seeing the raw value of `education` for every single participant, one after another — technically correct, but far too much to scan by eye and make sense of.
 
 Instead, it can be helpful to create summary counts.
 
@@ -339,13 +361,26 @@ prop.table(table(data$education))
 prop.table(table(data$education)) * 100
 ```
 
+**Putting this together:** the first line, `table()`, gives raw counts — 1,066 participants coded `"< Bachelor's"` and 934 coded `"Bachelor's degree or higher"`. `prop.table()` takes that same table and converts it to proportions of the total (each cell divided by 2,000), and multiplying by 100 turns those proportions into percentages: about 53.3% of participants have less than a bachelor's degree, and about 46.7% have a bachelor's degree or higher. All three lines describe the exact same underlying counts — they're just three different units (counts, proportions, percentages) for reporting the same distribution, and which one you'd report depends on your audience (a raw count is often more useful in a table you're building for yourself; a percentage usually reads more naturally in written text).
+
 ::: {.callout-tip title="🧠 Your Turn"}
-See if you can do the same thing (raw counts, proportions, and percentages) with the **`race_ethnicity`** variable.
+See if you can do the same thing (raw counts, proportions, and percentages) with the **`race_ethnicity`** variable. Then answer these three questions using your output:
+
+1. How many people identify as **Hispanic or Latino (of any race)**?
+2. What **proportion** of the study population identifies as **White alone, not Hispanic or Latino**?
+3. What **percentage** of the study population identifies as **Asian alone, not Hispanic or Latino**?
+
+Type your three answers as comments in the code box below before checking the solution.
 :::
 
 ```{webr-r}
 # Your code here — counts, proportions, and percentages for race_ethnicity
 
+
+# Your answers:
+# 1. Hispanic or Latino (of any race), count =
+# 2. White alone, not Hispanic or Latino, proportion =
+# 3. Asian alone, not Hispanic or Latino, percentage =
 ```
 
 ::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
@@ -356,6 +391,12 @@ prop.table(table(data$race_ethnicity))
 
 prop.table(table(data$race_ethnicity)) * 100
 ```
+
+**Answers:**
+
+1. **275** people identify as Hispanic or Latino (of any race).
+2. **0.61** (about 61%) of the study population identifies as White alone, not Hispanic or Latino.
+3. **4.7%** of the study population identifies as Asian alone, not Hispanic or Latino.
 :::
 
 # ======================================================
@@ -370,11 +411,21 @@ It's important to understand how to manipulate the variables in your data frame.
 str(data$education)
 ```
 
-Based on this, we see that `education` is a character variable.
+Based on this, we see that `education` is a character variable — we know that because `str()` labels it **`chr`** right at the start of the output.
+
+`str()` uses a short abbreviation for every variable type, and it's worth being able to recognize the common ones at a glance:
+
+| Abbreviation | Type | Example |
+|---|---|---|
+| `chr` | character (text/string) | `education`, `gender` |
+| `int` | integer (whole numbers) | `id`, `year` |
+| `num` | numeric (double — can hold decimals) | `age`, `hrlctree` |
+| `logi` | logical (`TRUE`/`FALSE`) | rare in survey data, but common after a comparison like `age > 65` |
+| `Factor` | factor (categorical, with defined levels) | not currently used in this dataset — R reads categories in as `chr` by default, but some analyses expect `Factor` instead |
 
 ## Creating a numeric version of the education variable
 
-Sometimes it's helpful to convert a character variable into a numeric variable — this can be very helpful when conducting quantitative analysis. Let's do this now, using base R's `ifelse()`:
+Right now, `education` is a character variable — useful for reading and for `table()`, but not for most quantitative work. **Regression models, correlations, and most statistical functions in R need numeric input** — they can't compute something like a mean, a correlation coefficient, or a regression slope on the text strings `"< Bachelor's"` and `"Bachelor's degree or higher"`. To use education status as a predictor or outcome in that kind of analysis later in the course, we first need a consistently coded numeric (here, binary 0/1) version. Let's do this now, using base R's `ifelse()`:
 
 ```{webr-r}
 data$num_education <- ifelse(data$education == "< Bachelor's", 0, 1)
@@ -392,6 +443,13 @@ So this line recodes a categorical `education` variable into a binary (0/1) nume
 * `1` = bachelor's degree or higher
 
 **Note:** in R there are lots of ways to do the same thing. Another way to recode this variable is with the `dplyr` package (loaded as part of `tidyverse`) instead of base R's `ifelse()`.
+
+Quick reminder of the syntax before you try it: `mutate()` adds (or changes) a column in a data frame, and `if_else()` works like `ifelse()` — a condition, then the value to use when it's `TRUE`, then the value to use when it's `FALSE`. Put together, the general pattern looks like:
+
+```r
+data <- data %>%
+  mutate(new_column_name = if_else(some_condition, value_if_true, value_if_false))
+```
 
 ::: {.callout-tip title="🧠 Your Turn"}
 `dplyr`'s equivalent of `ifelse()` is `if_else()`, typically used inside `mutate()`. Try rewriting the `num_education` recode above using `data %>% mutate(...)` and `if_else()` instead of base R. Call the new column `num_education2` so you can compare it to the original.
@@ -431,9 +489,11 @@ A lot of times in environmental epidemiology, we have additional environmental i
 
 You can probably think of additional types of data we might want to link in.
 
+Why would we want to do this? Here's a concrete example: if we're interested in studying the association between residential air pollution exposure and asthma diagnosis, our survey data alone won't have an air pollution measurement for each participant — so we'd want to link in a separate data source that does have it, matched to where each participant lives.
+
 We can do this by **merging** a second data frame — which has the environmental information of interest — into our primary data frame, by combining them using a common variable or variables.
 
-* Often, we use information about participants' neighborhoods (e.g., census tracts) to merge in environmental data.
+* Often, we use information about participants' neighborhoods (e.g., census tracts) to merge in environmental data. A **census tract** is a small, relatively permanent geographic area defined by the U.S. Census Bureau — roughly neighborhood-sized, typically a few thousand residents — that's commonly used in public health research as a proxy for someone's local environment, since exact addresses usually aren't available (or shared) for privacy reasons.
 
 Let's do that now.
 
@@ -510,12 +570,13 @@ str(data$geoid10)
 str(PHL_NDVI_summer_annual$GEOID10)
 ```
 
-Let's convert both to character type, using the `as.character()` function:
+Notice these **don't match**: `data$geoid10` shows up as `chr`, because we deliberately converted it back in Section 5 (it's a label, not a quantity, remember?) — but `PHL_NDVI_summer_annual$GEOID10` is freshly read in from its own file and is still `num`. This is exactly the situation the earlier conversion was setting up: without it, both would have looked numeric and matched by coincidence, hiding the fact that ID columns need this treatment at all. Since they don't match now, let's convert `GEOID10` to character too:
 
 ```{webr-r}
-data$geoid10 <- as.character(data$geoid10)
 PHL_NDVI_summer_annual$GEOID10 <- as.character(PHL_NDVI_summer_annual$GEOID10)
 ```
+
+(Re-running `data$geoid10 <- as.character(data$geoid10)` here as well wouldn't hurt anything — converting an already-character column to character is a harmless no-op — but it's only *necessary* for the one that's still numeric.)
 
 Now let's merge the datasets, using a left join:
 
@@ -528,6 +589,8 @@ Now the data frame called `data2` should have all of our original variables, plu
 As a check, think about how many variables were in each separate data frame.
 
 * How many rows are in `data2`?
+
+We're specifically checking this because a left join (`all.x = TRUE`) is supposed to keep **every** row from `data` — one row per participant, no more and no fewer — while just adding columns from `PHL_NDVI_summer_annual` onto each one. If the row count in `data2` doesn't match the row count in `data` (2,000), that's a red flag: it would mean the merge either dropped some participants, or duplicated some (which happens if the NDVI file accidentally has more than one row per `geoid10` — each extra match creates an extra output row). Checking `nrow()` before and after any merge is one of the simplest, most important habits for confirming a merge did what you expected.
 
 ```{webr-r}
 num_rows <- nrow(data2)
@@ -558,6 +621,8 @@ We can also do some logic checks to be sure everything checks out.
 ::: {.callout-tip title="🧠 Your Turn"}
 Do participants living in the identical census tract get assigned the **same** NDVI value? Write code to check this — for example, group `data2` by `geoid10` and count the number of *distinct* `X2015_NDVI` values within each tract. If the merge worked correctly, every tract should have exactly 1 distinct NDVI value.
 
+**Why should that be true?** `X2015_NDVI` is a *tract-level* measurement — it describes the neighborhood, not the individual person. A left join doesn't create new NDVI values; it just looks up the one value that belongs to each participant's `geoid10` and copies it onto every row that matches. So everyone sharing a tract should end up with the identical copied value. If any tract shows more than one distinct value, something's wrong — most likely a formatting issue (like the one we just fixed) that caused some participants to match the wrong row, or a duplicate tract entry in the NDVI file itself.
+
 (Hint: `dplyr`'s `group_by()`, `summarize()`, and `n_distinct()` are useful here.)
 :::
 
@@ -573,7 +638,7 @@ data2 %>%
   summarize(n_unique_ndvi = n_distinct(X2015_NDVI)) %>%
   count(n_unique_ndvi)
 ```
-If this worked correctly, you should see that `n_unique_ndvi` is `1` for every tract — i.e., everyone in the same census tract got the same NDVI value, as expected.
+**What this output is telling you:** the `summarize()` step produces one row per tract, giving the number of distinct NDVI values found within it (`n_unique_ndvi`) — then `count(n_unique_ndvi)` collapses *that* down into a small frequency table, showing how many tracts (`n`) had each possible value of `n_unique_ndvi`. What you're looking for is a **single row**: `n_unique_ndvi = 1`, with `n` equal to the total number of tracts (384) — meaning every tract, without exception, has exactly one NDVI value. If you instead saw a second row (e.g., `n_unique_ndvi = 2` with some nonzero `n`), that would tell you exactly how many tracts have the problem, which is your starting point for troubleshooting.
 :::
 
 Assuming everything looks OK, let's move on. If not, we'd need to do some troubleshooting!
@@ -588,6 +653,8 @@ Currently, our new data frame just lives in our R environment (or, on this page,
 
 **Note:** it's good practice to save your data frame using a **new** name, and — per this course's project convention — into `data_processed/`, not `data_raw/`. That way `data_raw/class_data_raw.csv` stays untouched as your original source, and anyone (including you, later) can tell at a glance that `data_processed/` files were generated by a script rather than hand-edited.
 
+Why does that separation matter so much? Think about reproducibility (recall this from Week 1): the whole point of the `data_raw/` → script → `data_processed/` pattern is that your **script**, not a person clicking around in a spreadsheet, is the record of every transformation applied to the data. If `class_data_raw.csv` ever got hand-edited directly, there would be no way to tell what changed or why — the original data would effectively be lost, and nobody (including future you) could regenerate it from scratch. Keeping `data_raw/` untouched means you can always delete `data_processed/` entirely and rebuild it by just re-running your script — which is exactly what "reproducible" means in practice.
+
 ::: {.callout-tip}
 ## 💻 In your RStudio script
 
@@ -600,7 +667,7 @@ write.csv(data2, file.path("data_processed", "class_data_processed.csv"), row.na
 This saves `class_data_processed.csv` into `data_processed/` inside your project, where it will persist between sessions.
 :::
 
-You can also run the chunk below in the browser to see how it works — but note that in the browser the file is only saved temporarily and disappears when you close the tab.
+You can also run the chunk below in the browser to see how it works — but note that in the browser the file is only saved temporarily and disappears when you close the tab. **To actually save this file permanently to your hard drive, run the single line shown in the green "In your RStudio script" box just above, inside RStudio** — with `data2` in your R environment and `data_processed/` already existing in your `EOH635_project`, that `write.csv(...)` line writes the file to your computer's disk, where it will still be there the next time you open RStudio.
 
 ```{webr-r}
 dir.create("data_processed", showWarnings = FALSE)
@@ -613,7 +680,7 @@ write.csv(data2, file.path("data_processed", "class_data_processed.csv"), row.na
 # 🚀 10. Quick-Start Script for Your Own Project
 # ======================================================
 
-Everything above walked through each step one at a time, with the browser-only fetching code mixed in. Below is everything put together as a **single clean script** — this is what actually goes in your `.R` or `.qmd` file inside `EOH635_project/scripts/`, running on your own computer with `class_data_raw.csv` and `PHL_NDVI_summer_annual.csv` already sitting in `data_raw/`.
+This script covers only the **data preparation** work we did in this lesson — reading in the NDVI data, merging it with our primary dataset, and recoding the `education` variable. It's not a full analysis; think of it as getting your dataset ready for one. Everything above walked through each of those steps one at a time, with the browser-only fetching code mixed in. Below is everything put together as a **single clean script** — this is what actually goes in your `.R` or `.qmd` file inside `EOH635_project/scripts/`, running on your own computer with `class_data_raw.csv` and `PHL_NDVI_summer_annual.csv` already sitting in `data_raw/`.
 
 ::: {.callout-tip}
 ## 💻 In your RStudio script
