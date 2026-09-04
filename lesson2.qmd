@@ -119,6 +119,12 @@ first few rows of the dataset.
 head(data)
 ```
 
+**What are we looking for here?** Mainly, that this loaded the way we expected: we should see the
+same 38 columns from Lesson 1's `class_data_raw.csv`, plus the new `X2015_NDVI` column merged in at
+the end. If a column looks missing, duplicated, or full of unexpected values already at this stage,
+that's worth chasing down before doing anything else — `head()` is a fast first sanity check, not a
+substitute for the more careful checks that follow.
+
 # Why Explore Data Before Analyzing It?
 
 It's tempting to skip straight to the "real" analysis — but exploratory data analysis (EDA) isn't
@@ -149,7 +155,7 @@ We'll work through each of these in turn.
 
 ::: {.callout-note}
 One more framing note before we start: everything in this lesson is **descriptive**, not
-**inferential**. We're not running hypothesis tests or p-values here — we're looking at
+**inferential**. We're not running hypothesis tests or looking at p-values here — we're looking at
 distributions to understand the data and catch problems *before* any modeling starts. That
 distinction matters enough that it's worth stating explicitly: descriptive analysis characterizes
 what's in front of you; inferential analysis (coming later in the course) is what lets you draw
@@ -178,6 +184,13 @@ deliberately built into this simulated dataset: `mental_health` (42), `current_s
 `high_blood_pressure` (12), `stress` (7), `has_park` (5), `age` (3), `gender` (2). If your
 `colSums(is.na(data))` output matches that, your merge from Lesson 1 didn't introduce (or lose)
 any missingness — which is exactly the kind of check worth doing after any merge.
+
+**A caveat specific to this class exercise:** we can check against the codebook here only because
+this is a teaching dataset, built with a known amount of missingness baked in on purpose. With
+real-world data, you typically *don't* know in advance how much missingness you have, or where —
+you find out by running exactly the code above and looking at the result. A codebook for a real
+dataset will usually tell you what a variable means and how it's coded, but not necessarily how
+much of it is missing in the specific file you were handed.
 :::
 
 For now we will not recode any of our missing variables. In some cases it makes sense to recode
@@ -190,8 +203,9 @@ variables that have missing values.
 
 ## Checking for Logical Inconsistencies
 
-Missing data is easy to spot — R shows you `NA` directly. **Logical inconsistencies** are sneakier:
-every individual value can look perfectly plausible on its own, but two variables *together* can't
+Missing data is easy to spot — R shows you `NA` directly. **Logical inconsistencies** are sneakier.
+When there's a logical inconsistency, every individual value can look perfectly plausible on its
+own — it's only when you look at two variables *together* that you find a combination that can't
 both be true. A classic example from environmental health survey data: someone recorded as
 biological sex "male" who also reports an age at first menstruation. Neither value looks wrong in
 isolation — the problem only shows up when you look at both at once.
@@ -200,49 +214,72 @@ The tool for catching this is one you already know: `table()`, applied to *two* 
 of one, to see every combination that actually occurs in the data.
 
 As a quick illustration of the technique (not a real inconsistency — just showing the mechanics),
-here's age broken into two rough bins, crossed with gender:
+let's break age into two rough groups and cross it with gender. We'll use the same approach Lesson
+1 used to create `r_age` and `num_education` — `ifelse()`, checking a condition and returning one
+value if it's `TRUE`, another if it's `FALSE`:
 
 ```{webr-r}
-table(cut(data$age, breaks = c(-Inf, 39, Inf), labels = c("39 and under", "40+")), data$gender)
+age_group_demo <- ifelse(data$age < 40, "Under 40", "40 or older")
+table(age_group_demo, data$gender)
 ```
+
+**What's happening here:** `ifelse(data$age < 40, "Under 40", "40 or older")` checks every value of
+`data$age` — wherever it's less than 40, it returns the text `"Under 40"`; everywhere else, it
+returns `"40 or older"`. That gives us a new vector of labels the same length as `data$age`, which
+we store as `age_group_demo`. `table()` then cross-tabulates that new label against `gender`, one
+count per combination.
 
 Reading a two-way table like this: each cell is a count of people with *that* combination of both
 variables. If a cell that should be logically impossible has a nonzero count, that's your signal
 to investigate.
 
 ::: {.callout-tip title="🧠 Your Turn"}
-This dataset has a real logical constraint built in: nobody under 22 should be coded as having a
-**Bachelor's degree or higher** (there simply hasn't been time to finish one). Build a two-way
-table of an "under 22 / 22 and over" age split against `education` to check whether that holds.
-(Hint: adapt the `cut()` pattern above, using a breakpoint at 22 instead of 40, and cross it with
-`data$education` instead of `data$gender`.)
+Let's build a real check, not just an illustration. Think about `education`: is it *possible* for
+someone to have a Bachelor's degree at age 20? Sure — early admission, an accelerated program, it
+happens, though it's uncommon. What about age 19? Now it's genuinely rare — not a strict logical
+impossibility the way "male" + "reports menses" is, but rare enough that finding several such
+cases in one dataset should make you suspicious of a coding error, not assume you've found a bunch
+of prodigies.
+
+Using the same `ifelse()` pattern as above, build a two-way table crossing an "under 19 / 19 and
+older" age split against `education`.
 :::
 
 ```{webr-r}
-# Your code here — two-way table of an age<22 split against education
+# Your code here — two-way table of an age<19 split against education
 
 ```
 
 ::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
 ```{webr-r}
-table(cut(data$age, breaks = c(-Inf, 21, Inf), labels = c("Under 22", "22 and over")), data$education)
+age_group <- ifelse(data$age < 19, "Under 19", "19 or older")
+table(age_group, data$education)
 ```
 
-The "Under 22" row should show **0** people with "Bachelor's degree or higher" — if it does, this
-consistency check passes. (Not every check you run will fail — knowing *how* to check is the
-skill, whether or not this particular one turns anything up.)
+The "Under 19" row should show **0** people with "Bachelor's degree or higher." Unlike the strict
+logical-impossibility example earlier (menses age recorded for someone coded male), this isn't a
+constraint that's *guaranteed* to hold in every real dataset — it's a "should be at or near zero;
+investigate anything that isn't" check. That distinction matters: not every consistency check has a
+clean yes/no answer, and part of the skill is judging how surprising a violation would actually be.
 :::
 
 ## Summary Statistics
 
-The `summary()` function provides a quick look at key statistics (e.g., min, max, median, mean).
+The `summary()` function provides a quick look at key statistics (e.g., min, max, median, mean) for
+the variables in our data frame.
+
+**This is a quick review from Lesson 1** — you ran `summary(data)` there too, on the raw,
+pre-merge data. It's worth doing again here, for two reasons: it's good practice to re-run basic
+checks like this after *any* merge (to make sure nothing shifted unexpectedly), and `data` now has
+one additional column, `X2015_NDVI`, that you haven't summarized yet.
 
 ```{webr-r}
 summary(data)
 ```
 
 **Question to consider:** What descriptive statistics do we see for each of the variables? For
-what types of variables does the `summary()` function not provide good information?
+what types of variables does the `summary()` function not provide good information? (If this feels
+familiar, it should — see if your answer matches what you found in Lesson 1.)
 
 Now let's redo this, looking only at the numeric variables.
 
@@ -350,7 +387,10 @@ logical-consistency check is.
 
 ## Visual Exploration of Data
 
-Let's plot some key variables to understand their distributions and relationships.
+Tables and summary statistics are useful, but it can also be very helpful to *visually* inspect the
+distribution of a variable — some patterns (an outlier, an unexpected cluster, a skew) are far
+easier to spot in a plot than in a column of numbers. Let's plot some key variables to understand
+their distributions and relationships.
 
 ### Example 1: Histogram
 
@@ -363,11 +403,30 @@ ggplot(data, aes(x = age)) +
   labs(title = "Distribution of Age", x = "Age", y = "Frequency")
 ```
 
+**How to read this:** the x-axis is age, split into 5-year bins (that's what `binwidth = 5` does);
+the y-axis is a count — how many participants fall into each bin. Taller bars mean more people at
+that age range. From this single plot, you can read off roughly where the minimum and maximum ages
+are (the leftmost and rightmost bars with any height at all), and see at a glance where the bulk of
+participants' ages fall — which, here, looks like it's concentrated in the younger-to-middle adult
+range, with progressively fewer people as age increases. You should also be able to spot a bar (or
+bars) sitting well off to the right, separated from the rest of the distribution — that's a visual
+signal of an age **outlier**, the same implausible values we're about to deal with directly below.
+
 ::: {.callout-tip title="🧠 Your Turn"}
 Before we get to age's outlier problem below, get a look at our primary *exposure* variable's
-distribution. Build a histogram of **`hrlctree`** (tree canopy cover). A `binwidth` of `0.05`
-works well here, since `hrlctree` is a proportion between 0 and 1 rather than a variable measured
-in whole years like age.
+distribution. Build a histogram of **`hrlctree`** (tree canopy cover) — start by copying the age
+histogram code above and just swapping in `hrlctree`.
+
+**One thing you'll need to change: `binwidth`.** A `binwidth` of `5` made sense for `age`, which
+spans roughly 18 to 116 years — but `hrlctree` is a *proportion*, ranging only from 0 to 1. A bin
+5 units wide would swallow the entire variable into a single bar, telling you nothing. Try a much
+smaller value, like `0.05`, instead.
+
+More generally, whenever you build a histogram of a new variable: first check its rough range (a
+quick `summary()` or `range()` will tell you), then pick a `binwidth` that divides that range into
+something like 10–30 bins. Too few bins hides the shape of the distribution; too many makes it
+look noisy. There's no single "correct" binwidth — this is a judgment call you refine by trying a
+value, looking at the plot, and adjusting.
 :::
 
 ```{webr-r}
@@ -386,7 +445,7 @@ much greener tracts — worth keeping in mind before you characterize this varia
 project.
 :::
 
-Some of the values we see for age look suspicious — the ages > 110 are very suspect. This is the
+Okay, back to age. Some of the values we see for age look suspicious — the ages > 110 are very suspect. This is the
 third error type from earlier: an **outlier**. Let's recode those with age > 105 to be missing.
 (Another option would be to recode these to some high but plausible number, e.g. 100.)
 
@@ -407,8 +466,9 @@ table(is.na(data$age))
 table(is.na(data$r_age))
 ```
 
-Note: after recoding, we have a few additional observations with missing age — that makes sense
-given the distribution we saw earlier.
+That is, we now have **four additional** missing observations, because there were four individuals
+with ages > 105 — we have set these to missing. (Original missing age count: 3. After recoding: 7.
+3 + 4 = 7 — the recode didn't touch anyone who wasn't already missing or above the 105 cutoff.)
 
 ::: {.callout-tip title="🧠 Your Turn"}
 Recall from Lesson 1 that `dplyr`'s `if_else()` (typically used inside `mutate()`) is another way
@@ -672,8 +732,8 @@ colSums(is.na(data))
 
 # ---- 2. Logical inconsistencies: cross-tabulate variables that should agree ----
 # Example template -- replace both variables with a pair relevant to your own project
-table(cut(data$age, breaks = c(-Inf, 21, Inf), labels = c("Under 22", "22 and over")),
-      data$education)
+age_group <- ifelse(data$age < 19, "Under 19", "19 or older")   # <- CHANGE THIS to your own condition
+table(age_group, data$education)                                # <- CHANGE THIS to your own pair
 
 # ---- 3. Outliers + summary statistics ----
 summary(data)                                    # all variables
