@@ -1,0 +1,299 @@
+---
+title: "Week 2 Practice: Reading a Published Conceptual Framework"
+subtitle: "EOH 635 — Environmental Epidemiology Methods"
+author: "Leah Schinasi"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    theme: cosmo
+    code-tools: false
+engine: knitr
+webr:
+  show-startup-message: true
+  packages: ['tidyverse']
+  autoload-packages: true
+filters:
+  - webr
+---
+
+# Introduction
+
+This week's Practice activity is a little different from a typical R tutorial. Instead of working through new code, you will work through a published paper — applying the vocabulary you just learned in the lectures (exposure, outcome, mediator, confounder, effect modifier) to decode a real framework from the environmental epidemiology literature.
+
+The paper is:
+
+> Lachowycz K, Jones AP. (2013). Towards a better understanding of the relationship between greenspace and health: Development of a theoretical framework. *Landscape and Urban Planning*, 118, 62–69.
+
+There are also two short R exercises at the end where you will use the class dataset to connect the paper's ideas to real variables.
+
+::: {.callout-important}
+## How to use this tutorial
+
+Work through the five parts in order — each builds on the one before it. Parts 1–4 are reading and reflection exercises; they use collapsible callout boxes to reveal answers after you have thought through each question yourself. Part 5 includes live R editors where you can run code in the browser.
+
+**For the reflection questions:** write your answers in your own words before you click to reveal the answer. The goal is to develop your reasoning, not produce the exact right phrasing.
+
+**For the R exercises:** click the green **Run Code** button to run the code in each gray box. You can also edit the code before running.
+:::
+
+::: {.callout-note}
+## Before you begin
+
+Open the Lachowycz & Jones (2013) paper and find **Figure 1** (the framework diagram on page 64 of the PDF). Keep it in front of you throughout Parts 1–4. Most of what you need is in that figure — the text provides context, but the diagram is the primary object you are working with.
+
+**One note on terminology:** Lachowycz and Jones use the word *moderator* where this course uses *effect modifier*. These terms mean the same thing. A moderator changes the strength or direction of the main association across subgroups.
+:::
+
+---
+
+# Part 1: Orient Yourself — Find the Core Hypothesis
+
+Every framework, no matter how complex, starts with a simple two-box hypothesis: **exposure → outcome**. Before you try to read all the complexity in Figure 1, find that core.
+
+**1a.** Looking at Figure 1, identify the core exposure and the core outcomes. Write them down in your own words.
+
+- What is the exposure? How is it measured?
+- What are the outcomes? How does the framework organize them?
+- Is the exposure measured at the individual level or the neighborhood/area level?
+
+**1b.** In one sentence, state the hypothesis that Figure 1 is built around. Write it the way you would write a hypothesis for Milestone 1 — specific, directional, using "associated with."
+
+::: {.callout-note collapse="true" title="💡 Answer guide — click to reveal after attempting"}
+
+**1a.**
+
+- **Exposure:** Access to greenspace — measured at the neighborhood or area level as distance to greenspace, amount of greenspace in the area, or similar spatial measures.
+- **Outcomes:** The framework distinguishes two broad categories: **physical health** (e.g., weight management, blood pressure, reduced risk of chronic disease) and **psychological health** (e.g., improved mental wellbeing, stress recovery, reduced aggression). These are shown as interacting rather than completely separate.
+- The exposure is **area-level**; outcomes are typically measured at the **individual level**.
+
+**1b.** A reasonable hypothesis: *Among urban residents, those living in neighborhoods with greater access to greenspace will have better physical and mental health outcomes, compared to those with lower greenspace access.* Notice the need for "associated with" even here — Lachowycz and Jones are careful to describe their causal pathways as *hypothetical*.
+
+:::
+
+---
+
+# Part 2: Identify the Mediators
+
+The middle column of Figure 1 is labeled "Potential mediators." These are variables on the causal pathway between the exposure and the outcomes — they explain *how* access to greenspace could improve health.
+
+**2a.** The authors group the mediators into three broad categories. Identify and name those three categories from the figure.
+
+**2b.** Pick *one specific mediator* from any of the three categories that makes intuitive sense to you. In 2–3 sentences, explain:
+
+- Where it sits in the causal story (exposure → mediator → outcome)
+- Why it belongs on the *pathway* rather than being a confounder
+
+**2c.** The authors note in Section 2.2 that evidence for mediators "operating in practice remains elusive." In your own words, why would that be the case? What would you need in order to actually test whether a mediator is operating?
+
+*(Hint: think about what a cross-sectional study can and cannot tell you about timing and sequence.)*
+
+::: {.callout-note collapse="true" title="💡 Answer guide — click to reveal after attempting"}
+
+**2a.** The three mediator categories are:
+
+1. **Improved perceptions of the living environment** (aesthetic satisfaction, sense of having the park there)
+2. **Aesthetic pleasure and relaxation from viewing greenspace**
+3. **Use of greenspace** — which includes relaxation activities, physical activities (jogging, football, playing), active travel (walking and cycling), interaction with wildlife, social interactions, and participation in group activities
+
+**2b.** Any well-reasoned answer works. Example: *Physical activity (a form of greenspace use) sits between greenspace access and physical health outcomes.* It belongs on the pathway — not as a confounder — because it is caused *by* greenspace access and then causes improved health. A confounder would independently cause both greenspace access and health through a separate mechanism; a mediator is activated by the exposure itself.
+
+**2c.** Cross-sectional studies measure the exposure, mediator, and outcome all at the same time. That means you cannot establish what came first — did living near greenspace lead to more physical activity, which then improved health? Or did healthier people choose to live near greenspace? To actually test mediation, you would ideally need longitudinal data where you measure changes in the mediator (e.g., physical activity levels) and the outcome over time in response to changes in the exposure — or a natural experiment where greenspace is introduced in an area and you can observe what happens next.
+
+:::
+
+---
+
+# Part 3: Identify the Moderators (Effect Modifiers)
+
+The left column of Figure 1 is labeled "Potential moderating factors." These are variables that change the *strength or direction* of the greenspace–health association across different groups or contexts — what this course calls **effect modifiers**.
+
+**3a.** The authors organize the moderating factors into three groups. Name the three groups as they appear in the figure.
+
+**3b.** The authors argue that socioeconomic status (SES) can act as a **moderator**, not just a confounder. In plain language, what is the difference between those two claims? What would it mean for SES to *modify* the greenspace–health association, as opposed to *confound* it?
+
+*(Hint: think about what "adjusting for" a variable does in a regression model, versus what "stratifying by" a variable does.)*
+
+**3c.** Identify **one moderating factor** that you could examine using variables available in the class dataset. Name the variable you would use and describe what group comparison you would make.
+
+::: {.callout-note collapse="true" title="💡 Answer guide — click to reveal after attempting"}
+
+**3a.** The three groups of moderating factors are:
+
+1. **Demographic factors** (age, gender, ethnicity, SES, occupation and lifestyle, household characteristics, dog ownership, car ownership)
+2. **Living context** (cultural factors, community activity, safety and infrastructure, government policy, rural–urban setting, surface/greenery on routes)
+3. **Characteristics of green space** (features, quality, maintenance/attractiveness, level and type of use, safety and privacy)
+
+Climate is shown separately as a fourth column in the figure.
+
+**3b.** Calling SES a *confounder* means: wealthier neighborhoods tend to have more greenspace AND lower disease rates through entirely separate mechanisms, so SES creates a spurious association that must be removed by adjusting for it in a model. Calling SES a *moderator (effect modifier)* means something different: the *size* of the greenspace–health benefit differs by SES level — for example, lower-SES residents may benefit more from greenspace access because they have fewer alternative health-promoting resources. The authors suggest both may be true simultaneously. Adjusting for SES (as a confounder) removes its confounding influence on the overall estimate; stratifying by SES (as a modifier) reveals whether the greenspace benefit is bigger or smaller in different groups.
+
+**3c.** Several variables work. For example:
+
+- `pov_allage` (tract-level poverty proportion): you could compare the greenspace–health association in high-poverty versus low-poverty tracts
+- `age`: compare the association in younger versus older participants
+- `female` (0/1): compare the association by sex, as the paper discusses gender differences in greenspace use
+
+:::
+
+---
+
+# Part 4: Read Critically — What Is Missing?
+
+A conceptual framework is a theory about what matters. Part of reading a framework critically is noticing what it *doesn't* include, and asking whether that matters.
+
+**4a.** The authors acknowledge in their Discussion that the framework was built primarily from cross-sectional studies. Why does that matter? What types of causal claims does Figure 1 make that cross-sectional evidence cannot actually establish?
+
+**4b.** The authors note one route of mediation that was *deliberately excluded* from the framework — the role of greenspace as a protector from environmental stressors such as pollution and heat (see the end of page 67 in the paper). Why did they exclude it? Do you agree with that decision, given what we now know about greenspace and air quality?
+
+::: {.callout-note collapse="true" title="💡 Answer guide — click to reveal after attempting"}
+
+**4a.** Cross-sectional studies measure everything at one point in time, making it impossible to establish what came first. Figure 1 uses arrows to imply temporal sequence and causal direction — but those arrows are theoretical claims, not conclusions from cross-sectional data. In particular, you cannot rule out reverse causation (healthier people choosing to live near greenspace) or confirm that the mediating variables operate in the sequence the diagram shows.
+
+**4b.** The authors excluded it primarily because of insufficient epidemiological evidence at the time — not enough studies had directly tested it as a mechanism linking greenspace access to health outcomes in free-living populations. Whether that was the right call is worth debating: there is a plausible biological mechanism (trees absorb particulate matter, greenspace reduces urban heat island effects), and we now know considerably more about greenspace and air quality. Many researchers would argue this pathway deserves inclusion in updated versions of the framework — and indeed, the authors themselves suggest it "could potentially be incorporated" as evidence emerges.
+
+:::
+
+---
+
+# Part 5: Connect to the Class Dataset
+
+Now let's bring these ideas into the data. The two exercises below use the class dataset to connect the paper's concepts to the variables you will work with all quarter.
+
+```{webr-r}
+#| autorun: true
+data_base_url <- "https://raw.githubusercontent.com/schinasi/EOH635/main/data/"
+dir.create("data_raw", showWarnings = FALSE)
+download.file(paste0(data_base_url, "class_data_raw.csv"),
+              file.path("data_raw", "class_data_raw.csv"))
+download.file(paste0(data_base_url, "PHL_NDVI_summer_annual.csv"),
+              file.path("data_raw", "PHL_NDVI_summer_annual.csv"))
+
+data <- read.csv(file.path("data_raw", "class_data_raw.csv"))
+
+ndvi <- read.csv(file.path("data_raw", "PHL_NDVI_summer_annual.csv"))
+data$geoid10 <- as.character(data$geoid10)
+ndvi$GEOID10  <- as.character(ndvi$GEOID10)
+data2 <- merge(data, ndvi, by.x = "geoid10", by.y = "GEOID10", all.x = TRUE)
+```
+
+::: {.callout-note}
+The chunk above runs automatically to load the class data. You do not need to modify it. In your own RStudio project, you would just `read.csv()` these files directly from your `data_raw/` folder.
+:::
+
+---
+
+## Exercise 5a: Explore the exposure and outcome from the paper
+
+The main exposure in the Lachowycz and Jones paper is **access to greenspace**. In our dataset, the closest measure is `X2015_NDVI` — the median summer NDVI value for each census tract, now merged into `data2`.
+
+The paper focuses on both physical and psychological health outcomes. Our dataset has several health variables that fall into those two categories.
+
+Run the code below to look at a quick summary of `X2015_NDVI` and two health outcomes — `asthma` (physical) and `mntlhlth` (the number of poor mental health days in the past month).
+
+```{webr-r}
+# Exposure: tract-level NDVI (greenspace)
+summary(data2$X2015_NDVI)
+
+# Physical health outcome: asthma diagnosis (0/1)
+table(data2$asthma)
+prop.table(table(data2$asthma)) * 100
+
+# Psychological health outcome: poor mental health days (count)
+summary(data2$mntlhlth)
+```
+
+Based on this output, answer the following:
+
+- What is the range of NDVI values across Philadelphia census tracts?
+- What proportion of participants have an asthma diagnosis?
+- What does the distribution of `mntlhlth` look like?
+
+::: {.callout-note collapse="true" title="💡 What to look for — click to reveal"}
+
+- **NDVI range:** Values should span roughly 0.1–0.5, reflecting the range of vegetation density across Philadelphia census tracts. Higher values = greener neighborhoods.
+- **Asthma prevalence:** Around 15–20% of participants should have an asthma diagnosis (`asthma == 1`).
+- **Mental health days:** The distribution of `mntlhlth` is likely right-skewed — most people report 0 poor mental health days, with a long tail of higher values. The mean will be higher than the median.
+
+These distributions are worth keeping in mind as you develop your own Milestone 1 hypothesis — if you choose one of these as your outcome, you now have a sense of how it is distributed.
+
+:::
+
+---
+
+## Exercise 5b: A first look at a potential confounder
+
+The Lachowycz and Jones paper identifies socioeconomic status as a key factor — both a confounder and a potential moderator of the greenspace–health relationship.
+
+In our dataset, the closest tract-level SES measure is `pov_allage` — the proportion of all ages living below the poverty line in each census tract.
+
+The code below produces a scatterplot showing the relationship between tract-level poverty (`pov_allage`) and tract-level NDVI (`X2015_NDVI`). Each point is one study participant (positioned by their census tract's values).
+
+```{webr-r}
+library(tidyverse)
+
+ggplot(data2, aes(x = pov_allage, y = X2015_NDVI)) +
+  geom_point(alpha = 0.3, color = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "navy") +
+  labs(
+    title = "Tract-level poverty and greenspace (NDVI)",
+    x = "Proportion below poverty line (pov_allage)",
+    y = "Summer NDVI (X2015_NDVI)"
+  ) +
+  theme_minimal()
+```
+
+::: {.callout-tip title="🧠 Your Turn"}
+
+Based on the plot:
+
+1. What is the direction of the relationship between poverty and NDVI? Does this match what Lachowycz and Jones argue in the paper?
+2. In your own causal story (whatever exposure-outcome pair you are planning for Milestone 1), do you think `pov_allage` belongs in your framework? If so, what role would it play — mediator, confounder, or effect modifier?
+
+Modify the code below to also visualize the relationship between `pov_allage` and `asthma`. *(Hint: because `asthma` is binary (0/1), `geom_point()` will produce an overplotted mess. Try `geom_jitter()` with `alpha = 0.2` instead, or compute the mean asthma rate by poverty quintile using `mutate()` + `ntile()` + `group_by()` + `summarize()`.)*
+
+:::
+
+```{webr-r}
+# Your code here — visualize the relationship between pov_allage and asthma
+
+```
+
+::: {.callout-note collapse="true" title="💡 One approach — click to reveal"}
+
+```{webr-r}
+# Compute mean asthma prevalence within poverty quintiles
+data2 %>%
+  mutate(pov_quintile = ntile(pov_allage, 5)) %>%
+  group_by(pov_quintile) %>%
+  summarize(
+    mean_pov   = mean(pov_allage, na.rm = TRUE),
+    asthma_pct = mean(asthma, na.rm = TRUE) * 100,
+    n          = n()
+  ) %>%
+  ggplot(aes(x = pov_quintile, y = asthma_pct)) +
+  geom_col(fill = "steelblue") +
+  labs(
+    title = "Asthma prevalence by tract poverty quintile",
+    x = "Poverty quintile (1 = lowest, 5 = highest)",
+    y = "Asthma prevalence (%)"
+  ) +
+  theme_minimal()
+```
+
+**What to look for:** If `pov_allage` is higher in tracts with higher asthma prevalence, that supports its role as a confounder in a greenspace–asthma analysis — it is associated with both the exposure (lower NDVI in higher-poverty tracts, as you saw in the first plot) and the outcome (higher asthma rates). This is exactly the confounding pattern Lachowycz and Jones describe for SES.
+
+:::
+
+---
+
+# Wrapping Up
+
+The framework-reading skills you just applied — finding the exposure, outcome, mediators, and moderators in someone else's published diagram, and then connecting those concepts to real data — are exactly the skills you need to build your own framework for Milestone 1.
+
+As you move into the Apply work, keep two things from this activity in mind:
+
+1. **Every box in your framework needs a sentence of justification.** Lachowycz and Jones wrote paragraphs for each element. Your Milestone 1 written explanation asks for one sentence per variable explaining why it is there and what role it plays — the same kind of reasoning, at a smaller scale.
+
+2. **Descriptive plots like the ones above are a legitimate part of framework-building.** Seeing that poverty and NDVI are negatively correlated in this dataset is empirical support for including `pov_allage` as a confounder in a greenspace–health analysis. You will produce similar plots for your own exposure-outcome pair in Week 3.
