@@ -15,8 +15,7 @@ no R or RStudio installation required. Built with [Quarto](https://quarto.org) a
   variables, and merging in a second dataset by a shared key.
 - **[Lesson 2: Reading a Published Conceptual Framework](https://schinasi.github.io/EOH635/lesson2.html)**
   — a reading/reflection activity applying exposure, outcome, mediator, confounder, and effect
-  modifier vocabulary to a published greenspace-and-health framework (Lachowycz & Jones 2013),
-  plus two short R exercises connecting it to the class dataset.
+  modifier vocabulary to a published greenspace-and-health framework (Lachowycz & Jones 2013).
 - **[Lesson 3: Exploratory Data Analysis & Data Cleaning](https://schinasi.github.io/EOH635/lesson3.html)**
   — identifying and recoding implausible values (age outliers), visualizing distributions
   (histograms, boxplots), and a first look at the course's primary exposure–outcome
