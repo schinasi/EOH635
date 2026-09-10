@@ -14,9 +14,9 @@ website:
       - href: lesson1.qmd
         text: "Lesson 1: Intro to R"
       - href: lesson2.qmd
-        text: "Lesson 2: EDA & Cleaning"
-      - href: week2_practice.qmd
-        text: "Week 2 Practice: Conceptual Frameworks"
+        text: "Lesson 2: Conceptual Frameworks"
+      - href: lesson3.qmd
+        text: "Lesson 3: EDA & Cleaning"
       - href: codebook.qmd
         text: "Codebook"
 

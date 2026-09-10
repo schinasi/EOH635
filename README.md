@@ -13,7 +13,11 @@ no R or RStudio installation required. Built with [Quarto](https://quarto.org) a
   — R basics (assignment, data frames, indexing), project organization and file paths, loading
   packages, reading in data, exploratory functions (`head`, `str`, `summary`, `dim`), recoding
   variables, and merging in a second dataset by a shared key.
-- **[Lesson 2: Exploratory Data Analysis & Data Cleaning](https://schinasi.github.io/EOH635/lesson2.html)**
+- **[Lesson 2: Reading a Published Conceptual Framework](https://schinasi.github.io/EOH635/lesson2.html)**
+  — a reading/reflection activity applying exposure, outcome, mediator, confounder, and effect
+  modifier vocabulary to a published greenspace-and-health framework (Lachowycz & Jones 2013),
+  plus two short R exercises connecting it to the class dataset.
+- **[Lesson 3: Exploratory Data Analysis & Data Cleaning](https://schinasi.github.io/EOH635/lesson3.html)**
   — identifying and recoding implausible values (age outliers), visualizing distributions
   (histograms, boxplots), and a first look at the course's primary exposure–outcome
   relationship — tree canopy cover and high blood pressure — including how to check whether a
@@ -56,7 +60,7 @@ relationship by education, while gender is deliberately left unrelated to tree c
 quarto_tutorials/
 ├── _quarto.yml                 # Project + site config (output-dir: docs, for GitHub Pages)
 ├── index.qmd                   # Landing page listing lessons
-├── lesson1.qmd / lesson2.qmd   # The two lessons
+├── lesson1.qmd / lesson2.qmd / lesson3.qmd   # The three lessons
 ├── codebook.qmd                # Data codebook
 ├── data/                       # Class data files, fetched by students' browsers at runtime
 │   ├── class_data_raw.csv
@@ -84,7 +88,7 @@ config, the data-fetch URL in `lesson1.qmd`, and the extension are already set u
 
 ### Adding a future lesson
 
-1. Duplicate `lesson1.qmd` (or `lesson2.qmd`) as a starting point, keeping the same YAML header
+1. Duplicate `lesson1.qmd` (or `lesson3.qmd`) as a starting point, keeping the same YAML header
    (`webr:`, `filters: [webr]`, etc.).
 2. Add it to the navbar in `_quarto.yml` and link it from `index.qmd`.
 3. If it needs its own data file, drop it in `data/` and fetch it the same way existing lessons
@@ -109,6 +113,6 @@ config, the data-fetch URL in `lesson1.qmd`, and the extension are already set u
 The data-generating scripts (original generation + a later remediation that fixed some
 association/confounding bugs) are kept in a **separate, private** instructor-only repo, not
 here — they document the dataset's exact ground-truth model, which would give away the answer
-to the confounding exercise in Lesson 2 if published alongside it.
+to the confounding exercise in Lesson 3 if published alongside it.
 
 </details>

@@ -1,5 +1,5 @@
 ---
-title: "Lesson 2: Exploratory Data Analysis & Data Cleaning"
+title: "Lesson 2: Reading a Published Conceptual Framework"
 subtitle: "EOH 635 — Environmental Epidemiology Methods"
 author: "Leah Schinasi"
 date: today
@@ -18,778 +18,282 @@ filters:
   - webr
 ---
 
-In our last session ([Lesson 1](lesson1.qmd)), we read in and manipulated our data set, and merged
-in NDVI (greenness) data by census tract. This week's module is about **research questions,
-conceptual frameworks, and descriptive analysis** — you've already worked through hypothesis
-components (exposure, outcome, population, expected relationship) and the mediator-vs-modifier
-distinction in this week's "Learn" material. This tutorial is the **Practice** half: hands-on
-descriptive statistics, data cleaning, and visualization in R.
+# Introduction
 
-That's not busywork. Every study population, exposure, and outcome needs to be *characterized*
-before it can be modeled — and this week's skills are exactly what you'll need for **Project
-Milestone 1** (research question, hypothesis, and conceptual framework), due this week. Milestone 1
-asks you to start characterizing the exposure and outcome you're considering for your own project,
-using this same class dataset. Everything below — checking distributions, spotting errors,
-visualizing a relationship — is directly reusable for that.
+This week's Practice activity is a little different from a typical R tutorial. Instead of working through new code, you will work through a published paper — applying the vocabulary you just learned in the lectures (exposure, outcome, mediator, confounder, effect modifier) to decode a real framework from the environmental epidemiology literature.
+
+The paper is:
+
+> Lachowycz K, Jones AP. (2013). Towards a better understanding of the relationship between greenspace and health: Development of a theoretical framework. *Landscape and Urban Planning*, 118, 62–69.
+
+There are also two short R exercises at the end where you will use the class dataset to connect the paper's ideas to real variables.
 
 ::: {.callout-important}
 ## How to use this tutorial
 
-The gray boxes below are **live R editors** — the code actually runs in your browser (no install
-needed). In the top-left corner of each gray box, you'll see a **green arrow button labeled "Run
-Code."** Click that green arrow to run the code in that box. The output (whatever the code
-produces — a number, a table, a plot, etc.) will appear directly underneath the box a moment
-later.
+Work through the five parts in order — each builds on the one before it. Parts 1–4 are reading and reflection exercises; they use collapsible callout boxes to reveal answers after you have thought through each question yourself. Part 5 includes live R editors where you can run code in the browser.
 
-You can also edit the code first — click inside the box, change something, then click the green
-**Run Code** arrow to run your edited version. Nothing you do here can break anything; if you make
-a mess, just refresh the page to start that box over.
+**For the reflection questions:** write your answers in your own words before you click to reveal the answer. The goal is to develop your reasoning, not produce the exact right phrasing.
 
-Sections marked **🧠 Your Turn** give you a task and a blank (or partially blank) code editor. Try
-writing the code yourself before revealing the solution, hidden in a collapsed box underneath.
-Click it open only after a real attempt (or if you're truly stuck) — the point is practice, not
-just reading the answer.
-
-**A note on browser vs. RStudio code:** one chunk in this lesson runs automatically in the
-background (labeled `#| autorun: true`) — it fetches the class data file from the web so it's
-available in your browser. **When you write your own scripts in RStudio, you will not include
-this fetching code.** Immediately after it, you'll find a green box labeled **"In your RStudio
-script"** showing the simpler code you'll actually use.
+**For the R exercises:** click the green **Run Code** button to run the code in each gray box. You can also edit the code before running.
 :::
 
 ::: {.callout-note}
-## Doing this in RStudio instead of (or in addition to) the browser?
+## Before you begin
 
-This lesson picks up where Lesson 1 left off: reading in **`class_data_processed.csv`**, the
-merged file you (or this tutorial) saved to `data_processed/` at the end of Lesson 1. If you
-worked through Lesson 1 in RStudio and saved your own version there, use that file — it should
-match. If you skipped straight to this lesson, that's fine too; a copy is fetched for you below.
-See the [Data Codebook](codebook.qmd) for variable definitions.
+Open the Lachowycz & Jones (2013) paper and find **Figure 1** (the framework diagram on page 64 of the PDF). Keep it in front of you throughout Parts 1–4. Most of what you need is in that figure — the text provides context, but the diagram is the primary object you are working with.
 
-As a reminder from Lesson 1: the web-fetch step below is a browser-only workaround. On your own
-computer, `class_data_processed.csv` is just a file sitting in your `data_processed/` folder —
-you read it directly, no downloading involved.
+**One note on terminology:** Lachowycz and Jones use the word *moderator* where this course uses *effect modifier*. These terms mean the same thing. A moderator changes the strength or direction of the main association across subgroups.
 :::
 
-Just as in Lesson 1, we first load any packages we need, then read in our data — using
-`file.path()` and the same `data_raw` / `data_processed` structure from your `EOH635_project`,
-not `setwd()`. (Recall from Lesson 1: on your own computer you're responsible for
-`install.packages()` and `library()` for every package you use — this tutorial page loads
-`tidyverse` for you automatically, which your own script won't do.)
+---
 
-```{webr-r}
-library(tidyverse)
-```
+# Part 1: Orient Yourself — Find the Core Hypothesis
 
-# Let's read our data into R
+Every framework, no matter how complex, starts with a simple two-box hypothesis: **exposure → outcome**. Before you try to read all the complexity in Figure 1, find that core.
 
-As always, make sure the data you're reading in are where your code expects to find them.
+**1a.** Looking at Figure 1, identify the core exposure and the core outcomes. Write them down in your own words.
 
-Note that we're reading in **`class_data_processed.csv`**, which already has the NDVI data linked
-in from Lesson 1.
+- What is the exposure? How is it measured?
+- What are the outcomes? How does the framework organize them?
+- Is the exposure measured at the individual level or the neighborhood/area level?
 
-In RStudio, that's:
+**1b.** In one sentence, state the hypothesis that Figure 1 is built around. Write it the way you would write a hypothesis for Milestone 1 — specific, directional, using "associated with."
 
-```r
-data <- read.csv(file.path("data_processed", "class_data_processed.csv"))
-```
+::: {.callout-note collapse="true" title="💡 Answer guide — click to reveal after attempting"}
 
-In the browser, the chunk below fetches that file for you and puts it in a `data_processed/`
-folder here in webR's virtual filesystem, matching the real project structure:
+**1a.**
+
+- **Exposure:** Access to greenspace — measured at the neighborhood or area level as distance to greenspace, amount of greenspace in the area, or similar spatial measures.
+- **Outcomes:** The framework distinguishes two broad categories: **physical health** (e.g., weight management, blood pressure, reduced risk of chronic disease) and **psychological health** (e.g., improved mental wellbeing, stress recovery, reduced aggression). These are shown as interacting rather than completely separate.
+- The exposure is **area-level**; outcomes are typically measured at the **individual level**.
+
+**1b.** A reasonable hypothesis: *Among urban residents, those living in neighborhoods with greater access to greenspace will have better physical and mental health outcomes, compared to those with lower greenspace access.* Notice the need for "associated with" even here — Lachowycz and Jones are careful to describe their causal pathways as *hypothetical*.
+
+:::
+
+---
+
+# Part 2: Identify the Mediators
+
+The middle column of Figure 1 is labeled "Potential mediators." These are variables on the causal pathway between the exposure and the outcomes — they explain *how* access to greenspace could improve health.
+
+**2a.** The authors group the mediators into three broad categories. Identify and name those three categories from the figure.
+
+**2b.** Pick *one specific mediator* from any of the three categories that makes intuitive sense to you. In 2–3 sentences, explain:
+
+- Where it sits in the causal story (exposure → mediator → outcome)
+- Why it belongs on the *pathway* rather than being a confounder
+
+**2c.** The authors note in Section 2.2 that evidence for mediators "operating in practice remains elusive." In your own words, why would that be the case? What would you need in order to actually test whether a mediator is operating?
+
+*(Hint: think about what a cross-sectional study can and cannot tell you about timing and sequence.)*
+
+::: {.callout-note collapse="true" title="💡 Answer guide — click to reveal after attempting"}
+
+**2a.** The three mediator categories are:
+
+1. **Improved perceptions of the living environment** (aesthetic satisfaction, sense of having the park there)
+2. **Aesthetic pleasure and relaxation from viewing greenspace**
+3. **Use of greenspace** — which includes relaxation activities, physical activities (jogging, football, playing), active travel (walking and cycling), interaction with wildlife, social interactions, and participation in group activities
+
+**2b.** Any well-reasoned answer works. Example: *Physical activity (a form of greenspace use) sits between greenspace access and physical health outcomes.* It belongs on the pathway — not as a confounder — because it is caused *by* greenspace access and then causes improved health. A confounder would independently cause both greenspace access and health through a separate mechanism; a mediator is activated by the exposure itself.
+
+**2c.** Cross-sectional studies measure the exposure, mediator, and outcome all at the same time. That means you cannot establish what came first — did living near greenspace lead to more physical activity, which then improved health? Or did healthier people choose to live near greenspace? To actually test mediation, you would ideally need longitudinal data where you measure changes in the mediator (e.g., physical activity levels) and the outcome over time in response to changes in the exposure — or a natural experiment where greenspace is introduced in an area and you can observe what happens next.
+
+:::
+
+---
+
+# Part 3: Identify the Moderators (Effect Modifiers)
+
+The left column of Figure 1 is labeled "Potential moderating factors." These are variables that change the *strength or direction* of the greenspace–health association across different groups or contexts — what this course calls **effect modifiers**.
+
+**3a.** The authors organize the moderating factors into three groups. Name the three groups as they appear in the figure.
+
+**3b.** The authors argue that socioeconomic status (SES) can act as a **moderator**, not just a confounder. In plain language, what is the difference between those two claims? What would it mean for SES to *modify* the greenspace–health association, as opposed to *confound* it?
+
+*(Hint: think about what "adjusting for" a variable does in a regression model, versus what "stratifying by" a variable does.)*
+
+**3c.** Identify **one moderating factor** that you could examine using variables available in the class dataset. Name the variable you would use and describe what group comparison you would make.
+
+::: {.callout-note collapse="true" title="💡 Answer guide — click to reveal after attempting"}
+
+**3a.** The three groups of moderating factors are:
+
+1. **Demographic factors** (age, gender, ethnicity, SES, occupation and lifestyle, household characteristics, dog ownership, car ownership)
+2. **Living context** (cultural factors, community activity, safety and infrastructure, government policy, rural–urban setting, surface/greenery on routes)
+3. **Characteristics of green space** (features, quality, maintenance/attractiveness, level and type of use, safety and privacy)
+
+Climate is shown separately as a fourth column in the figure.
+
+**3b.** Calling SES a *confounder* means: wealthier neighborhoods tend to have more greenspace AND lower disease rates through entirely separate mechanisms, so SES creates a spurious association that must be removed by adjusting for it in a model. Calling SES a *moderator (effect modifier)* means something different: the *size* of the greenspace–health benefit differs by SES level — for example, lower-SES residents may benefit more from greenspace access because they have fewer alternative health-promoting resources. The authors suggest both may be true simultaneously. Adjusting for SES (as a confounder) removes its confounding influence on the overall estimate; stratifying by SES (as a modifier) reveals whether the greenspace benefit is bigger or smaller in different groups.
+
+**3c.** Several variables work. For example:
+
+- `pov_allage` (tract-level poverty proportion): you could compare the greenspace–health association in high-poverty versus low-poverty tracts
+- `age`: compare the association in younger versus older participants
+- `female` (0/1): compare the association by sex, as the paper discusses gender differences in greenspace use
+
+:::
+
+---
+
+# Part 4: Read Critically — What Is Missing?
+
+A conceptual framework is a theory about what matters. Part of reading a framework critically is noticing what it *doesn't* include, and asking whether that matters.
+
+**4a.** The authors acknowledge in their Discussion that the framework was built primarily from cross-sectional studies. Why does that matter? What types of causal claims does Figure 1 make that cross-sectional evidence cannot actually establish?
+
+**4b.** The authors note one route of mediation that was *deliberately excluded* from the framework — the role of greenspace as a protector from environmental stressors such as pollution and heat (see the end of page 67 in the paper). Why did they exclude it? Do you agree with that decision, given what we now know about greenspace and air quality?
+
+::: {.callout-note collapse="true" title="💡 Answer guide — click to reveal after attempting"}
+
+**4a.** Cross-sectional studies measure everything at one point in time, making it impossible to establish what came first. Figure 1 uses arrows to imply temporal sequence and causal direction — but those arrows are theoretical claims, not conclusions from cross-sectional data. In particular, you cannot rule out reverse causation (healthier people choosing to live near greenspace) or confirm that the mediating variables operate in the sequence the diagram shows.
+
+**4b.** The authors excluded it primarily because of insufficient epidemiological evidence at the time — not enough studies had directly tested it as a mechanism linking greenspace access to health outcomes in free-living populations. Whether that was the right call is worth debating: there is a plausible biological mechanism (trees absorb particulate matter, greenspace reduces urban heat island effects), and we now know considerably more about greenspace and air quality. Many researchers would argue this pathway deserves inclusion in updated versions of the framework — and indeed, the authors themselves suggest it "could potentially be incorporated" as evidence emerges.
+
+:::
+
+---
+
+# Part 5: Connect to the Class Dataset
+
+Now let's bring these ideas into the data. The two exercises below use the class dataset to connect the paper's concepts to the variables you will work with all quarter.
 
 ```{webr-r}
 #| autorun: true
-
 data_base_url <- "https://raw.githubusercontent.com/schinasi/EOH635/main/data/"
+dir.create("data_raw", showWarnings = FALSE)
+download.file(paste0(data_base_url, "class_data_raw.csv"),
+              file.path("data_raw", "class_data_raw.csv"))
+download.file(paste0(data_base_url, "PHL_NDVI_summer_annual.csv"),
+              file.path("data_raw", "PHL_NDVI_summer_annual.csv"))
 
-dir.create("data_processed", showWarnings = FALSE)
+data <- read.csv(file.path("data_raw", "class_data_raw.csv"))
 
-download.file(paste0(data_base_url, "class_data_processed.csv"), file.path("data_processed", "class_data_processed.csv"))
-
-data <- read.csv(file.path("data_processed", "class_data_processed.csv"))
-```
-
-# Data check
-
-To check that our data loaded correctly, we'll use the `head()` function, which displays the
-first few rows of the dataset.
-
-```{webr-r}
-# Preview first few rows to verify data loading
-head(data)
-```
-
-**What are we looking for here?** Mainly, that this loaded the way we expected: we should see the
-same 38 columns from Lesson 1's `class_data_raw.csv`, plus the new `X2015_NDVI` column merged in at
-the end. If a column looks missing, duplicated, or full of unexpected values already at this stage,
-that's worth chasing down before doing anything else — `head()` is a fast first sanity check, not a
-substitute for the more careful checks that follow.
-
-# Why Explore Data Before Analyzing It?
-
-It's tempting to skip straight to the "real" analysis — but exploratory data analysis (EDA) isn't
-a formality before the real work starts. **It *is* part of the real work.** Before you can trust
-any regression result later in the course, you need to know your data cold: what each variable
-looks like, where the errors are, and what a "normal" value even is for each one.
-
-This class dataset is a simulated example of something very real in environmental epidemiology:
-data assembled from **multiple sources**, each with its own error patterns. Here, individual-level
-answers came from a household survey, and neighborhood-level measures (tree canopy, traffic,
-poverty, crime) were **linked in** by census tract — the same kind of linkage you did yourself in
-Lesson 1. Every data-collection method has its own way of introducing error:
-
-* **Surveys / interviewer-administered questionnaires** — recall bias, misunderstood questions,
-  data entry mistakes.
-* **Monitors and administrative/electronic data** — instrument drift, missing readings,
-  records that were never meant for research use.
-* **Linked data** (like the tract-level variables here) — mismatched geographic identifiers, or a
-  value that's technically correct but describes the *neighborhood*, not the *person*.
-
-Broadly, the errors EDA is designed to catch fall into three buckets:
-
-1. **Missing data**
-2. **Logical inconsistencies** — combinations of values that can't both be true
-3. **Outliers** — values so extreme they're more likely to be errors than reality
-
-We'll work through each of these in turn.
-
-::: {.callout-note}
-One more framing note before we start: everything in this lesson is **descriptive**, not
-**inferential**. We're not running hypothesis tests or looking at p-values here — we're looking at
-distributions to understand the data and catch problems *before* any modeling starts. That
-distinction matters enough that it's worth stating explicitly: descriptive analysis characterizes
-what's in front of you; inferential analysis (coming later in the course) is what lets you draw
-conclusions and test hypotheses from it.
-:::
-
-## Checking for Missing Values
-
-Missing values can affect analysis, so it's essential to check for them.
-
-```{webr-r}
-# Use the is.na() function with colSums() to count missing values in each column.
-missing_values <- colSums(is.na(data))
-missing_values
-```
-
-**Questions to consider:**
-
-* What variables have missing values?
-* How many missing values do you see for each?
-* Do you think this is a problem? Why or why not?
-
-::: {.callout-note collapse="true" title="💡 Compare against the codebook — click to reveal"}
-The [Data Codebook](codebook.qmd#known-missingness-in-this-dataset) lists the missingness that was
-deliberately built into this simulated dataset: `mental_health` (42), `current_smoker` (20),
-`high_blood_pressure` (12), `stress` (7), `has_park` (5), `age` (3), `gender` (2). If your
-`colSums(is.na(data))` output matches that, your merge from Lesson 1 didn't introduce (or lose)
-any missingness — which is exactly the kind of check worth doing after any merge.
-
-**A caveat specific to this class exercise:** we can check against the codebook here only because
-this is a teaching dataset, built with a known amount of missingness baked in on purpose. With
-real-world data, you typically *don't* know in advance how much missingness you have, or where —
-you find out by running exactly the code above and looking at the result. A codebook for a real
-dataset will usually tell you what a variable means and how it's coded, but not necessarily how
-much of it is missing in the specific file you were handed.
-:::
-
-For now we will not recode any of our missing variables. In some cases it makes sense to recode
-missing variables — particularly if we can infer their values from other variables in the data
-frame — but for now we'll proceed without doing that. It's good to be aware of which variables
-have missing values, since we'll need to think about this later when conducting analyses.
-
-Since you'll be working with these data in your project analysis, be sure to take note of the
-variables that have missing values.
-
-## Checking for Logical Inconsistencies
-
-Missing data is easy to spot — R shows you `NA` directly. **Logical inconsistencies** are sneakier.
-When there's a logical inconsistency, every individual value can look perfectly plausible on its
-own — it's only when you look at two variables *together* that you find a combination that can't
-both be true. A classic example from environmental health survey data: someone recorded as
-biological sex "male" who also reports an age at first menstruation. Neither value looks wrong in
-isolation — the problem only shows up when you look at both at once.
-
-The tool for catching this is one you already know: `table()`, applied to *two* variables instead
-of one, to see every combination that actually occurs in the data.
-
-As a quick illustration of the technique (not a real inconsistency — just showing the mechanics),
-let's break age into two rough groups and cross it with gender. We'll use the same approach Lesson
-1 used to create `r_age` and `num_education` — `ifelse()`, checking a condition and returning one
-value if it's `TRUE`, another if it's `FALSE`:
-
-```{webr-r}
-age_group_demo <- ifelse(data$age < 40, "Under 40", "40 or older")
-table(age_group_demo, data$gender)
-```
-
-**What's happening here:** `ifelse(data$age < 40, "Under 40", "40 or older")` checks every value of
-`data$age` — wherever it's less than 40, it returns the text `"Under 40"`; everywhere else, it
-returns `"40 or older"`. That gives us a new vector of labels the same length as `data$age`, which
-we store as `age_group_demo`. `table()` then cross-tabulates that new label against `gender`, one
-count per combination.
-
-Reading a two-way table like this: each cell is a count of people with *that* combination of both
-variables. If a cell that should be logically impossible has a nonzero count, that's your signal
-to investigate.
-
-::: {.callout-tip title="🧠 Your Turn"}
-Let's build a real check, not just an illustration. Think about `education`: is it *possible* for
-someone to have a Bachelor's degree at age 20? Sure — early admission, an accelerated program, it
-happens, though it's uncommon. What about age 19? Now it's genuinely rare — not a strict logical
-impossibility the way "male" + "reports menses" is, but rare enough that finding several such
-cases in one dataset should make you suspicious of a coding error, not assume you've found a bunch
-of prodigies.
-
-Using the same `ifelse()` pattern as above, build a two-way table crossing an "under 19 / 19 and
-older" age split against `education`.
-:::
-
-```{webr-r}
-# Your code here — two-way table of an age<19 split against education
-
-```
-
-::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
-```{webr-r}
-age_group <- ifelse(data$age < 19, "Under 19", "19 or older")
-table(age_group, data$education)
-```
-
-The "Under 19" row should show **0** people with "Bachelor's degree or higher." Unlike the strict
-logical-impossibility example earlier (menses age recorded for someone coded male), this isn't a
-constraint that's *guaranteed* to hold in every real dataset — it's a "should be at or near zero;
-investigate anything that isn't" check. That distinction matters: not every consistency check has a
-clean yes/no answer, and part of the skill is judging how surprising a violation would actually be.
-:::
-
-## Summary Statistics
-
-The `summary()` function provides a quick look at key statistics (e.g., min, max, median, mean) for
-the variables in our data frame.
-
-**This is a quick review from Lesson 1** — you ran `summary(data)` there too, on the raw,
-pre-merge data. It's worth doing again here, for two reasons: it's good practice to re-run basic
-checks like this after *any* merge (to make sure nothing shifted unexpectedly), and `data` now has
-one additional column, `X2015_NDVI`, that you haven't summarized yet.
-
-```{webr-r}
-summary(data)
-```
-
-**Question to consider:** What descriptive statistics do we see for each of the variables? For
-what types of variables does the `summary()` function not provide good information? (If this feels
-familiar, it should — see if your answer matches what you found in Lesson 1.)
-
-Now let's redo this, looking only at the numeric variables.
-
-```{webr-r}
-# Select only numeric columns in the data
-numeric_data <- data %>% select(where(is.double))
-
-# Get summary statistics for only the numeric columns
-summary(numeric_data)
+ndvi <- read.csv(file.path("data_raw", "PHL_NDVI_summer_annual.csv"))
+data$geoid10 <- as.character(data$geoid10)
+ndvi$GEOID10  <- as.character(ndvi$GEOID10)
+data2 <- merge(data, ndvi, by.x = "geoid10", by.y = "GEOID10", all.x = TRUE)
 ```
 
 ::: {.callout-note}
-**Note:** `is.double()` selects only columns stored as double (continuous numeric variables). This
-avoids including integer columns (like `id` and `year`), which are used for identifiers or years
-rather than quantities we'd summarize with a mean. Use `is.numeric()` instead if you want to
-include both integer and double types — `is.double()` is appropriate here because we want to
-calculate means, medians, etc. on genuinely continuous measures. It doesn't make sense to compute
-a mean or median for a binary yes/no variable — for those, we need a different tool, which is
-exactly what the next section covers.
+The chunk above runs automatically to load the class data. You do not need to modify it. In your own RStudio project, you would just `read.csv()` these files directly from your `data_raw/` folder.
 :::
 
-**Questions to consider:**
+---
 
-* What is the median age in this population? What is the minimum age? What is the maximum age?
-* For what variables do we not see much difference in value across the population? Why do you
-  think this is?
-* What can you tell about percent living in poverty in participants' neighborhoods, based on the
-  distribution you see here?
+## Exercise 5a: Explore the exposure and outcome from the paper
 
-Now let's create some tables to start looking at distributions for the other variables in the
-data set.
+The main exposure in the Lachowycz and Jones paper is **access to greenspace**. In our dataset, the closest measure is `X2015_NDVI` — the median summer NDVI value for each census tract, now merged into `data2`.
+
+The paper focuses on both physical and psychological health outcomes. Our dataset has several health variables that fall into those two categories.
+
+Run the code below to look at a quick summary of `X2015_NDVI` and two health outcomes — `asthma` (physical) and `mntlhlth` (the number of poor mental health days in the past month).
 
 ```{webr-r}
-# Identify non-numeric columns (excluding double-precision numeric, id, and year)
-non_numeric_data <- data %>% select(-where(is.double), -id, -year)
+# Exposure: tract-level NDVI (greenspace)
+summary(data2$X2015_NDVI)
+
+# Physical health outcome: asthma diagnosis (0/1)
+table(data2$asthma)
+prop.table(table(data2$asthma)) * 100
+
+# Psychological health outcome: poor mental health days (count)
+summary(data2$mntlhlth)
 ```
 
-::: {.callout-note}
-**Note about the code above:** this selects all columns that are *not* double-precision numeric
-(`is.double`), and also removes `id` and `year`. "Double precision" refers to how continuous
-numbers are stored in R — they use more memory to allow for decimal values with high precision.
-The minus sign (`-`) is used inside `select()` to exclude columns. We're storing the non-numeric
-columns in a data frame called `non_numeric_data`.
+Based on this output, answer the following:
+
+- What is the range of NDVI values across Philadelphia census tracts?
+- What proportion of participants have an asthma diagnosis?
+- What does the distribution of `mntlhlth` look like?
+
+::: {.callout-note collapse="true" title="💡 What to look for — click to reveal"}
+
+- **NDVI range:** Values should span roughly 0.1–0.5, reflecting the range of vegetation density across Philadelphia census tracts. Higher values = greener neighborhoods.
+- **Asthma prevalence:** Around 15–20% of participants should have an asthma diagnosis (`asthma == 1`).
+- **Mental health days:** The distribution of `mntlhlth` is likely right-skewed — most people report 0 poor mental health days, with a long tail of higher values. The mean will be higher than the median.
+
+These distributions are worth keeping in mind as you develop your own Milestone 1 hypothesis — if you choose one of these as your outcome, you now have a sense of how it is distributed.
+
 :::
 
-## Frequency Tables
+---
 
-Now let's create frequency tables to look at other variables:
+## Exercise 5b: A first look at a potential confounder
 
-```{webr-r}
-table(non_numeric_data$education)
-table(non_numeric_data$stress)
-table(non_numeric_data$employment_status)
-```
+The Lachowycz and Jones paper identifies socioeconomic status as a key factor — both a confounder and a potential moderator of the greenspace–health relationship.
 
-::: {.callout-tip title="🧠 Your Turn"}
-Use the same approach (`table()`, and if you like, `prop.table()`) to look at the distribution of
-**`race_ethnicity`** in this newly merged dataset. Do the proportions look the same as what you
-found for `race_ethnicity` back in Lesson 1? They should — merging in NDVI shouldn't have changed
-any of the original columns. If your numbers don't match, that's worth investigating!
-:::
+In our dataset, the closest tract-level SES measure is `pov_allage` — the proportion of all ages living below the poverty line in each census tract.
+
+The code below produces a scatterplot showing the relationship between tract-level poverty (`pov_allage`) and tract-level NDVI (`X2015_NDVI`). Each point is one study participant (positioned by their census tract's values).
 
 ```{webr-r}
-# Your code here — distribution of race_ethnicity
-
-```
-
-::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
-```{webr-r}
-table(data$race_ethnicity)
-prop.table(table(data$race_ethnicity)) * 100
-```
-:::
-
-We can also use a function to run this for *all* of the non-numeric variables at once:
-
-```{webr-r}
-# Use lapply to create frequency tables for each non-numeric variable
-distribution_tables <- lapply(non_numeric_data, function(x) {
-  if (is.factor(x) || is.character(x) || is.logical(x) || is.integer(x)) {
-    counts <- table(x, useNA = "ifany")             # Frequency counts including NAs
-    percentages <- prop.table(counts) * 100         # Calculate percentages
-    result <- cbind(Count = counts, Percentage = percentages)  # Combine counts and percentages
-    return(result)
-  } else {
-    return(NULL)
-  }
-})
-
-# Display the tables for each variable
-distribution_tables
-```
-
-::: {.callout-note}
-You're not expected to write a function like this on your own yet. Save this code (consider
-building yourself a small code library of "recipes" like this one) and reuse it whenever you need
-frequency tables for every categorical variable in a data set at once.
-:::
-
-Take a look at `asthma` in the output above. Its prevalence should look like a plausible
-proportion of the population — a small minority, not nearly everyone. That's worth pausing on: a
-variable whose distribution looks *implausible* (way too common, way too rare, or suspiciously
-uniform) is itself a signal worth chasing down, the same way a missing-value count or a failed
-logical-consistency check is.
-
-## Visual Exploration of Data
-
-Tables and summary statistics are useful, but it can also be very helpful to *visually* inspect the
-distribution of a variable — some patterns (an outlier, an unexpected cluster, a skew) are far
-easier to spot in a plot than in a column of numbers. Let's plot some key variables to understand
-their distributions and relationships.
-
-### Example 1: Histogram
-
-Histograms are useful for visualizing the distribution of a single numeric variable. Let's look
-at age.
-
-```{webr-r}
-ggplot(data, aes(x = age)) +
-  geom_histogram(binwidth = 5, fill = "blue", color = "black") +
-  labs(title = "Distribution of Age", x = "Age", y = "Frequency")
-```
-
-**How to read this:** the x-axis is age, split into 5-year bins (that's what `binwidth = 5` does);
-the y-axis is a count — how many participants fall into each bin. Taller bars mean more people at
-that age range. From this single plot, you can read off roughly where the minimum and maximum ages
-are (the leftmost and rightmost bars with any height at all), and see at a glance where the bulk of
-participants' ages fall — which, here, looks like it's concentrated in the younger-to-middle adult
-range, with progressively fewer people as age increases. You should also be able to spot a bar (or
-bars) sitting well off to the right, separated from the rest of the distribution — that's a visual
-signal of an age **outlier**, the same implausible values we're about to deal with directly below.
-
-::: {.callout-tip title="🧠 Your Turn"}
-Before we get to age's outlier problem below, get a look at our primary *exposure* variable's
-distribution. Build a histogram of **`hrlctree`** (tree canopy cover) — start by copying the age
-histogram code above and just swapping in `hrlctree`.
-
-**One thing you'll need to change: `binwidth`.** A `binwidth` of `5` made sense for `age`, which
-spans roughly 18 to 116 years — but `hrlctree` is a *proportion*, ranging only from 0 to 1. A bin
-5 units wide would swallow the entire variable into a single bar, telling you nothing. Try a much
-smaller value, like `0.05`, instead.
-
-More generally, whenever you build a histogram of a new variable: first check its rough range (a
-quick `summary()` or `range()` will tell you), then pick a `binwidth` that divides that range into
-something like 10–30 bins. Too few bins hides the shape of the distribution; too many makes it
-look noisy. There's no single "correct" binwidth — this is a judgment call you refine by trying a
-value, looking at the plot, and adjusting.
-:::
-
-```{webr-r}
-# Your code here — histogram of hrlctree
-
-```
-
-::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
-```{webr-r}
-ggplot(data, aes(x = hrlctree)) +
-  geom_histogram(binwidth = 0.05, fill = "forestgreen", color = "black") +
-  labs(title = "Distribution of Tree Canopy Cover", x = "Tree canopy cover (proportion)", y = "Frequency")
-```
-Most tracts should cluster at fairly low canopy values with a long right tail toward a handful of
-much greener tracts — worth keeping in mind before you characterize this variable for your own
-project.
-:::
-
-Okay, back to age. Some of the values we see for age look suspicious — the ages > 110 are very suspect. This is the
-third error type from earlier: an **outlier**. Let's recode those with age > 105 to be missing.
-(Another option would be to recode these to some high but plausible number, e.g. 100.)
-
-There's a trade-off here: we gain more missing values, or we introduce more uncertainty. This is a
-balancing act you'll have to consider as you move forward with your own data analysis. Like most
-things, there isn't necessarily one "right" answer — just be thoughtful, and document your choice.
-
-Our new recoded age variable will be called `r_age`:
-
-```{webr-r}
-data$r_age <- ifelse(data$age > 105, NA, data$age)
-```
-
-We can check the number of missing values in the recoded and original age variables:
-
-```{webr-r}
-table(is.na(data$age))
-table(is.na(data$r_age))
-```
-
-That is, we now have **four additional** missing observations, because there were four individuals
-with ages > 105 — we have set these to missing. (Original missing age count: 3. After recoding: 7.
-3 + 4 = 7 — the recode didn't touch anyone who wasn't already missing or above the 105 cutoff.)
-
-::: {.callout-tip title="🧠 Your Turn"}
-Recall from Lesson 1 that `dplyr`'s `if_else()` (typically used inside `mutate()`) is another way
-to do the same recoding `ifelse()` just did. Recreate `r_age` using `mutate()` and `if_else()`
-instead, calling the new column `r_age2`, and confirm it matches `r_age` (hint: a table of
-`r_age == r_age2`, or `identical()`, can confirm this — remember that `NA == NA` is `NA`, not
-`TRUE`, so a simple `table()` of the comparison is often clearer than `identical()` here).
-:::
-
-```{webr-r}
-# Your code here — recreate r_age using mutate() + if_else(), call it r_age2
-
-```
-
-::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
-```{webr-r}
-data <- data %>%
-  mutate(r_age2 = if_else(age > 105, NA_real_, age))
-
-table(data$r_age == data$r_age2, useNA = "ifany")
-```
-
-(Note: `if_else()` is stricter than base R's `ifelse()` about types — it needs `NA_real_` rather
-than a plain `NA` here, since `age` is a decimal/"double" column. This is a common `if_else()`
-gotcha worth remembering.)
-:::
-
-Let's recreate our histogram with the recoded age variable:
-
-```{webr-r}
-ggplot(data, aes(x = r_age)) +
-  geom_histogram(binwidth = 5, fill = "blue", color = "black") +
-  labs(title = "Distribution of Recoded Age", x = "Recoded Age", y = "Frequency")
-```
-
-Our histogram no longer has the age outliers we observed earlier.
-
-### Example 2: Boxplot
-
-Boxplots are helpful for identifying outliers and comparing distributions across categories.
-
-Let's look at the distribution of age by gender.
-
-```{webr-r}
-ggplot(data, aes(x = gender, y = age)) +
-  geom_boxplot(fill = "orange") +
-  labs(title = "Age Distribution by Gender", x = "Gender", y = "Age")
-```
-
-**Question to consider:** What is the relationship between gender identity and age?
-
-Let's look at high blood pressure, our primary outcome/dependent variable, by tree canopy cover
-(our primary exposure/independent variable):
-
-```{webr-r}
-ggplot(data, aes(x = as.character(high_blood_pressure), y = hrlctree)) +
-  geom_boxplot(fill = "orange") +
-  labs(title = "Tree canopy cover by high blood pressure status", x = "High blood pressure", y = "Tree canopy cover")
-```
-
-Note the `as.character()` wrapped around `high_blood_pressure` in the code above. Why do we need
-it? (Hint: try running the code without that wrapper. Hint 2: recall from the [Data
-Codebook](codebook.qmd) how `high_blood_pressure` is coded/stored.)
-
-::: {.callout-note collapse="true" title="💡 Why as.character()? — click to reveal"}
-`high_blood_pressure` is stored as an **integer** 0/1 flag, not a category. Without
-`as.character()`, `ggplot` treats it as a continuous numeric axis and tries to draw a single
-boxplot (or a strange, mostly-empty range of "groups" between 0 and 1) rather than two separate
-boxes for "0" and "1". Wrapping it in `as.character()` (or `factor()`) tells `ggplot` to treat it
-as a categorical variable, so it draws one box per group as intended. This is the same
-integer-flags-that-are-really-categories issue you first ran into with `str(data)` back in
-Lesson 1.
-:::
-
-**Question to consider:** Based on what you see here, what is the relationship between high blood
-pressure and % tree canopy cover?
-
-::: {.callout-note}
-Remember this is a **crude** estimate of the relationship — and, per Week 1, an association
-(however real it looks here) is not the same thing as causation. Even if this boxplot shows a
-clear pattern, several other explanations besides "tree canopy directly affects blood pressure"
-are still on the table, including confounding by some third variable related to both. We'll
-return to formal tools for evaluating that (regression models, and later in the course,
-confounding assessment with causal diagrams) — for now, just describe what you see.
-:::
-
-Let's also look at tree canopy cover by gender:
-
-```{webr-r}
-ggplot(data, aes(x = gender, y = hrlctree)) +
-  geom_boxplot(fill = "orange") +
-  labs(title = "Tree canopy cover by gender", x = "Gender", y = "Tree canopy cover")
-```
-
-**Question to consider:** Based on what you see here, what is the relationship between gender
-identity and % tree canopy cover? Why might this matter within the context of our study question?
-
-Let's also look at tree canopy cover by education:
-
-```{webr-r}
-ggplot(data, aes(x = education, y = hrlctree)) +
-  geom_boxplot(fill = "orange") +
-  labs(title = "Tree canopy cover by education", x = "Education", y = "Tree canopy cover")
-```
-
-**Question to consider:** Based on what you see here, what is the relationship between personal
-educational attainment and % tree canopy cover? Why might this matter within the context of our
-study question?
-
-::: {.callout-note}
-Keep these last two plots in mind. You just checked whether two different variables (gender,
-education) are related to our exposure of interest. That's exactly the first step in thinking
-about **confounding** — a topic the course returns to formally in Week 5. A variable can only
-confound a relationship if it's associated with *both* the exposure and the outcome; here you've
-just checked the "associated with the exposure" half for two candidates. Not every variable you
-check will turn out to matter — and that's useful information too.
-:::
-
-::: {.callout-tip title="🧠 Your Turn"}
-Let's check one more candidate variable, this time against a different outcome. Build a boxplot of
-**`hrlctree`** by **`mental_health`** status (remember: you'll need `as.character()` or `factor()`
-around `mental_health`, for the same reason as `high_blood_pressure` above).
-:::
-
-```{webr-r}
-# Your code here — boxplot of hrlctree by mental_health status
-
-```
-
-::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
-```{webr-r}
-ggplot(data, aes(x = as.character(mental_health), y = hrlctree)) +
-  geom_boxplot(fill = "orange") +
-  labs(title = "Tree canopy cover by mental health status", x = "Good mental health (1 = yes)", y = "Tree canopy cover")
-```
-:::
-
-### Example 3: Scatter Plot
-
-Scatter plots are useful for exploring relationships between two numeric variables. Let's look at
-the relationship between percentage of the census tract living in poverty and tree canopy cover:
-
-```{webr-r}
-ggplot(data, aes(x = pov_allage, y = hrlctree)) +
-  geom_point(color = "purple") +
-  labs(title = "% living in poverty vs. tree canopy cover", x = "% living in poverty", y = "% tree canopy")
-```
-
-**Question to consider:** Based on what you see, what do you conclude about the overall
-relationship between living in a tract with higher % poverty and % tree canopy? Stated another
-way, what is the general shape and direction of this relationship?
-
-::: {.callout-tip title="🧠 Your Turn"}
-Scatter plots are also a good sanity check when a dataset has two variables that *should* be
-related. This dataset has two different greenness measures: `hrlctree` (tree canopy cover, linked
-in during data creation) and `X2015_NDVI` (the NDVI value you yourself merged in during Lesson 1).
-Build a scatter plot of `hrlctree` (x-axis) against `X2015_NDVI` (y-axis). Do they move together
-the way you'd expect two measures of the same underlying thing to?
-:::
-
-```{webr-r}
-# Your code here — scatter plot of hrlctree vs. X2015_NDVI
-
-```
-
-::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
-```{webr-r}
-ggplot(data, aes(x = hrlctree, y = X2015_NDVI)) +
-  geom_point(color = "darkgreen") +
-  labs(title = "Tree canopy cover vs. NDVI", x = "Tree canopy cover", y = "NDVI")
-```
-A clear positive relationship here is a reassuring sign — two independently sourced measures of
-"how green is this place" agreeing with each other is exactly the kind of cross-check worth doing
-before you build an argument around either one.
-:::
-
-### Example 4: Summary Table of Key Metrics
-
-We can also create summary tables that group data by a categorical variable. Suppose we want to
-summarize average age by gender:
-
-```{webr-r}
-summary_table <- data %>%
-  group_by(gender) %>%
-  summarize(
-    avg_age = mean(age, na.rm = TRUE),
-    max_age = max(age, na.rm = TRUE),
-    min_age = min(age, na.rm = TRUE)
-  )
-
-print(summary_table)
-```
-
-**Question to consider:** Compare the results from this summary table to the boxplot you made
-earlier (age stratified by gender). Do you find one more useful than the other? Why?
-
-::: {.callout-tip title="🧠 Your Turn"}
-Build a similar summary table, but (a) group by **`education`** instead of `gender`, (b) summarize
-**`hrlctree`** instead of `age`, and (c) add the **median** alongside the mean, max, and min.
-:::
-
-```{webr-r}
-# Your code here — summary table of hrlctree by education, including the median
-
-```
-
-::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
-```{webr-r}
-tree_by_education <- data %>%
-  group_by(education) %>%
-  summarize(
-    avg_tree = mean(hrlctree, na.rm = TRUE),
-    median_tree = median(hrlctree, na.rm = TRUE),
-    max_tree = max(hrlctree, na.rm = TRUE),
-    min_tree = min(hrlctree, na.rm = TRUE)
-  )
-
-print(tree_by_education)
-```
-:::
-
-# ======================================================
-# 🎉 Next Steps
-# ======================================================
-
-You now have a working toolkit for characterizing a dataset: checking for missing values and
-logical inconsistencies, summarizing distributions, building frequency tables, and visualizing
-relationships with histograms, boxplots, scatter plots, and grouped summary tables. That's exactly
-what **Project Milestone 1** (due this week) asks you to start doing for your own chosen exposure
-and outcome — pick your pair from this dataset, and run them through the same steps you just
-practiced here.
-
-Next week, we turn to **exposure assessment and misclassification** — how exposure gets measured
-and coded, and what happens when that measurement isn't perfect. Before then, take a closer look
-at the environmental exposure variables in the [Data Codebook](codebook.qmd) (tree canopy,
-traffic density, crime, air/greenness measures) as you think about which one you want to build
-your project around.
-
-# ======================================================
-# 🚀 Quick-Start Script for Your Own Project
-# ======================================================
-
-Everything above walked through each step one at a time, with the browser-only fetching code mixed
-in. Below is a **single reusable script** — this is what you'd paste into a new `.R` or `.qmd`
-file inside `EOH635_project/scripts/`, running on your own computer with `class_data_processed.csv`
-already sitting in `data_processed/` (from Lesson 1). Swap in your own variable names wherever
-you see `# <- CHANGE THIS`, and use it as a starting checklist for Milestone 1.
-
-::: {.callout-tip}
-## 💻 In your RStudio script
-
-```r
-# ---- Setup ----
 library(tidyverse)
 
-# ---- Read in your data ----
-data <- read.csv(file.path("data_processed", "class_data_processed.csv"))
-
-# ---- 1. Missing data: check every column at once ----
-colSums(is.na(data))
-
-# ---- 2. Logical inconsistencies: cross-tabulate variables that should agree ----
-# Example template -- replace both variables with a pair relevant to your own project
-age_group <- ifelse(data$age < 19, "Under 19", "19 or older")   # <- CHANGE THIS to your own condition
-table(age_group, data$education)                                # <- CHANGE THIS to your own pair
-
-# ---- 3. Outliers + summary statistics ----
-summary(data)                                    # all variables
-summary(data %>% select(where(is.double)))       # numeric variables only
-
-# ---- 4. Frequency tables for categorical variables ----
-table(data$education)                            # <- CHANGE THIS to your own categorical variables
-prop.table(table(data$education)) * 100
-
-# Every non-numeric variable at once:
-non_numeric_data <- data %>% select(-where(is.double), -id, -year)
-lapply(non_numeric_data, function(x) {
-  if (is.factor(x) || is.character(x) || is.logical(x) || is.integer(x)) {
-    counts <- table(x, useNA = "ifany")
-    percentages <- prop.table(counts) * 100
-    cbind(Count = counts, Percentage = percentages)
-  } else {
-    NULL
-  }
-})
-
-# ---- 5. Recode an implausible value once you've found one ----
-# Template, following the age > 105 example above:
-data$r_age <- ifelse(data$age > 105, NA, data$age)   # <- CHANGE THIS to your own variable/cutoff
-
-# ---- 6. Visualize a single continuous variable ----
-ggplot(data, aes(x = age)) +                                    # <- CHANGE THIS to your exposure or outcome
-  geom_histogram(binwidth = 5, fill = "blue", color = "black") +
-  labs(title = "Distribution of Age", x = "Age", y = "Frequency")
-
-# ---- 7. Visualize your exposure-outcome relationship ----
-# If your outcome is a 0/1 flag, wrap it in as.character() so ggplot treats it as a category:
-ggplot(data, aes(x = as.character(high_blood_pressure), y = hrlctree)) +  # <- CHANGE THIS
-  geom_boxplot(fill = "orange") +
-  labs(title = "Tree canopy cover by high blood pressure status",
-       x = "High blood pressure", y = "Tree canopy cover")
-
-# If both your exposure and outcome are continuous, use a scatter plot instead:
-ggplot(data, aes(x = pov_allage, y = hrlctree)) +                # <- CHANGE THIS
-  geom_point(color = "purple") +
-  labs(title = "% living in poverty vs. tree canopy cover",
-       x = "% living in poverty", y = "% tree canopy")
-
-# ---- 8. Check a candidate confounder against your exposure ----
-ggplot(data, aes(x = education, y = hrlctree)) +                 # <- CHANGE THIS
-  geom_boxplot(fill = "orange") +
-  labs(title = "Tree canopy cover by education", x = "Education", y = "Tree canopy cover")
-
-# ---- 9. Grouped summary table ----
-data %>%
-  group_by(education) %>%                                       # <- CHANGE THIS
-  summarize(
-    avg = mean(hrlctree, na.rm = TRUE),                          # <- CHANGE THIS
-    median = median(hrlctree, na.rm = TRUE),
-    max = max(hrlctree, na.rm = TRUE),
-    min = min(hrlctree, na.rm = TRUE)
-  )
+ggplot(data2, aes(x = pov_allage, y = X2015_NDVI)) +
+  geom_point(alpha = 0.3, color = "steelblue") +
+  geom_smooth(method = "lm", se = FALSE, color = "navy") +
+  labs(
+    title = "Tract-level poverty and greenspace (NDVI)",
+    x = "Proportion below poverty line (pov_allage)",
+    y = "Summer NDVI (X2015_NDVI)"
+  ) +
+  theme_minimal()
 ```
+
+::: {.callout-tip title="🧠 Your Turn"}
+
+Based on the plot:
+
+1. What is the direction of the relationship between poverty and NDVI? Does this match what Lachowycz and Jones argue in the paper?
+2. In your own causal story (whatever exposure-outcome pair you are planning for Milestone 1), do you think `pov_allage` belongs in your framework? If so, what role would it play — mediator, confounder, or effect modifier?
+
+Modify the code below to also visualize the relationship between `pov_allage` and `asthma`. *(Hint: because `asthma` is binary (0/1), `geom_point()` will produce an overplotted mess. Try `geom_jitter()` with `alpha = 0.2` instead, or compute the mean asthma rate by poverty quintile using `mutate()` + `ntile()` + `group_by()` + `summarize()`.)*
+
 :::
+
+```{webr-r}
+# Your code here — visualize the relationship between pov_allage and asthma
+
+```
+
+::: {.callout-note collapse="true" title="💡 One approach — click to reveal"}
+
+```{webr-r}
+# Compute mean asthma prevalence within poverty quintiles
+data2 %>%
+  mutate(pov_quintile = ntile(pov_allage, 5)) %>%
+  group_by(pov_quintile) %>%
+  summarize(
+    mean_pov   = mean(pov_allage, na.rm = TRUE),
+    asthma_pct = mean(asthma, na.rm = TRUE) * 100,
+    n          = n()
+  ) %>%
+  ggplot(aes(x = pov_quintile, y = asthma_pct)) +
+  geom_col(fill = "steelblue") +
+  labs(
+    title = "Asthma prevalence by tract poverty quintile",
+    x = "Poverty quintile (1 = lowest, 5 = highest)",
+    y = "Asthma prevalence (%)"
+  ) +
+  theme_minimal()
+```
+
+**What to look for:** If `pov_allage` is higher in tracts with higher asthma prevalence, that supports its role as a confounder in a greenspace–asthma analysis — it is associated with both the exposure (lower NDVI in higher-poverty tracts, as you saw in the first plot) and the outcome (higher asthma rates). This is exactly the confounding pattern Lachowycz and Jones describe for SES.
+
+:::
+
+---
+
+# Wrapping Up
+
+The framework-reading skills you just applied — finding the exposure, outcome, mediators, and moderators in someone else's published diagram, and then connecting those concepts to real data — are exactly the skills you need to build your own framework for Milestone 1.
+
+As you move into the Apply work, keep two things from this activity in mind:
+
+1. **Every box in your framework needs a sentence of justification.** Lachowycz and Jones wrote paragraphs for each element. Your Milestone 1 written explanation asks for one sentence per variable explaining why it is there and what role it plays — the same kind of reasoning, at a smaller scale.
+
+2. **Descriptive plots like the ones above are a legitimate part of framework-building.** Seeing that poverty and NDVI are negatively correlated in this dataset is empirical support for including `pov_allage` as a confounder in a greenspace–health analysis. You will produce similar plots for your own exposure-outcome pair in Week 3.
