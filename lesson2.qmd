@@ -8,14 +8,6 @@ format:
     toc: true
     toc-depth: 2
     theme: cosmo
-    code-tools: false
-engine: knitr
-webr:
-  show-startup-message: true
-  packages: ['tidyverse']
-  autoload-packages: true
-filters:
-  - webr
 ---
 
 # Introduction
