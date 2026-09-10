@@ -26,16 +26,12 @@ The paper is:
 
 > Lachowycz K, Jones AP. (2013). Towards a better understanding of the relationship between greenspace and health: Development of a theoretical framework. *Landscape and Urban Planning*, 118, 62–69.
 
-There are also two short R exercises at the end where you will use the class dataset to connect the paper's ideas to real variables.
-
 ::: {.callout-important}
 ## How to use this tutorial
 
-Work through the five parts in order — each builds on the one before it. Parts 1–4 are reading and reflection exercises; they use collapsible callout boxes to reveal answers after you have thought through each question yourself. Part 5 includes live R editors where you can run code in the browser.
+Work through the four parts in order — each builds on the one before it. Each part uses collapsible callout boxes to reveal answers after you have thought through each question yourself.
 
 **For the reflection questions:** write your answers in your own words before you click to reveal the answer. The goal is to develop your reasoning, not produce the exact right phrasing.
-
-**For the R exercises:** click the green **Run Code** button to run the code in each gray box. You can also edit the code before running.
 :::
 
 ::: {.callout-note}
@@ -157,143 +153,8 @@ A conceptual framework is a theory about what matters. Part of reading a framewo
 
 ---
 
-# Part 5: Connect to the Class Dataset
-
-Now let's bring these ideas into the data. The two exercises below use the class dataset to connect the paper's concepts to the variables you will work with all quarter.
-
-```{webr-r}
-#| autorun: true
-data_base_url <- "https://raw.githubusercontent.com/schinasi/EOH635/main/data/"
-dir.create("data_raw", showWarnings = FALSE)
-download.file(paste0(data_base_url, "class_data_raw.csv"),
-              file.path("data_raw", "class_data_raw.csv"))
-download.file(paste0(data_base_url, "PHL_NDVI_summer_annual.csv"),
-              file.path("data_raw", "PHL_NDVI_summer_annual.csv"))
-
-data <- read.csv(file.path("data_raw", "class_data_raw.csv"))
-
-ndvi <- read.csv(file.path("data_raw", "PHL_NDVI_summer_annual.csv"))
-data$geoid10 <- as.character(data$geoid10)
-ndvi$GEOID10  <- as.character(ndvi$GEOID10)
-data2 <- merge(data, ndvi, by.x = "geoid10", by.y = "GEOID10", all.x = TRUE)
-```
-
-::: {.callout-note}
-The chunk above runs automatically to load the class data. You do not need to modify it. In your own RStudio project, you would just `read.csv()` these files directly from your `data_raw/` folder.
-:::
-
----
-
-## Exercise 5a: Explore the exposure and outcome from the paper
-
-The main exposure in the Lachowycz and Jones paper is **access to greenspace**. In our dataset, the closest measure is `X2015_NDVI` — the median summer NDVI value for each census tract, now merged into `data2`.
-
-The paper focuses on both physical and psychological health outcomes. Our dataset has several health variables that fall into those two categories.
-
-Run the code below to look at a quick summary of `X2015_NDVI` and two health outcomes — `asthma` (physical) and `mntlhlth` (the number of poor mental health days in the past month).
-
-```{webr-r}
-# Exposure: tract-level NDVI (greenspace)
-summary(data2$X2015_NDVI)
-
-# Physical health outcome: asthma diagnosis (0/1)
-table(data2$asthma)
-prop.table(table(data2$asthma)) * 100
-
-# Psychological health outcome: poor mental health days (count)
-summary(data2$mntlhlth)
-```
-
-Based on this output, answer the following:
-
-- What is the range of NDVI values across Philadelphia census tracts?
-- What proportion of participants have an asthma diagnosis?
-- What does the distribution of `mntlhlth` look like?
-
-::: {.callout-note collapse="true" title="💡 What to look for — click to reveal"}
-
-- **NDVI range:** Values should span roughly 0.1–0.5, reflecting the range of vegetation density across Philadelphia census tracts. Higher values = greener neighborhoods.
-- **Asthma prevalence:** Around 15–20% of participants should have an asthma diagnosis (`asthma == 1`).
-- **Mental health days:** The distribution of `mntlhlth` is likely right-skewed — most people report 0 poor mental health days, with a long tail of higher values. The mean will be higher than the median.
-
-These distributions are worth keeping in mind as you develop your own Milestone 1 hypothesis — if you choose one of these as your outcome, you now have a sense of how it is distributed.
-
-:::
-
----
-
-## Exercise 5b: A first look at a potential confounder
-
-The Lachowycz and Jones paper identifies socioeconomic status as a key factor — both a confounder and a potential moderator of the greenspace–health relationship.
-
-In our dataset, the closest tract-level SES measure is `pov_allage` — the proportion of all ages living below the poverty line in each census tract.
-
-The code below produces a scatterplot showing the relationship between tract-level poverty (`pov_allage`) and tract-level NDVI (`X2015_NDVI`). Each point is one study participant (positioned by their census tract's values).
-
-```{webr-r}
-library(tidyverse)
-
-ggplot(data2, aes(x = pov_allage, y = X2015_NDVI)) +
-  geom_point(alpha = 0.3, color = "steelblue") +
-  geom_smooth(method = "lm", se = FALSE, color = "navy") +
-  labs(
-    title = "Tract-level poverty and greenspace (NDVI)",
-    x = "Proportion below poverty line (pov_allage)",
-    y = "Summer NDVI (X2015_NDVI)"
-  ) +
-  theme_minimal()
-```
-
-::: {.callout-tip title="🧠 Your Turn"}
-
-Based on the plot:
-
-1. What is the direction of the relationship between poverty and NDVI? Does this match what Lachowycz and Jones argue in the paper?
-2. In your own causal story (whatever exposure-outcome pair you are planning for Milestone 1), do you think `pov_allage` belongs in your framework? If so, what role would it play — mediator, confounder, or effect modifier?
-
-Modify the code below to also visualize the relationship between `pov_allage` and `asthma`. *(Hint: because `asthma` is binary (0/1), `geom_point()` will produce an overplotted mess. Try `geom_jitter()` with `alpha = 0.2` instead, or compute the mean asthma rate by poverty quintile using `mutate()` + `ntile()` + `group_by()` + `summarize()`.)*
-
-:::
-
-```{webr-r}
-# Your code here — visualize the relationship between pov_allage and asthma
-
-```
-
-::: {.callout-note collapse="true" title="💡 One approach — click to reveal"}
-
-```{webr-r}
-# Compute mean asthma prevalence within poverty quintiles
-data2 %>%
-  mutate(pov_quintile = ntile(pov_allage, 5)) %>%
-  group_by(pov_quintile) %>%
-  summarize(
-    mean_pov   = mean(pov_allage, na.rm = TRUE),
-    asthma_pct = mean(asthma, na.rm = TRUE) * 100,
-    n          = n()
-  ) %>%
-  ggplot(aes(x = pov_quintile, y = asthma_pct)) +
-  geom_col(fill = "steelblue") +
-  labs(
-    title = "Asthma prevalence by tract poverty quintile",
-    x = "Poverty quintile (1 = lowest, 5 = highest)",
-    y = "Asthma prevalence (%)"
-  ) +
-  theme_minimal()
-```
-
-**What to look for:** If `pov_allage` is higher in tracts with higher asthma prevalence, that supports its role as a confounder in a greenspace–asthma analysis — it is associated with both the exposure (lower NDVI in higher-poverty tracts, as you saw in the first plot) and the outcome (higher asthma rates). This is exactly the confounding pattern Lachowycz and Jones describe for SES.
-
-:::
-
----
-
 # Wrapping Up
 
-The framework-reading skills you just applied — finding the exposure, outcome, mediators, and moderators in someone else's published diagram, and then connecting those concepts to real data — are exactly the skills you need to build your own framework for Milestone 1.
+The framework-reading skills you just applied — finding the exposure, outcome, mediators, and moderators in someone else's published diagram — are exactly the skills you need to build your own framework for Milestone 1.
 
-As you move into the Apply work, keep two things from this activity in mind:
-
-1. **Every box in your framework needs a sentence of justification.** Lachowycz and Jones wrote paragraphs for each element. Your Milestone 1 written explanation asks for one sentence per variable explaining why it is there and what role it plays — the same kind of reasoning, at a smaller scale.
-
-2. **Descriptive plots like the ones above are a legitimate part of framework-building.** Seeing that poverty and NDVI are negatively correlated in this dataset is empirical support for including `pov_allage` as a confounder in a greenspace–health analysis. You will produce similar plots for your own exposure-outcome pair in Week 3.
+As you move into the Apply work, keep this in mind: **every box in your framework needs a sentence of justification.** Lachowycz and Jones wrote paragraphs for each element. Your Milestone 1 written explanation asks for one sentence per variable explaining why it is there and what role it plays — the same kind of reasoning, at a smaller scale.

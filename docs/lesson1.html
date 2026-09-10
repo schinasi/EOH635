@@ -1691,11 +1691,11 @@ globalThis.qwebrExecuteCode = async function (
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./lesson2.html"> 
-<span class="menu-text">Lesson 2: EDA &amp; Cleaning</span></a>
+<span class="menu-text">Lesson 2: Conceptual Frameworks</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./week2_practice.html"> 
-<span class="menu-text">Week 2 Practice: Conceptual Frameworks</span></a>
+    <a class="nav-link" href="./lesson3.html"> 
+<span class="menu-text">Lesson 3: EDA &amp; Cleaning</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./codebook.html"> 
@@ -2421,7 +2421,7 @@ Note
 </div>
 <div id="callout-10" class="callout-10-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p><strong><code>age</code></strong> (a genuinely continuous variable): <code>summary()</code> gives six numbers — Min. <code>18.02</code>, 1st Qu. <code>29.99</code>, Median <code>40.36</code>, Mean <code>44.99</code>, 3rd Qu. <code>56.24</code>, Max. <code>116.00</code> — plus a count of missing values (<code>NA's 3</code>). These are all meaningful here: the middle 50% of participants (between the 1st and 3rd quartiles) are roughly 30 to 56 years old. But that <strong>Max. of 116</strong> should catch your eye immediately — a plausible age tops out well below that. That’s exactly the kind of thing <code>summary()</code> is good for catching early, before it quietly distorts an analysis later. (We’ll deal with this specific outlier in Lesson 2.)</p>
+<p><strong><code>age</code></strong> (a genuinely continuous variable): <code>summary()</code> gives six numbers — Min. <code>18.02</code>, 1st Qu. <code>29.99</code>, Median <code>40.36</code>, Mean <code>44.99</code>, 3rd Qu. <code>56.24</code>, Max. <code>116.00</code> — plus a count of missing values (<code>NA's 3</code>). These are all meaningful here: the middle 50% of participants (between the 1st and 3rd quartiles) are roughly 30 to 56 years old. But that <strong>Max. of 116</strong> should catch your eye immediately — a plausible age tops out well below that. That’s exactly the kind of thing <code>summary()</code> is good for catching early, before it quietly distorts an analysis later. (We’ll deal with this specific outlier in Lesson 3.)</p>
 <p><strong><code>high_blood_pressure</code></strong> (a binary 0/1 flag, not a continuous quantity): <code>summary()</code> reports Min. <code>0</code>, Median <code>0</code>, Mean <code>0.3048</code>, Max. <code>1</code>. The Min./Median/Max. here aren’t wrong, exactly, but they’re not very <em>useful</em> — a variable that can only be 0 or 1 doesn’t have a meaningful “middle” or “spread” the way age does. The one number worth keeping from this output is the <strong>Mean, <code>0.3048</code></strong> — for a 0/1 variable, the mean is just the proportion coded <code>1</code>, so about 30.5% of participants have high blood pressure. For everything else about a binary variable’s distribution, a frequency count (<code>table()</code>, coming up in Section 6) is the right tool, not <code>summary()</code>.</p>
 </div>
 </div>
