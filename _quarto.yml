@@ -3,6 +3,7 @@ project:
   output-dir: docs
   resources:
     - data/
+    - images/
 
 website:
   title: "EOH 635: Environmental Epidemiology Methods"
@@ -17,6 +18,8 @@ website:
         text: "Lesson 2: Conceptual Frameworks"
       - href: lesson3.qmd
         text: "Lesson 3: EDA & Cleaning"
+      - href: lesson4.qmd
+        text: "Lesson 4: Exposure Assessment"
       - href: codebook.qmd
         text: "Codebook"
 

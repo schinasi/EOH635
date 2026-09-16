@@ -1,0 +1,553 @@
+---
+title: "Lesson 4: Exposure Assessment & Misclassification"
+subtitle: "EOH 635 — Environmental Epidemiology Methods"
+author: "Leah Schinasi"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    theme: cosmo
+    code-tools: false
+engine: knitr
+webr:
+  show-startup-message: true
+  packages: ['tidyverse']
+  autoload-packages: true
+filters:
+  - webr
+---
+
+In [Lesson 3](lesson3.qmd) you cleaned and characterized your variables — checking distributions,
+catching implausible values, and visualizing what you had. This lesson asks a question that comes
+*before* all of that: how good is the exposure measurement itself?
+
+Every environmental exposure in this course — NDVI, tree canopy, traffic density, poverty — is a
+**proxy**. None of it is a direct measurement of what actually reached a person's lungs, skin, or
+bloodstream. That gap between the true exposure and what we actually measured is called
+**exposure misclassification**, and it is not a minor technical footnote — it changes what your
+effect estimates mean and, in some cases, which direction they're biased in.
+
+This lesson has two parts:
+
+1. **Exposure coding** — given a continuous exposure measurement, how do you decide whether (and
+   how) to categorize it? Worked example: NDVI, the same variable from Lessons 1 and 3.
+2. **Exposure misclassification** — what happens to your effect estimate when the exposure you
+   measured isn't quite the exposure that's real? Worked example: a purpose-built simulated
+   dataset where we know the "true" exposure, because we're the ones who simulated it.
+
+::: {.callout-important}
+## How to use this tutorial
+
+The gray boxes below are **live R editors** — the code actually runs in your browser (no install
+needed). Click the green **Run Code** arrow in the top-left corner of a box to run it. The output
+appears directly underneath a moment later.
+
+You can edit the code first — click inside the box, change something, then click **Run Code**
+again. Nothing you do here can break anything; refresh the page to start over if you make a mess.
+
+Sections marked **🧠 Your Turn** give you a task and a blank or partially blank code editor. Try
+writing the code yourself before revealing the solution, hidden in a collapsed box underneath.
+
+**A note on browser vs. RStudio code:** chunks labeled `#| autorun: true` fetch data from the web
+in the background so it's available in your browser. **You will not include this fetching code in
+your own RStudio scripts.** Immediately after each one, a green box labeled **"In your RStudio
+script"** shows the simpler code you'll actually use.
+:::
+
+::: {.callout-note}
+## Doing this in RStudio instead of (or in addition to) the browser?
+
+Part 1 continues from Lesson 1/3: it reads **`class_data_processed.csv`** from your
+`data_processed/` folder. Part 2 introduces a **new, purpose-built dataset**,
+`simulated_ozone_asthma_exposuremisclassification.csv` — save it to `data_raw/` in your own
+project if you want to work through Part 2 in RStudio too. See the
+[Data Codebook](codebook.qmd) for the class dataset's variables.
+:::
+
+---
+
+# Part 1: Exposure Coding
+
+```{webr-r}
+library(tidyverse)
+```
+
+## Why coding decisions matter
+
+Suppose you measure a continuous exposure — NDVI, ozone, traffic density, whatever it is. You now
+face a choice that has nothing to do with the biology of the exposure and everything to do with
+how you plan to model it:
+
+- Leave it **continuous**?
+- Split it into a small number of **categories** (tertiles, quartiles)?
+- **Dichotomize** it into two groups (high/low)?
+
+| Approach | Advantages | Disadvantages |
+|---|---|---|
+| **Continuous** | Retains full variability; maximizes statistical power; allows flexible modeling (splines, interaction terms) | Assumes a specific functional form (often linearity) unless you model it more flexibly; harder to communicate to non-technical audiences |
+| **Categorical (3+ groups)** | Can reveal non-linear exposure-response patterns; easier to communicate ("low/medium/high") | Requires enough sample size per category; category boundaries are somewhat arbitrary |
+| **Binary (dichotomized)** | Simplest to interpret and communicate | Discards the most information; assumes everyone within a category has the same risk, which is rarely true; can create or obscure a dose-response relationship depending on where the cut-point falls |
+
+There is no single correct answer. The right choice depends on your research question, your sample
+size, prior evidence about the shape of the exposure-response relationship, and — sometimes — an
+externally meaningful threshold (e.g., the EPA's ground-level ozone standard of 70 ppb over an
+8-hour average). Whatever you choose, the decision should be **transparent and justified**, not
+just whatever produced the most convenient result.
+
+## Reading in our data
+
+We pick up with `class_data_processed.csv`, the file from Lesson 1 with NDVI already merged in by
+census tract.
+
+In RStudio:
+
+```r
+data <- read.csv(file.path("data_processed", "class_data_processed.csv"))
+```
+
+In the browser:
+
+```{webr-r}
+#| autorun: true
+
+data_base_url <- "https://raw.githubusercontent.com/schinasi/EOH635/main/data/"
+
+dir.create("data_processed", showWarnings = FALSE)
+
+download.file(paste0(data_base_url, "class_data_processed.csv"), file.path("data_processed", "class_data_processed.csv"))
+download.file(paste0(data_base_url, "PHL_NDVI_summer_annual.csv"), file.path("data_processed", "PHL_NDVI_summer_annual.csv"))
+
+data <- read.csv(file.path("data_processed", "class_data_processed.csv"))
+ndvi_PHL <- read.csv(file.path("data_processed", "PHL_NDVI_summer_annual.csv"))
+```
+
+::: {.callout-tip}
+## 💻 In your RStudio script
+
+```r
+data <- read.csv(file.path("data_processed", "class_data_processed.csv"))
+ndvi_PHL <- read.csv(file.path("data_raw", "PHL_NDVI_summer_annual.csv"))
+```
+:::
+
+`ndvi_PHL` is a **tract-level** file — one row per census tract, 384 rows for all of Philadelphia
+— not linked to any participant. We'll use it in a moment for comparison.
+
+```{webr-r}
+dim(data)      # participant-level data
+dim(ndvi_PHL)  # one row per Philadelphia census tract
+```
+
+## Participant-level vs. city-level distribution of NDVI
+
+Because our study participants don't live in a random sample of Philadelphia's 384 census tracts
+— they live where they live — the distribution of NDVI *among participants* can differ from the
+distribution *across the city*. If certain tracts are over- or under-represented in who happened
+to enroll, our sample may not reflect the full range of greenness found citywide.
+
+```{webr-r}
+# Citywide distribution (384 census tracts)
+summary(ndvi_PHL$X2015_NDVI)
+```
+
+```{webr-r}
+# Distribution among our study participants
+summary(data$X2015_NDVI)
+```
+
+**Questions to consider:**
+
+- Is the range of NDVI similar in both distributions, or does one look narrower/shifted?
+- If our participants are concentrated in a subset of tracts, what would that mean for how well
+  our study represents "greenness exposure" across the whole city?
+
+## Categorizing NDVI into quartiles
+
+```{webr-r}
+# Convert NDVI into quartiles (1 = lowest, 4 = highest)
+data <- data %>%
+  mutate(NDVI_quartile = ntile(X2015_NDVI, 4))
+
+table(data$NDVI_quartile)
+
+ggplot(data, aes(x = factor(NDVI_quartile), y = X2015_NDVI)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(x = "NDVI Quartile", y = "NDVI Value", title = "Distribution of NDVI by Quartile") +
+  theme_minimal()
+```
+
+**Questions to consider:**
+
+- `ntile()` splits the data into four *equal-sized* groups, by definition. What sample size do you
+  see in each?
+- What assumption are we making by treating everyone within Quartile 1 as having the "same"
+  exposure, even though the raw NDVI values within that group still vary?
+
+::: {.callout-tip title="🧠 Your Turn: Tertiles"}
+Create a three-level categorical version of NDVI based on tertiles, name it `NDVI_tertile`, then
+display and visualize its distribution the same way we just did for quartiles.
+:::
+
+```{webr-r}
+# Your code here
+
+```
+
+::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
+```{webr-r}
+data <- data %>%
+  mutate(NDVI_tertile = ntile(X2015_NDVI, 3))
+
+table(data$NDVI_tertile)
+
+ggplot(data, aes(x = factor(NDVI_tertile), y = X2015_NDVI)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(x = "NDVI Tertile", y = "NDVI Value", title = "Distribution of NDVI by Tertile") +
+  theme_minimal()
+```
+:::
+
+## Dichotomizing NDVI: median vs. mean cut-points
+
+A **median split** puts exactly half of participants in each group by definition. A **mean split**
+is similar but is pulled around by extreme values — if the distribution is skewed, the mean and
+median split can put quite different people into the "high" group.
+
+::: {.callout-tip title="🧠 Your Turn: Median split"}
+Create a binary variable `NDVI_high_median` that equals 1 if a participant's NDVI is above the
+**median**, 0 otherwise. Then display the counts in each group.
+:::
+
+```{webr-r}
+# Your code here
+
+```
+
+::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
+```{webr-r}
+data <- data %>%
+  mutate(NDVI_high_median = ifelse(X2015_NDVI > median(X2015_NDVI, na.rm = TRUE), 1, 0))
+
+table(data$NDVI_high_median)
+```
+:::
+
+::: {.callout-tip title="🧠 Your Turn: Mean split"}
+Now do the same thing using the **mean** instead of the median — call it `NDVI_high_mean`.
+:::
+
+```{webr-r}
+# Your code here
+
+```
+
+::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
+```{webr-r}
+data <- data %>%
+  mutate(NDVI_high_mean = ifelse(X2015_NDVI > mean(X2015_NDVI, na.rm = TRUE), 1, 0))
+
+table(data$NDVI_high_mean)
+```
+:::
+
+**Questions to consider:**
+
+- Are the median-split and mean-split group sizes similar or different? What does that tell you
+  about the shape of the NDVI distribution?
+- What do you gain by dichotomizing (simplicity of interpretation)? What do you lose (variability,
+  statistical power, the ability to detect a dose-response pattern)?
+- Would a **fixed threshold** — say, NDVI > 0.3, chosen based on prior literature rather than this
+  sample's own median — ever make more sense than a data-driven split? When would you want a
+  threshold that doesn't depend on your own sample?
+
+## A coding wrinkle: negative NDVI values
+
+NDVI ranges from -1 to 1. Negative values indicate water, clouds, snow, or extreme barren land —
+not "very low greenness" in the way a small positive value would mean. Should tracts with negative
+NDVI be treated as just another point on the continuous scale, excluded, or coded as their own
+category?
+
+There is no universally correct answer — it depends on what negative NDVI *means* for your
+research question. Here, we'll give it its own category rather than either lumping it in with the
+lowest true-greenness tracts or discarding it outright:
+
+```{webr-r}
+data <- data %>%
+  mutate(NDVI_quartile_neg = case_when(
+    X2015_NDVI < 0 ~ 0,
+    TRUE ~ ntile(X2015_NDVI, 4)
+  ))
+
+table(data$NDVI_quartile_neg)
+```
+
+Only a handful of participants fall in category 0. A cell that small can cause a regression model
+to fail to converge later on — so, for this teaching example, we'll drop them:
+
+```{webr-r}
+new_data <- data %>%
+  filter(NDVI_quartile_neg != 0)
+
+dim(new_data)
+```
+
+**Questions to consider:**
+
+- Does the row count in `new_data` match what you'd expect, given how many participants were in
+  category 0?
+- Dropping observations is not free — it changes who your study describes. Is dropping 7 people out
+  of ~2,000 participants likely to matter much here? Would your answer change if it were 700 out of
+  2,000?
+
+---
+
+# Part 2: Exposure Misclassification
+
+Coding decisions assume you have an accurate measurement to begin with. Part 2 asks: what if the
+exposure measurement itself has error?
+
+**Exposure misclassification** occurs when a participant's true exposure status or level differs
+from what was recorded. It comes in two flavors, and the distinction matters enormously for how
+your results should be interpreted:
+
+- **Non-differential misclassification**: the error in exposure measurement is unrelated to
+  outcome status. Example: air pollution is estimated from the nearest monitor, and not everyone
+  lives equally close to one — but how close you live has nothing to do with whether you
+  developed the outcome.
+- **Differential misclassification**: the error in exposure measurement is systematically related
+  to outcome status. Example: a case-control study of pesticide exposure and adverse birth
+  outcomes relying on self-report — parents of an affected child may recall and report past
+  pesticide exposure differently than parents of an unaffected child (recall bias).
+
+**The consequences differ too:**
+
+- Non-differential misclassification of a binary exposure typically biases the estimate **toward
+  the null** — it dilutes a real association, making it look weaker than it truly is.
+- Differential misclassification can bias the estimate **in either direction** — toward or away
+  from the null — because the error itself depends on the very thing you're trying to measure the
+  effect on.
+
+![Non-differential misclassification biases toward the null; differential misclassification can bias in either direction. Adapted from Grubic et al., *Canadian Journal of Cardiology*.](images/bias_figure.jpg)
+
+## A simulated dataset where we know the truth
+
+In a real study we never observe the *true* exposure alongside the *misclassified* one — if we
+could measure the true value, we wouldn't have a misclassification problem. To see the
+consequences directly, we'll use a dataset built specifically for this: 500 simulated children in
+Philadelphia, with **doctor-diagnosed asthma** (yes/no) as the outcome and **three versions of the
+same ozone exposure** — the true value, and two different misclassified versions.
+
+In RStudio:
+
+```r
+df <- read.csv(file.path("data_raw", "simulated_ozone_asthma_exposuremisclassification.csv"))
+```
+
+In the browser:
+
+```{webr-r}
+#| autorun: true
+
+download.file(
+  paste0(data_base_url, "simulated_ozone_asthma_exposuremisclassification.csv"),
+  file.path("data_processed", "simulated_ozone_asthma_exposuremisclassification.csv")
+)
+
+df <- read.csv(file.path("data_processed", "simulated_ozone_asthma_exposuremisclassification.csv"))
+```
+
+::: {.callout-tip}
+## 💻 In your RStudio script
+
+```r
+df <- read.csv(file.path("data_raw", "simulated_ozone_asthma_exposuremisclassification.csv"))
+```
+:::
+
+```{webr-r}
+names(df)
+dim(df)
+```
+
+- **`true_ozone`** — the exposure we would never actually know in a real study, but we do here
+  because we simulated it.
+- **`nondiff_misclass_ozone`** — `true_ozone` plus random noise, added *regardless* of asthma
+  status.
+- **`diff_misclass_ozone`** — `true_ozone` plus noise added *only* for children with asthma —
+  intentionally mimicking something like differential recall in a case-control design.
+- **`asthma`** — doctor-diagnosed asthma by age 12 (1 = yes, 0 = no).
+
+```{webr-r}
+table(df$asthma)
+```
+
+## Comparing the three exposure measures
+
+```{webr-r}
+summary(df$true_ozone)
+summary(df$nondiff_misclass_ozone)
+summary(df$diff_misclass_ozone)
+```
+
+```{webr-r}
+df_long <- df %>%
+  select(true_ozone, nondiff_misclass_ozone, diff_misclass_ozone) %>%
+  pivot_longer(everything(), names_to = "measure", values_to = "ozone")
+
+ggplot(df_long, aes(x = measure, y = ozone, fill = measure)) +
+  geom_boxplot() +
+  labs(title = "True vs. Misclassified Ozone Exposure", x = NULL, y = "Ozone (ppb)") +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+**Questions to consider:**
+
+- Do the three distributions look roughly similar overall? (They should — misclassification adds
+  *noise* around the true value; it does not necessarily shift the average.)
+
+## Does the misclassification differ by asthma status?
+
+This is the key diagnostic question: does the size of the measurement error depend on the outcome?
+
+::: {.callout-tip title="🧠 Your Turn"}
+Compute `true_ozone - nondiff_misclass_ozone` and `true_ozone - diff_misclass_ozone` as two new
+columns, then summarize each **separately for children with and without asthma** (`group_by(asthma)`
++ `summarise()`, or filter into two subsets — either approach works).
+:::
+
+```{webr-r}
+# Your code here
+
+```
+
+::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
+```{webr-r}
+df <- df %>%
+  mutate(
+    diff_nondiff = true_ozone - nondiff_misclass_ozone,
+    diff_diff = true_ozone - diff_misclass_ozone
+  )
+
+df %>%
+  group_by(asthma) %>%
+  summarise(
+    n = n(),
+    mean_error_nondiff = mean(diff_nondiff),
+    sd_error_nondiff = sd(diff_nondiff),
+    mean_error_diff = mean(diff_diff),
+    sd_error_diff = sd(diff_diff)
+  )
+```
+:::
+
+**Questions to consider:**
+
+- For the non-differential measure, is the size of the error similar for children with and
+  without asthma?
+- For the differential measure, is the error noticeably larger (or more variable) in one group?
+  Given how this dataset was simulated — extra noise added specifically to children *with*
+  asthma — does that match what you see?
+
+## What does this do to our effect estimate?
+
+We'll fit three logistic regression models — one per exposure measure — to estimate the
+association between ozone and asthma. (We haven't covered regression modeling yet; the details of
+`glm()` are not the point here. Focus on the **odds ratio** each model produces and how it compares
+to the "true" one.)
+
+```{webr-r}
+model_true <- glm(asthma ~ true_ozone, data = df, family = binomial)
+model_nondiff <- glm(asthma ~ nondiff_misclass_ozone, data = df, family = binomial)
+model_diff <- glm(asthma ~ diff_misclass_ozone, data = df, family = binomial)
+```
+
+```{webr-r}
+extract_or <- function(model, label) {
+  b <- coef(model)[2]
+  se <- sqrt(diag(vcov(model)))[2]
+  data.frame(
+    Model = label,
+    OR = exp(b),
+    CI_Lower = exp(b - 1.96 * se),
+    CI_Upper = exp(b + 1.96 * se)
+  )
+}
+
+bind_rows(
+  extract_or(model_true, "True Ozone"),
+  extract_or(model_nondiff, "Non-Differential Misclassification"),
+  extract_or(model_diff, "Differential Misclassification")
+)
+```
+
+An odds ratio of 1 is the null value — no association. Values above 1 indicate higher odds of
+asthma with higher ozone; values below 1 indicate lower odds.
+
+**Questions to consider:**
+
+- Which OR is closest to the "true" one, and which is furthest?
+- Does the non-differentially misclassified estimate move toward 1 (the null) relative to the
+  true estimate, as the theory predicts?
+- Does the differentially misclassified estimate move in a *predictable* direction, or does this
+  example show why differential misclassification is harder to reason about in advance?
+- If you only had the misclassified data in a real study — which is always true, since you never
+  actually observe `true_ozone` — would you have any way of knowing which direction, or how far,
+  your estimate had been pushed?
+
+---
+
+# Quick-Start Script for Your Own Project
+
+::: {.callout-tip}
+## 💻 In your RStudio script
+
+```r
+# ---- Setup ----
+library(tidyverse)
+
+# ---- Exposure coding ----
+data <- read.csv(file.path("data_processed", "class_data_processed.csv"))
+
+# Quartiles
+data <- data %>% mutate(YOUR_EXPOSURE_quartile = ntile(YOUR_EXPOSURE, 4))
+table(data$YOUR_EXPOSURE_quartile)
+
+# Median split
+data <- data %>%
+  mutate(YOUR_EXPOSURE_high = ifelse(YOUR_EXPOSURE > median(YOUR_EXPOSURE, na.rm = TRUE), 1, 0))
+table(data$YOUR_EXPOSURE_high)
+
+ggplot(data, aes(x = factor(YOUR_EXPOSURE_quartile), y = YOUR_EXPOSURE)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(x = "Quartile", y = "[Exposure label]", title = "[Exposure] by Quartile") +
+  theme_minimal()
+
+# ---- Exploring misclassification concepts ----
+# There is no "true vs. misclassified" pair for your own project exposure -- that's exactly the
+# point: in a real study you never observe ground truth. Use the simulated ozone/asthma example
+# above to reason qualitatively about which kind of misclassification (differential or
+# non-differential) is more plausible for how *your* exposure was measured, and in which
+# direction it's likely to have biased your future regression estimates.
+```
+:::
+
+---
+
+# Wrap Up
+
+- Exposure coding decisions (continuous, categorical, dichotomized) trade off statistical power
+  and the ability to detect non-linear patterns against interpretability — there's no
+  universally correct choice, only a justified one.
+- Exposure misclassification is the gap between what you measured and what's actually true, and
+  it comes in two kinds: **non-differential** (error unrelated to outcome status) and
+  **differential** (error related to outcome status).
+- Non-differential misclassification of a binary exposure typically biases toward the null.
+  Differential misclassification can bias in either direction.
+- Because we never observe ground truth in a real study, thinking carefully about *how* an
+  exposure was measured — and what could make that error differ by outcome status — is often the
+  only tool available for reasoning about the direction of bias.
+
+**Next in the course:** regression modeling — how we actually estimate and interpret the
+exposure-outcome associations we've been setting up to study since Lesson 2.
