@@ -21,6 +21,14 @@ no R or RStudio installation required. Built with [Quarto](https://quarto.org) a
   (histograms, boxplots), and a first look at the course's primary exposure–outcome
   relationship — tree canopy cover and high blood pressure — including how to check whether a
   third variable (like gender or education) might be confounding that relationship.
+- **[Lesson 4: Exposure Assessment & Misclassification](https://schinasi.github.io/EOH635/lesson4.html)**
+  — coding a continuous exposure (quartiles, tertiles, median/mean splits) using NDVI, and how
+  differential vs. non-differential misclassification bias an effect estimate, using a simulated
+  ozone/asthma dataset where the true exposure is known.
+- **[Lesson 5: Regression, Linearity & Dose-Response](https://schinasi.github.io/EOH635/lesson5.html)**
+  — choosing a model from the outcome type, logistic vs. log-binomial regression for a common
+  outcome, interpreting exponentiated estimates, and checking the linearity assumption with
+  categorical indicator terms (tree canopy and high blood pressure).
 - **[Data Codebook](https://schinasi.github.io/EOH635/codebook.html)** — full variable
   reference for the class dataset: what each column means, how it's coded, known missingness,
   and known data quirks to watch for.

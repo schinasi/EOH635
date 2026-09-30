@@ -20,6 +20,8 @@ website:
         text: "Lesson 3: EDA & Cleaning"
       - href: lesson4.qmd
         text: "Lesson 4: Exposure Assessment"
+      - href: lesson5.qmd
+        text: "Lesson 5: Regression & Linearity"
       - href: codebook.qmd
         text: "Codebook"
 

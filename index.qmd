@@ -22,6 +22,10 @@ Welcome! These tutorials walk through the R and analysis skills used in this cou
   — coding decisions for a continuous exposure (NDVI), and how differential vs. non-differential
   misclassification bias an effect estimate, using a simulated dataset where the true exposure is
   known
+- [Lesson 5: Regression, Linearity & Dose-Response](lesson5.qmd)
+  — choosing and fitting a crude regression model (logistic vs. log-binomial) for tree canopy and
+  high blood pressure, interpreting the estimate, and checking the linearity assumption with
+  categorical indicator terms
 
 ## Reference
 

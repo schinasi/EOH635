@@ -9,7 +9,7 @@
 <meta name="author" content="Leah Schinasi">
 <meta name="dcterms.date" content="2026-09-30">
 
-<title>Lesson 4: Exposure Assessment &amp; Misclassification – EOH 635: Environmental Epidemiology Methods</title>
+<title>Lesson 5: Regression, Linearity &amp; Dose-Response – EOH 635: Environmental Epidemiology Methods</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -407,7 +407,7 @@ globalThis.qwebrCustomizedWebROptions = {
 };
 
 // Store cell data
-globalThis.qwebrCellDetails = [{"code":"library(tidyverse)","id":1,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-1","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data_base_url <- \"https://raw.githubusercontent.com/schinasi/EOH635/main/data/\"\n\ndir.create(\"data_processed\", showWarnings = FALSE)\n\ndownload.file(paste0(data_base_url, \"class_data_processed.csv\"), file.path(\"data_processed\", \"class_data_processed.csv\"))\ndownload.file(paste0(data_base_url, \"PHL_NDVI_summer_annual.csv\"), file.path(\"data_processed\", \"PHL_NDVI_summer_annual.csv\"))\n\ndata <- read.csv(file.path(\"data_processed\", \"class_data_processed.csv\"))\nndvi_PHL <- read.csv(file.path(\"data_processed\", \"PHL_NDVI_summer_annual.csv\"))","id":2,"options":{"autorun":"true","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-2","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"dim(data)      # participant-level data\ndim(ndvi_PHL)  # one row per Philadelphia census tract","id":3,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-3","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Citywide distribution (384 census tracts)\nsummary(ndvi_PHL$X2015_NDVI)","id":4,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-4","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Distribution among our study participants\nsummary(data$X2015_NDVI)","id":5,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-5","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Convert NDVI into quartiles (1 = lowest, 4 = highest)\ndata <- data %>%\n  mutate(NDVI_quartile = ntile(X2015_NDVI, 4))\n\ntable(data$NDVI_quartile)\n\nggplot(data, aes(x = factor(NDVI_quartile), y = X2015_NDVI)) +\n  geom_boxplot(fill = \"lightblue\") +\n  labs(x = \"NDVI Quartile\", y = \"NDVI Value\", title = \"Distribution of NDVI by Quartile\") +\n  theme_minimal()","id":6,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-6","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here","id":7,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-7","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(NDVI_tertile = ntile(X2015_NDVI, 3))\n\ntable(data$NDVI_tertile)\n\nggplot(data, aes(x = factor(NDVI_tertile), y = X2015_NDVI)) +\n  geom_boxplot(fill = \"lightblue\") +\n  labs(x = \"NDVI Tertile\", y = \"NDVI Value\", title = \"Distribution of NDVI by Tertile\") +\n  theme_minimal()","id":8,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-8","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here","id":9,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-9","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(NDVI_high_median = ifelse(X2015_NDVI > median(X2015_NDVI, na.rm = TRUE), 1, 0))\n\ntable(data$NDVI_high_median)","id":10,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-10","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here","id":11,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-11","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(NDVI_high_mean = ifelse(X2015_NDVI > mean(X2015_NDVI, na.rm = TRUE), 1, 0))\n\ntable(data$NDVI_high_mean)","id":12,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-12","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(NDVI_quartile_neg = case_when(\n    X2015_NDVI < 0 ~ 0,\n    TRUE ~ ntile(X2015_NDVI, 4)\n  ))\n\ntable(data$NDVI_quartile_neg)","id":13,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-13","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"new_data <- data %>%\n  filter(NDVI_quartile_neg != 0)\n\ndim(new_data)","id":14,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-14","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"download.file(\n  paste0(data_base_url, \"simulated_ozone_asthma_exposuremisclassification.csv\"),\n  file.path(\"data_processed\", \"simulated_ozone_asthma_exposuremisclassification.csv\")\n)\n\ndf <- read.csv(file.path(\"data_processed\", \"simulated_ozone_asthma_exposuremisclassification.csv\"))","id":15,"options":{"autorun":"true","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-15","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"names(df)\ndim(df)","id":16,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-16","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(df$asthma)","id":17,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-17","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"summary(df$true_ozone)\nsummary(df$nondiff_misclass_ozone)\nsummary(df$diff_misclass_ozone)","id":18,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-18","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"df_long <- df %>%\n  select(true_ozone, nondiff_misclass_ozone, diff_misclass_ozone) %>%\n  pivot_longer(everything(), names_to = \"measure\", values_to = \"ozone\")\n\nggplot(df_long, aes(x = measure, y = ozone, fill = measure)) +\n  geom_boxplot() +\n  labs(title = \"True vs. Misclassified Ozone Exposure\", x = NULL, y = \"Ozone (ppb)\") +\n  theme_minimal() +\n  theme(legend.position = \"none\")","id":19,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-19","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here","id":20,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-20","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"df <- df %>%\n  mutate(\n    diff_nondiff = true_ozone - nondiff_misclass_ozone,\n    diff_diff = true_ozone - diff_misclass_ozone\n  )\n\ndf %>%\n  group_by(asthma) %>%\n  summarise(\n    n = n(),\n    mean_error_nondiff = mean(diff_nondiff),\n    sd_error_nondiff = sd(diff_nondiff),\n    mean_error_diff = mean(diff_diff),\n    sd_error_diff = sd(diff_diff)\n  )","id":21,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-21","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_true <- glm(asthma ~ true_ozone, data = df, family = binomial)\nmodel_nondiff <- glm(asthma ~ nondiff_misclass_ozone, data = df, family = binomial)\nmodel_diff <- glm(asthma ~ diff_misclass_ozone, data = df, family = binomial)","id":22,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-22","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"extract_or <- function(model, label) {\n  b <- coef(model)[2]\n  se <- sqrt(diag(vcov(model)))[2]\n  data.frame(\n    Model = label,\n    OR = exp(b),\n    CI_Lower = exp(b - 1.96 * se),\n    CI_Upper = exp(b + 1.96 * se)\n  )\n}\n\nbind_rows(\n  extract_or(model_true, \"True Ozone\"),\n  extract_or(model_nondiff, \"Non-Differential Misclassification\"),\n  extract_or(model_diff, \"Differential Misclassification\")\n)","id":23,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-23","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}}];
+globalThis.qwebrCellDetails = [{"code":"library(tidyverse)","id":1,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-1","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data_base_url <- \"https://raw.githubusercontent.com/schinasi/EOH635/main/data/\"\n\ndir.create(\"data_processed\", showWarnings = FALSE)\n\ndownload.file(paste0(data_base_url, \"class_data_processed.csv\"), file.path(\"data_processed\", \"class_data_processed.csv\"))\n\ndata <- read.csv(file.path(\"data_processed\", \"class_data_processed.csv\"))","id":2,"options":{"autorun":"true","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-2","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(data$high_blood_pressure, useNA = \"ifany\")\nprop.table(table(data$high_blood_pressure))","id":3,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-3","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(tree_high = ifelse(hrlctree > median(hrlctree, na.rm = TRUE), 1, 0))\n\ntwo_by_two <- table(Tree_high = data$tree_high, HBP = data$high_blood_pressure)\ntwo_by_two\n\nA <- two_by_two[2, 2]  # exposed (high canopy), cases\nB <- two_by_two[2, 1]  # exposed, non-cases\nC <- two_by_two[1, 2]  # unexposed (low canopy), cases\nD <- two_by_two[1, 1]  # unexposed, non-cases\n\nprev_exposed   <- A / (A + B)\nprev_unexposed <- C / (C + D)\n\nc(prevalence_exposed = prev_exposed,\n  prevalence_unexposed = prev_unexposed,\n  prevalence_ratio = prev_exposed / prev_unexposed,\n  odds_ratio = (A * D) / (B * C))","id":4,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-4","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"extract_ratio <- function(model, label) {\n  b  <- coef(model)[-1]\n  se <- sqrt(diag(vcov(model)))[-1]\n  data.frame(\n    Model    = label,\n    Term     = names(b),\n    Estimate = exp(b),\n    CI_Lower = exp(b - 1.96 * se),\n    CI_Upper = exp(b + 1.96 * se),\n    row.names = NULL\n  )\n}\n\n# Logistic regression: logit link -> odds ratio\nmodel_logit <- glm(high_blood_pressure ~ tree_high, data = data,\n                   family = binomial(link = \"logit\"))\n\n# Log-binomial regression: log link -> prevalence ratio\nmodel_logbin <- glm(high_blood_pressure ~ tree_high, data = data,\n                    family = binomial(link = \"log\"))\n\nbind_rows(\n  extract_ratio(model_logit,  \"Logistic (OR)\"),\n  extract_ratio(model_logbin, \"Log-binomial (PR)\")\n)","id":5,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-5","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(hrlctree_10 = hrlctree * 10)   # 1 unit = 10 percentage points of canopy\n\nmodel_cont <- glm(high_blood_pressure ~ hrlctree_10, data = data,\n                  family = binomial(link = \"log\"))\n\nsummary(model_cont)\n\nextract_ratio(model_cont, \"Log-binomial, continuous (per 10 percentage points)\")","id":6,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-6","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — a crude model for your own exposure and outcome","id":7,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-7","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Asthma is binary; how common is it?\nprop.table(table(data$asthma))\n\n# ctb1traff is strongly right-skewed (recall your Week 3 histogram), so we use a\n# log2 transformation: 1 unit = a doubling of traffic density\ndata <- data %>%\n  mutate(traffic_log2 = log2(ctb1traff))\n\nmodel_asthma <- glm(asthma ~ traffic_log2, data = data,\n                    family = binomial(link = \"log\"))\n\nbind_rows(\n  extract_ratio(model_asthma, \"Log-binomial (PR)\"),\n  extract_ratio(glm(asthma ~ traffic_log2, data = data, family = binomial), \"Logistic (OR)\")\n)","id":8,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-8","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(tree_quartile = factor(ntile(hrlctree, 4)))   # factor() -> one indicator per level\n\n# Range of canopy and prevalence of high blood pressure in each quartile\ndata %>%\n  group_by(tree_quartile) %>%\n  summarise(\n    n = n(),\n    min_canopy = min(hrlctree),\n    median_canopy = median(hrlctree),\n    max_canopy = max(hrlctree),\n    prevalence_hbp = mean(high_blood_pressure, na.rm = TRUE)\n  )\n\nmodel_quart <- glm(high_blood_pressure ~ tree_quartile, data = data,\n                   family = binomial(link = \"log\"))\n\nextract_ratio(model_quart, \"Log-binomial, quartiles (ref = Q1)\")","id":9,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-9","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"quartile_medians <- data %>%\n  group_by(tree_quartile) %>%\n  summarise(median_canopy = median(hrlctree))\n\nquartile_results <- extract_ratio(model_quart, \"Quartiles\") %>%\n  mutate(tree_quartile = factor(2:4)) %>%\n  bind_rows(data.frame(tree_quartile = factor(1), Estimate = 1, CI_Lower = 1, CI_Upper = 1)) %>%\n  left_join(quartile_medians, by = \"tree_quartile\")\n\nggplot(quartile_results, aes(x = median_canopy * 100, y = Estimate)) +\n  geom_hline(yintercept = 1, linetype = \"dashed\", color = \"red\") +\n  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0.8) +\n  geom_point(size = 3, color = \"blue\") +\n  geom_line(color = \"blue\") +\n  geom_text(aes(label = paste0(\"Q\", tree_quartile)), vjust = -1.2, hjust = 1.2) +\n  scale_y_log10() +\n  labs(x = \"Median tree canopy cover in quartile (%)\",\n       y = \"Prevalence ratio (95% CI, log scale)\",\n       title = \"High blood pressure by tree canopy quartile (reference = Q1)\") +\n  theme_minimal()","id":10,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-10","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(tree_top_quartile = ifelse(tree_quartile == \"4\", 1, 0))  # Q4 vs. Q1-Q3\n\ntable(data$tree_quartile, data$tree_top_quartile)   # always check a recode\n\nmodel_top <- glm(high_blood_pressure ~ tree_top_quartile, data = data,\n                 family = binomial(link = \"log\"))\n\nextract_ratio(model_top, \"Log-binomial, top quartile vs. Q1-Q3\")","id":11,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-11","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"library(splines)\n\nmodel_spline <- glm(high_blood_pressure ~ ns(hrlctree, df = 3), data = data,\n                    family = binomial(link = \"log\"),\n                    start = c(log(0.3), 0, 0, 0))   # starting values help log-binomial converge\n\nmodel_linear <- glm(high_blood_pressure ~ hrlctree, data = data,\n                    family = binomial(link = \"log\"))\n\n# Predicted prevalence across the range of canopy, from each model\ncanopy_grid <- data.frame(hrlctree = seq(0.02, 0.60, by = 0.01))\ncanopy_grid$Spline <- predict(model_spline, newdata = canopy_grid, type = \"response\")\ncanopy_grid$Linear <- predict(model_linear, newdata = canopy_grid, type = \"response\")\n\ncanopy_grid %>%\n  pivot_longer(c(Spline, Linear), names_to = \"Model\", values_to = \"Predicted\") %>%\n  ggplot(aes(x = hrlctree * 100, y = Predicted, color = Model)) +\n  geom_line(linewidth = 1) +\n  labs(x = \"Tree canopy cover (%)\", y = \"Predicted prevalence of high blood pressure\",\n       title = \"Linear vs. spline model for tree canopy\") +\n  theme_minimal()\n\n# Compare model fit: lower AIC = better fit (after penalizing for extra terms)\nAIC(model_linear, model_spline, model_quart, model_top)","id":12,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-12","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — linearity check for your own exposure","id":13,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-13","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(traffic_quartile = factor(ntile(ctb1traff, 4)))\n\nmodel_traffic_q <- glm(asthma ~ traffic_quartile, data = data,\n                       family = binomial(link = \"log\"))\n\ntraffic_medians <- data %>%\n  group_by(traffic_quartile) %>%\n  summarise(median_traffic = median(ctb1traff))\n\ntraffic_results <- extract_ratio(model_traffic_q, \"Quartiles\") %>%\n  mutate(traffic_quartile = factor(2:4)) %>%\n  bind_rows(data.frame(traffic_quartile = factor(1), Estimate = 1, CI_Lower = 1, CI_Upper = 1)) %>%\n  left_join(traffic_medians, by = \"traffic_quartile\")\n\ntraffic_results\n\nggplot(traffic_results, aes(x = median_traffic, y = Estimate)) +\n  geom_hline(yintercept = 1, linetype = \"dashed\", color = \"red\") +\n  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0) +\n  geom_point(size = 3, color = \"blue\") +\n  geom_line(color = \"blue\") +\n  scale_y_log10() +\n  labs(x = \"Median traffic density in quartile\", y = \"Prevalence ratio (95% CI, log scale)\",\n       title = \"Asthma by traffic density quartile (reference = Q1)\") +\n  theme_minimal()","id":14,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-14","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}}];
 
 </script>
 <script type="module">
@@ -1698,11 +1698,11 @@ globalThis.qwebrExecuteCode = async function (
 <span class="menu-text">Lesson 3: EDA &amp; Cleaning</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="./lesson4.html" aria-current="page"> 
+    <a class="nav-link" href="./lesson4.html"> 
 <span class="menu-text">Lesson 4: Exposure Assessment</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./lesson5.html"> 
+    <a class="nav-link active" href="./lesson5.html" aria-current="page"> 
 <span class="menu-text">Lesson 5: Regression &amp; Linearity</span></a>
   </li>  
   <li class="nav-item">
@@ -1725,21 +1725,19 @@ globalThis.qwebrExecuteCode = async function (
     <h2 id="toc-title">On this page</h2>
    
   <ul class="collapse">
-  <li><a href="#part-1-exposure-coding" id="toc-part-1-exposure-coding" class="nav-link active" data-scroll-target="#part-1-exposure-coding">Part 1: Exposure Coding</a>
+  <li><a href="#part-1-choosing-fitting-and-interpreting-a-crude-model" id="toc-part-1-choosing-fitting-and-interpreting-a-crude-model" class="nav-link active" data-scroll-target="#part-1-choosing-fitting-and-interpreting-a-crude-model">Part 1: Choosing, Fitting, and Interpreting a Crude Model</a>
   <ul class="collapse">
-  <li><a href="#why-coding-decisions-matter" id="toc-why-coding-decisions-matter" class="nav-link" data-scroll-target="#why-coding-decisions-matter">Why coding decisions matter</a></li>
-  <li><a href="#reading-in-our-data" id="toc-reading-in-our-data" class="nav-link" data-scroll-target="#reading-in-our-data">Reading in our data</a></li>
-  <li><a href="#participant-level-vs.-city-level-distribution-of-ndvi" id="toc-participant-level-vs.-city-level-distribution-of-ndvi" class="nav-link" data-scroll-target="#participant-level-vs.-city-level-distribution-of-ndvi">Participant-level vs.&nbsp;city-level distribution of NDVI</a></li>
-  <li><a href="#categorizing-ndvi-into-quartiles" id="toc-categorizing-ndvi-into-quartiles" class="nav-link" data-scroll-target="#categorizing-ndvi-into-quartiles">Categorizing NDVI into quartiles</a></li>
-  <li><a href="#dichotomizing-ndvi-median-vs.-mean-cut-points" id="toc-dichotomizing-ndvi-median-vs.-mean-cut-points" class="nav-link" data-scroll-target="#dichotomizing-ndvi-median-vs.-mean-cut-points">Dichotomizing NDVI: median vs.&nbsp;mean cut-points</a></li>
-  <li><a href="#a-coding-wrinkle-negative-ndvi-values" id="toc-a-coding-wrinkle-negative-ndvi-values" class="nav-link" data-scroll-target="#a-coding-wrinkle-negative-ndvi-values">A coding wrinkle: negative NDVI values</a></li>
+  <li><a href="#step-1-what-kind-of-outcome-do-you-have-and-is-it-rare-or-common" id="toc-step-1-what-kind-of-outcome-do-you-have-and-is-it-rare-or-common" class="nav-link" data-scroll-target="#step-1-what-kind-of-outcome-do-you-have-and-is-it-rare-or-common">Step 1: What kind of outcome do you have — and is it rare or common?</a></li>
+  <li><a href="#step-2-a-two-by-two-table-you-can-calculate-by-hand" id="toc-step-2-a-two-by-two-table-you-can-calculate-by-hand" class="nav-link" data-scroll-target="#step-2-a-two-by-two-table-you-can-calculate-by-hand">Step 2: A two-by-two table you can calculate by hand</a></li>
+  <li><a href="#step-3-the-same-comparison-as-a-regression-model" id="toc-step-3-the-same-comparison-as-a-regression-model" class="nav-link" data-scroll-target="#step-3-the-same-comparison-as-a-regression-model">Step 3: The same comparison as a regression model</a></li>
+  <li><a href="#step-4-entering-the-exposure-as-a-continuous-term" id="toc-step-4-entering-the-exposure-as-a-continuous-term" class="nav-link" data-scroll-target="#step-4-entering-the-exposure-as-a-continuous-term">Step 4: Entering the exposure as a continuous term</a></li>
   </ul></li>
-  <li><a href="#part-2-exposure-misclassification" id="toc-part-2-exposure-misclassification" class="nav-link" data-scroll-target="#part-2-exposure-misclassification">Part 2: Exposure Misclassification</a>
+  <li><a href="#part-2-checking-the-linearity-assumption" id="toc-part-2-checking-the-linearity-assumption" class="nav-link" data-scroll-target="#part-2-checking-the-linearity-assumption">Part 2: Checking the Linearity Assumption</a>
   <ul class="collapse">
-  <li><a href="#a-simulated-dataset-where-we-know-the-truth" id="toc-a-simulated-dataset-where-we-know-the-truth" class="nav-link" data-scroll-target="#a-simulated-dataset-where-we-know-the-truth">A simulated dataset where we know the truth</a></li>
-  <li><a href="#comparing-the-three-exposure-measures" id="toc-comparing-the-three-exposure-measures" class="nav-link" data-scroll-target="#comparing-the-three-exposure-measures">Comparing the three exposure measures</a></li>
-  <li><a href="#does-the-misclassification-differ-by-asthma-status" id="toc-does-the-misclassification-differ-by-asthma-status" class="nav-link" data-scroll-target="#does-the-misclassification-differ-by-asthma-status">Does the misclassification differ by asthma status?</a></li>
-  <li><a href="#what-does-this-do-to-our-effect-estimate" id="toc-what-does-this-do-to-our-effect-estimate" class="nav-link" data-scroll-target="#what-does-this-do-to-our-effect-estimate">What does this do to our effect estimate?</a></li>
+  <li><a href="#steps-1-and-2-quartiles-as-indicator-terms" id="toc-steps-1-and-2-quartiles-as-indicator-terms" class="nav-link" data-scroll-target="#steps-1-and-2-quartiles-as-indicator-terms">Steps 1 and 2: Quartiles as indicator terms</a></li>
+  <li><a href="#step-3-plot-the-estimates" id="toc-step-3-plot-the-estimates" class="nav-link" data-scroll-target="#step-3-plot-the-estimates">Step 3: Plot the estimates</a></li>
+  <li><a href="#collapsing-categories-that-look-alike" id="toc-collapsing-categories-that-look-alike" class="nav-link" data-scroll-target="#collapsing-categories-that-look-alike">Collapsing categories that look alike</a></li>
+  <li><a href="#optional-relaxing-linearity-with-a-spline" id="toc-optional-relaxing-linearity-with-a-spline" class="nav-link" data-scroll-target="#optional-relaxing-linearity-with-a-spline">Optional: relaxing linearity with a spline</a></li>
   </ul></li>
   <li><a href="#quick-start-script-for-your-own-project" id="toc-quick-start-script-for-your-own-project" class="nav-link" data-scroll-target="#quick-start-script-for-your-own-project">Quick-Start Script for Your Own Project</a></li>
   <li><a href="#wrap-up" id="toc-wrap-up" class="nav-link" data-scroll-target="#wrap-up">Wrap Up</a></li>
@@ -2035,7 +2033,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Lesson 4: Exposure Assessment &amp; Misclassification</h1>
+<h1 class="title">Lesson 5: Regression, Linearity &amp; Dose-Response</h1>
 <p class="subtitle lead">EOH 635 — Environmental Epidemiology Methods</p>
 </div>
 
@@ -2065,14 +2063,12 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </header>
 
 
-<p>In <a href="./lesson3.html">Lesson 3</a> you cleaned and characterized your variables — checking distributions, catching implausible values, and visualizing what you had. This lesson asks a question that comes <em>before</em> all of that: how good is the exposure measurement itself?</p>
-<p>Every environmental exposure in this course — NDVI, tree canopy, traffic density, poverty — is a <strong>proxy</strong>. None of it is a direct measurement of what actually reached a person’s lungs, skin, or bloodstream. That gap between the true exposure and what we actually measured is called <strong>exposure misclassification</strong>, and it is not a minor technical footnote — it changes what your effect estimates mean and, in some cases, which direction they’re biased in.</p>
-<p>Even before that gap enters the picture, you face a second decision that’s easy to overlook: once you have a continuous exposure measurement — say, an NDVI value for every participant — how should you actually use it in your analysis? Leave it as a continuous number? Split it into a few categories, like “low/medium/high”? Collapse it into just two groups, “high” vs.&nbsp;“low”? This is called an <strong>exposure coding</strong> decision, and it is not just a formatting choice: it trades off how much statistical power you have to detect a real association, whether you can detect a relationship that isn’t a simple straight line, and how easy your results are to interpret and communicate. Different coding choices can even lead to different conclusions from the <em>same</em> underlying data — which is exactly why the decision needs to be made thoughtfully and justified, not just defaulted to.</p>
-<p>This lesson has two parts:</p>
+<p>In <a href="./lesson4.html">Lesson 4</a> you decided how to code your exposure. In this week’s Learn materials you saw how to choose a regression model based on your outcome, how to interpret the estimate it produces, and why the assumption that an exposure is related to the outcome “in a straight line” needs to be checked rather than assumed. This tutorial is the <strong>Practice</strong> half, in two parts:</p>
 <ol type="1">
-<li><strong>Exposure coding</strong> — given a continuous exposure measurement, how do you decide whether (and how) to categorize it, and what do you gain and lose with each choice? Worked example: NDVI, the same variable from Lessons 1 and 3.</li>
-<li><strong>Exposure misclassification</strong> — what happens to your effect estimate when the exposure you measured isn’t quite the exposure that’s real? Worked example: a purpose-built <strong>simulated</strong> dataset — data generated by a computer according to rules <em>we</em> set, rather than collected from real people — where we know the “true” exposure because we’re the ones who created it. (More on what “simulated” means and why that’s useful in Part 2.)</li>
+<li><strong>Choosing, fitting, and interpreting a crude model</strong> — starting from a two-by-two table you can calculate by hand, then fitting the same comparison as a logistic and a log-binomial regression model, then entering the exposure as a continuous term. Worked example: tree canopy cover and high blood pressure, the course’s primary exposure–outcome relationship.</li>
+<li><strong>Checking the linearity assumption</strong> — categorizing the exposure, fitting a model with one indicator term per category, and plotting the estimates to see whether the relationship really is a straight line.</li>
 </ol>
+<p>Both parts end with a <strong>🧠 Your Turn</strong> for the exposure and outcome in your own project. Together they produce the crude model and the evaluation of functional form that Milestone 2 asks for (see the <strong>Apply</strong> page).</p>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -2083,10 +2079,10 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The gray boxes below are <strong>live R editors</strong> — the code actually runs in your browser (no install needed). Click the green <strong>Run Code</strong> arrow in the top-left corner of a box to run it. The output appears directly underneath a moment later.</p>
-<p>You can edit the code first — click inside the box, change something, then click <strong>Run Code</strong> again. Nothing you do here can break anything; refresh the page to start over if you make a mess.</p>
+<p>The gray boxes below are <strong>live R editors</strong> — the code actually runs in your browser (no install needed). Click the green <strong>Run Code</strong> arrow in the top-left corner of a box to run it. The output will appear directly underneath.</p>
+<p>You can also edit the code first — click inside the box, change something, then click <strong>Run Code</strong> to run your edited version. Nothing you do here can break anything; if you make a mess, just refresh the page to start that box over.</p>
 <p>Sections marked <strong>🧠 Your Turn</strong> give you a task and a blank or partially blank code editor. Try writing the code yourself before revealing the solution, hidden in a collapsed box underneath.</p>
-<p><strong>A note on browser vs.&nbsp;RStudio code:</strong> chunks labeled <code>#| autorun: true</code> fetch data from the web in the background so it’s available in your browser. <strong>You will not include this fetching code in your own RStudio scripts.</strong> Immediately after each one, a green box labeled <strong>“In your RStudio script”</strong> shows the simpler code you’ll actually use.</p>
+<p><strong>A note on browser vs.&nbsp;RStudio code:</strong> chunks labeled <code>#| autorun: true</code> fetch data from the web in the background so it’s available in your browser. <strong>When you write your own scripts in RStudio, you will not include this fetching code.</strong> Immediately after each one, a green box labeled <strong>“In your RStudio script”</strong> shows the simpler code you’ll actually use.</p>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -2099,60 +2095,14 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Part 1 continues from Lesson 1/3: it reads <strong><code>class_data_processed.csv</code></strong> from your <code>data_processed/</code> folder. Part 2 introduces a <strong>new, purpose-built dataset</strong>, <code>simulated_ozone_asthma_exposuremisclassification.csv</code> — save it to <code>data_raw/</code> in your own project if you want to work through Part 2 in RStudio too. See the <a href="./codebook.html">Data Codebook</a> for the class dataset’s variables.</p>
+<p>This tutorial uses <strong><code>class_data_processed.csv</code></strong>, the same merged file from Weeks 1, 3, and 4. If you saved your Week 4 exposure coding in your project script, run that code first so your categorical and binary exposure variables exist. See the <a href="./codebook.html">Data Codebook</a> for variable definitions.</p>
 </div>
 </div>
 <hr>
-<section id="part-1-exposure-coding" class="level1">
-<h1>Part 1: Exposure Coding</h1>
-<p>As in every lesson, we start by loading <code>tidyverse</code> — the collection of packages that gives us <code>%&gt;%</code> and <code>mutate()</code> for working with data (used below to create our categorized exposure variables) and <code>ggplot2</code> for the plots we’ll make to visualize them.</p>
+<section id="part-1-choosing-fitting-and-interpreting-a-crude-model" class="level1">
+<h1>Part 1: Choosing, Fitting, and Interpreting a Crude Model</h1>
 <div id="qwebr-insertion-location-1"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<section id="why-coding-decisions-matter" class="level2">
-<h2 class="anchored" data-anchor-id="why-coding-decisions-matter">Why coding decisions matter</h2>
-<p>Suppose you measure a continuous exposure — NDVI, ozone, traffic density, whatever it is. You now face a choice that has nothing to do with the biology of the exposure and everything to do with how you plan to model it:</p>
-<ul>
-<li>Leave it <strong>continuous</strong>?</li>
-<li>Split it into a small number of <strong>categories</strong> (tertiles, quartiles)?</li>
-<li><strong>Dichotomize</strong> it into two groups (high/low)?</li>
-</ul>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Approach</th>
-<th>What you gain</th>
-<th>What you lose</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><strong>Continuous</strong> (keep the raw numbers)</td>
-<td>You keep every bit of information in the data, which gives you the best chance of detecting a real association if one exists — this is what people mean by “more statistical power.” You can also model curved (not just straight-line) relationships if you use the right tools.</td>
-<td>By default, a regression model assumes the relationship is a straight line (more exposure = proportionally more risk, all the way up and down the scale) unless you specifically tell it otherwise. A single number (“for each 1-unit increase in exposure…”) can also be harder to explain to a general audience than “low/medium/high.”</td>
-</tr>
-<tr class="even">
-<td><strong>Categorical (3+ groups, e.g., quartiles or tertiles)</strong></td>
-<td>You can see whether risk jumps around unevenly across the range of exposure — for example, if only the <em>highest</em> group has meaningfully higher risk — without assuming a straight-line relationship. Easier to describe in plain language (“low/medium/high exposure”).</td>
-<td>You need enough people in <em>each</em> group for your results to be reliable, and where exactly you draw the group boundaries is somewhat arbitrary.</td>
-</tr>
-<tr class="odd">
-<td><strong>Binary (high vs.&nbsp;low)</strong></td>
-<td>The simplest possible result to interpret and explain: two groups, one comparison.</td>
-<td>You throw away the most information — everyone in “low” is treated as identical, even someone barely below the cutoff and someone far below it. Depending on where you draw the line, you can make a real relationship look stronger, weaker, or disappear entirely.</td>
-</tr>
-</tbody>
-</table>
-<p>There is no single correct answer. The right choice depends on your research question, how many participants you have, what prior studies suggest about the shape of the relationship, and — sometimes — a threshold that already has real-world meaning (e.g., the EPA’s ground-level ozone standard of 70 ppb over an 8-hour average). Whatever you choose, the decision should be <strong>transparent and justified</strong>, not just whatever produced the most convenient result.</p>
-</section>
-<section id="reading-in-our-data" class="level2">
-<h2 class="anchored" data-anchor-id="reading-in-our-data">Reading in our data</h2>
-<p>We pick up with <code>class_data_processed.csv</code>, the file from Lesson 1 with NDVI already merged in by census tract. This will be our familiar <strong>participant-level</strong> dataset — one row per person, and NDVI is one of many columns describing them.</p>
-<p>We’re also going to bring in a <em>second</em>, different file: <code>PHL_NDVI_summer_annual.csv</code>. This one has nothing to do with our 2,000 participants directly — it’s a separate, <strong>tract-level</strong> file with one row per Philadelphia census tract (all 384 of them) and its NDVI value. Why look at this at all? Because NDVI is measured at the <em>tract</em> level, not the individual level — every participant living in the same tract shares the same NDVI value. Our participants only live in some of the city’s tracts, not a random sample of all of them, so it’s worth checking: does the range of greenness our participants actually experience look like the full range of greenness found across the whole city, or is it narrower or shifted in some way? Answering that requires comparing our participant data against this citywide tract-level file.</p>
 <p>In RStudio:</p>
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 <p>In the browser:</p>
@@ -2168,323 +2118,245 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>))</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>ndvi_PHL <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"PHL_NDVI_summer_annual.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
-<p>Let’s confirm both files loaded the way we’d expect before going any further:</p>
+<section id="step-1-what-kind-of-outcome-do-you-have-and-is-it-rare-or-common" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-what-kind-of-outcome-do-you-have-and-is-it-rare-or-common">Step 1: What kind of outcome do you have — and is it rare or common?</h2>
+<p>The type of outcome determines the model (see the model-choice table in the Learn materials). <code>high_blood_pressure</code> is <strong>binary</strong> (1 = diagnosed, 0 = not), so a linear regression model is not appropriate — we need logistic or log-binomial regression. Which of those two to prefer depends on whether the outcome is rare or common.</p>
 <div id="qwebr-insertion-location-3"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p><code>dim()</code> reports rows first, then columns. <code>data</code> should show <strong>2000 rows and 39 columns</strong> — 2,000 participants, each described by 39 variables (including NDVI, already merged in from Lesson 1). <code>ndvi_PHL</code> should show <strong>384 rows and 2 columns</strong> — one row for every census tract in Philadelphia, with just two columns: a tract identifier and that tract’s NDVI value. If your numbers don’t match these, something went wrong in the loading step above and it’s worth tracking down before continuing.</p>
-</section>
-<section id="participant-level-vs.-city-level-distribution-of-ndvi" class="level2">
-<h2 class="anchored" data-anchor-id="participant-level-vs.-city-level-distribution-of-ndvi">Participant-level vs.&nbsp;city-level distribution of NDVI</h2>
-<p>Because our study participants don’t live in a random sample of Philadelphia’s 384 census tracts — they live where they live — the distribution of NDVI <em>among participants</em> can differ from the distribution <em>across the city</em>. If certain tracts are over- or under-represented in who happened to enroll, our sample may not reflect the full range of greenness found citywide.</p>
-<div id="qwebr-insertion-location-4"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<div id="qwebr-insertion-location-5"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p><strong>Questions to consider:</strong></p>
 <ul>
-<li>Is the range of NDVI similar in both distributions, or does one look narrower/shifted?</li>
-<li>If our participants are concentrated in a subset of tracts, what would that mean for how well our study represents “greenness exposure” across the whole city?</li>
+<li>What proportion of participants have high blood pressure? Would you call that rare or common?</li>
+<li>How many participants are missing this outcome? (These will be dropped from every model below.)</li>
 </ul>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 Discussion — click to reveal after you've looked at both summaries yourself">
+</section>
+<section id="step-2-a-two-by-two-table-you-can-calculate-by-hand" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-a-two-by-two-table-you-can-calculate-by-hand">Step 2: A two-by-two table you can calculate by hand</h2>
+<p>Before fitting any model, let’s calculate the association the old-fashioned way, so you can see exactly what the regression model will reproduce. We’ll use a median split of tree canopy cover — the same kind of binary exposure you created in Week 4.</p>
+<div id="qwebr-insertion-location-4"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>Recall the bracket syntax <code>[row, column]</code>: row 2 is <code>tree_high = 1</code>, column 2 is <code>high_blood_pressure = 1</code>.</p>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>Is the prevalence ratio (PR) or the odds ratio (OR) further from the null value of 1? Why does that happen with an outcome this common?</li>
+<li>Because this is a <strong>cross-sectional</strong> survey, we are comparing <em>prevalence</em>, not <em>risk</em>. That is why we call this a prevalence ratio rather than a risk ratio.</li>
+</ul>
+</section>
+<section id="step-3-the-same-comparison-as-a-regression-model" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-the-same-comparison-as-a-regression-model">Step 3: The same comparison as a regression model</h2>
+<p>Now fit the same median-split comparison two ways. The <code>extract_ratio()</code> helper below exponentiates a model’s coefficient and its 95% confidence interval — the same steps as the <code>extract_or()</code> function from Week 4, just renamed because it now produces prevalence ratios as well as odds ratios.</p>
+<div id="qwebr-insertion-location-5"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>The two models differ only in their <strong>link function</strong>: <code>binomial(link = "logit")</code> models the log odds of the outcome, while <code>binomial(link = "log")</code> models the log prevalence.</p>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>Compare each estimate to the one you calculated by hand in Step 2. Do they match?</li>
+<li>Write a one-sentence interpretation of the PR. (Check your wording against the interpretation template in the Learn materials.)</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Example interpretation — click to reveal after you've written your own">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 Discussion — click to reveal after you’ve looked at both summaries yourself
+<span class="screen-reader-only">Note</span>💡 Example interpretation — click to reveal after you’ve written your own
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
 <div id="callout-4" class="callout-4-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>The two distributions turn out to be quite similar. Citywide, NDVI ranges from about -0.03 to 0.35 (median ≈ 0.13); among participants, it ranges from about -0.03 to 0.35 as well (median ≈ 0.12) — nearly identical minimums and maximums, with the participant distribution’s median and mean each only slightly lower than the city’s. Participants also turn out to live in 363 of the city’s 384 tracts (about 95% of them) — not a narrow slice of the city at all.</p>
-<p>That’s good news for this particular exposure: it means our study sample is exposed to nearly the full range of greenness found across Philadelphia, so conclusions about NDVI from this dataset are likely to generalize reasonably well to the city as a whole. Had the two distributions looked very different instead — say, if participants were clustered in only the greenest (or only the least green) tracts — we’d be looking at a narrower slice of the exposure range than actually exists in the population, which would limit how confidently we could generalize our findings city-wide, and could also make it harder to detect a dose-response relationship if most of our variation in exposure were compressed into a small range.</p>
+<p>The prevalence of high blood pressure among participants living in census tracts with above-median tree canopy cover was 0.72 times the prevalence among those living in tracts with below-median canopy (95% CI: 0.63, 0.83) — about 28% lower. The odds ratio (0.63) is further from the null than the PR (0.72) because high blood pressure is common here (about 30% prevalence); reporting the OR as if it were a PR would overstate the strength of the association.</p>
 </div>
 </div>
 </div>
 </section>
-<section id="categorizing-ndvi-into-quartiles" class="level2">
-<h2 class="anchored" data-anchor-id="categorizing-ndvi-into-quartiles">Categorizing NDVI into quartiles</h2>
-<p>Here’s the code, walked through piece by piece:</p>
-<ul>
-<li><code>mutate()</code> is the tidyverse function for <strong>adding a new column</strong> to a data frame — here, we’re adding a column called <code>NDVI_quartile</code> to <code>data</code>.</li>
-<li><code>ntile(X2015_NDVI, 4)</code> is what actually does the categorizing. It ranks every participant’s NDVI value from lowest to highest, then splits them into <strong>4</strong> equal-sized groups — the number 4 is simply the second argument we gave the function. It labels the lowest quarter of values <code>1</code>, the next quarter <code>2</code>, and so on up to <code>4</code> for the highest quarter. If we’d written <code>ntile(X2015_NDVI, 3)</code> instead, we’d get three equal-sized groups (tertiles) labeled 1–3 — we’ll do exactly that in the next section.</li>
-<li><code>data %&gt;% mutate(...)</code> reads as “take <code>data</code>, then add this new column to it,” and we save the result back into <code>data</code> so the new column sticks around for the rest of the tutorial.</li>
-</ul>
+<section id="step-4-entering-the-exposure-as-a-continuous-term" class="level2">
+<h2 class="anchored" data-anchor-id="step-4-entering-the-exposure-as-a-continuous-term">Step 4: Entering the exposure as a continuous term</h2>
+<p>A median split throws away information: someone at the 51st percentile of tree canopy is treated the same as someone at the 99th. Entering <code>hrlctree</code> as a continuous term uses all of it. But <code>hrlctree</code> is a <strong>proportion</strong> (0 to 1), so a “one-unit increase” would mean going from 0% to 100% canopy — a meaningless comparison. We rescale so that one unit equals a <strong>10-percentage-point</strong> increase in tree canopy cover.</p>
 <div id="qwebr-insertion-location-6"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p><strong>Questions to consider:</strong></p>
 <ul>
-<li><code>ntile()</code> splits the data into four <em>equal-sized</em> groups, by definition — because we told it to, with that <code>4</code>. What sample size do you see in each?</li>
-<li>What assumption are we making by treating everyone within Quartile 1 as having the “same” exposure, even though the raw NDVI values within that group still vary?</li>
+<li>Interpret the PR per 10-percentage-point increase in tree canopy.</li>
+<li>This model assumes that <em>every</em> 10-point increase — from 5% to 15%, or from 40% to 50% — multiplies prevalence by the same amount. Is that a reasonable assumption? That is exactly what Part 2 checks.</li>
 </ul>
-<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn: Tertiles">
+<div class="callout callout-style-default callout-note callout-titled" title="💡 What if my log-binomial model won't converge?">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 What if my log-binomial model won’t converge?
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Log-binomial models sometimes fail with an error like <em>“no valid set of coefficients has been found: please supply starting values”</em>. This happens because predicted prevalences must stay below 1, which the fitting algorithm can struggle with. Two common fixes:</p>
+<ol type="1">
+<li><strong>Supply starting values.</strong> Set the intercept to the log of the overall prevalence and the other coefficients to 0, e.g.&nbsp;<code>start = c(log(0.3), 0)</code> for a model with one exposure term.</li>
+<li><strong>Use a modified Poisson model</strong> — a Poisson model with robust (“sandwich”) standard errors, which also estimates a prevalence ratio. In RStudio:</li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sandwich)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lmtest)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>model_pois <span class="ot">&lt;-</span> <span class="fu">glm</span>(high_blood_pressure <span class="sc">~</span> hrlctree_10, <span class="at">data =</span> data,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>robust_se <span class="ot">&lt;-</span> <span class="fu">vcovHC</span>(model_pois, <span class="at">type =</span> <span class="st">"HC0"</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="fu">coeftest</span>(model_pois, <span class="at">vcov =</span> robust_se)                 <span class="co"># coefficients with robust SEs</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">coefci</span>(model_pois, <span class="at">vcov =</span> robust_se))              <span class="co"># PR 95% CI</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">coef</span>(model_pois))                                  <span class="co"># PR point estimate</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn: Fit a crude model for your own project">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>🧠 Your Turn: Tertiles
+<span class="screen-reader-only">Tip</span>🧠 Your Turn: Fit a crude model for your own project
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Create a three-level categorical version of NDVI based on tertiles, name it <code>NDVI_tertile</code>, then display and visualize its distribution the same way we just did for quartiles.</p>
+<p>Using the <strong>exposure and outcome from your project</strong> (and the exposure coding you decided on in Week 4):</p>
+<ol type="1">
+<li>Check whether your outcome is binary or continuous and, if binary, how common it is.</li>
+<li>Fit the appropriate crude model: log-binomial (or logistic, if you can justify it) for a binary outcome, or <code>lm()</code> for a continuous one. If your exposure is a proportion or has large units, rescale it first so a one-unit change is meaningful.</li>
+<li>Use <code>extract_ratio()</code> to get your estimate and 95% CI (skip the exponentiating for a linear model — use <code>coef()</code> and <code>confint()</code> instead), and write a one-sentence interpretation.</li>
+</ol>
 </div>
 </div>
 <div id="qwebr-insertion-location-7"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Example: traffic density (ctb1traff) and asthma — click to reveal">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 Solution — click to reveal
+<span class="screen-reader-only">Note</span>💡 Example: traffic density (ctb1traff) and asthma — click to reveal
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div id="qwebr-insertion-location-8"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>Interpretation: each doubling of census-tract traffic density was associated with a 1.66-fold higher prevalence of asthma (95% CI: 1.49, 1.84).</p>
+<p>Asthma affects about 10% of participants, so the OR (1.73) and PR are closer to each other here than they were for high blood pressure — the rarer the outcome, the better the OR approximates the PR.</p>
+<p>Why not simply rescale to “per 10,000 units,” as we did for tree canopy? Try it: a log-binomial model with <code>ctb1traff / 10000</code> fails with <em>“no valid set of coefficients has been found”</em>. The handful of tracts with extremely high traffic push predicted prevalence above 1, which a log link cannot allow. The log transformation handles the skew and fixes the convergence problem together.</p>
 </div>
 </div>
 </div>
-<p>Compare the tertile counts to the quartile counts from before: with only 3 groups instead of 4, each tertile now contains <em>more</em> participants than each quartile did. But that larger group size comes at a cost — each tertile now spans a <em>wider</em> range of actual NDVI values than a quartile did, so it’s a more coarse (less precise) summary of exposure. This is the general pattern any time you use fewer categories: bigger, more stable groups, but each one is a blunter description of what’s really a continuous exposure.</p>
+<hr>
 </section>
-<section id="dichotomizing-ndvi-median-vs.-mean-cut-points" class="level2">
-<h2 class="anchored" data-anchor-id="dichotomizing-ndvi-median-vs.-mean-cut-points">Dichotomizing NDVI: median vs.&nbsp;mean cut-points</h2>
-<p>A <strong>median split</strong> puts exactly half of participants in each group by definition. A <strong>mean split</strong> is similar but is pulled around by extreme values — if the distribution is skewed, the mean and median split can put quite different people into the “high” group.</p>
-<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn: Median split">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>🧠 Your Turn: Median split
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Create a binary variable <code>NDVI_high_median</code> that equals 1 if a participant’s NDVI is above the <strong>median</strong>, 0 otherwise. Then display the counts in each group.</p>
-</div>
-</div>
+</section>
+<section id="part-2-checking-the-linearity-assumption" class="level1">
+<h1>Part 2: Checking the Linearity Assumption</h1>
+<p>The continuous model in Step 4 produced <strong>one</strong> number to summarize the whole relationship. The check below asks whether that one number is a fair summary. The steps (from the Learn materials):</p>
+<ol type="1">
+<li>Categorize the exposure into several groups (quartiles here).</li>
+<li>Fit a model with a separate <strong>indicator term</strong> for each category, compared with a reference category.</li>
+<li>Plot the estimates. If they fall roughly along a straight line, the linearity assumption is reasonable; if they bend, level off, or jump, it isn’t.</li>
+</ol>
+<section id="steps-1-and-2-quartiles-as-indicator-terms" class="level2">
+<h2 class="anchored" data-anchor-id="steps-1-and-2-quartiles-as-indicator-terms">Steps 1 and 2: Quartiles as indicator terms</h2>
 <div id="qwebr-insertion-location-9"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
+<p>Wrapping the quartile variable in <code>factor()</code> is what tells R to create a separate indicator term for each category. Without it, R treats 1, 2, 3, 4 as a continuous number and returns a single coefficient — which would assume linearity instead of testing it. The first level (Q1, lowest canopy) is the reference category and drops out of the model; every PR is a comparison with Q1.</p>
+</section>
+<section id="step-3-plot-the-estimates" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-plot-the-estimates">Step 3: Plot the estimates</h2>
+<p>We plot each quartile’s PR (with Q1 fixed at 1) against the <strong>median canopy in that quartile</strong>, not just the quartile number. This matters: look at the table above — the top quartile spans a much wider range of canopy than the other three.</p>
+<div id="qwebr-insertion-location-10"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>The y-axis is on a <strong>log scale</strong> because the log-binomial model is linear on the log scale: if the linearity assumption holds, the points should fall along a straight line on this plot.</p>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>Do Q1, Q2, and Q3 look different from each other? Where does most of the change happen?</li>
+<li>If you had plotted these against quartile <em>number</em> (1, 2, 3, 4) instead of median canopy, would the relationship look more or less linear? Why?</li>
+<li>Given this plot, would you keep tree canopy as a single continuous term, use the quartile categories, or collapse some categories together?</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Discussion — click to reveal after you've looked at the plot yourself">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 Solution — click to reveal
+<span class="screen-reader-only">Note</span>💡 Discussion — click to reveal after you’ve looked at the plot yourself
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
 <div id="callout-8" class="callout-8-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div id="qwebr-insertion-location-10"></div>
+<p>Q2 is essentially the same as Q1, Q3 is slightly lower, and Q4 is much lower (PR ≈ 0.58). Plotted against quartile number, this looks like a “flat, then a sudden drop” pattern — strongly non-linear. Plotted against actual canopy, the picture is less dramatic: part of the “jump” is simply that Q4 covers a much wider range of canopy (roughly 18% to 63%) than the lower quartiles put together. On the canopy scale, the data suggest little difference between the two lowest quartiles and a fairly steady decline above roughly 10% canopy.</p>
+<p>There is no single right answer about what to do next — reasonable options include:</p>
+<ul>
+<li><strong>Keep the continuous term</strong>, if you judge the departure from linearity to be small. It is the most efficient and easiest to communicate (one PR per 10 percentage points).</li>
+<li><strong>Collapse categories that look alike.</strong> Here, Q1–Q3 could be combined into one reference group and compared with Q4 (the top quartile): fewer coefficients, and the estimate reflects where the change actually appears.</li>
+<li><strong>Use a flexible term such as a spline</strong> (optional section below).</li>
+</ul>
+<p>Whatever you choose, justify it using the plot, your sample size in each category, and what will be most meaningful for your research question.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="collapsing-categories-that-look-alike" class="level2">
+<h2 class="anchored" data-anchor-id="collapsing-categories-that-look-alike">Collapsing categories that look alike</h2>
+<div id="qwebr-insertion-location-11"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-</div>
-</div>
-</div>
-<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn: Mean split">
+<p><strong>Question to consider:</strong> interpret this PR. How is it different from the median-split PR in Step 3 of Part 1, and why?</p>
+</section>
+<section id="optional-relaxing-linearity-with-a-spline" class="level2">
+<h2 class="anchored" data-anchor-id="optional-relaxing-linearity-with-a-spline">Optional: relaxing linearity with a spline</h2>
+<p>You will not be required to use splines in this course, but they are common in environmental epidemiology (for example, temperature–mortality curves). A <strong>natural cubic spline</strong> lets the relationship bend smoothly instead of forcing a straight line. <code>df</code> sets how flexible the curve is.</p>
+<div id="qwebr-insertion-location-12"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p><strong>Question to consider:</strong> the spline and the linear model have almost identical AIC values. What does that suggest about how much the linearity assumption actually matters for this particular exposure and outcome?</p>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn: Check linearity for your own exposure">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>🧠 Your Turn: Mean split
+<span class="screen-reader-only">Tip</span>🧠 Your Turn: Check linearity for your own exposure
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Now do the same thing using the <strong>mean</strong> instead of the median — call it <code>NDVI_high_mean</code>.</p>
+<p>Using <strong>your own project’s exposure and outcome</strong>:</p>
+<ol type="1">
+<li>Create quartiles (or quintiles, if your sample size allows) of your exposure with <code>ntile()</code>, wrapped in <code>factor()</code>.</li>
+<li>Fit your crude model with the categorical exposure and extract the estimates.</li>
+<li>Plot the estimates against the median exposure value in each category, with the reference category fixed at 1 (or at 0 for a linear model — and use a regular, not log, y-axis).</li>
+<li>In two or three sentences, state whether the linearity assumption looks reasonable and what coding you will use in your models going forward.</li>
+</ol>
 </div>
 </div>
-<div id="qwebr-insertion-location-11"></div>
+<div id="qwebr-insertion-location-13"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Example: traffic density (ctb1traff) and asthma — click to reveal">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 Solution — click to reveal
+<span class="screen-reader-only">Note</span>💡 Example: traffic density (ctb1traff) and asthma — click to reveal
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
 <div id="callout-10" class="callout-10-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div id="qwebr-insertion-location-12"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-</div>
-</div>
-</div>
-<p><strong>Questions to consider:</strong></p>
-<ul>
-<li>Are the median-split and mean-split group sizes similar or different? What does that tell you about the shape of the NDVI distribution?</li>
-<li>What do you gain by dichotomizing (simplicity of interpretation)? What do you lose (variability, statistical power, the ability to detect a dose-response pattern)?</li>
-<li>Would a <strong>fixed threshold</strong> — say, NDVI &gt; 0.3, chosen based on prior literature rather than this sample’s own median — ever make more sense than a data-driven split? When would you want a threshold that doesn’t depend on your own sample?</li>
-</ul>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 Discussion — click to reveal after you've tried both splits yourself">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 Discussion — click to reveal after you’ve tried both splits yourself
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-11" class="callout-11-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<p><strong>Median vs.&nbsp;mean split:</strong> the median split comes out almost perfectly even (1,008 vs.&nbsp;992 — essentially half and half, which is exactly what a median split guarantees by definition). The mean split is noticeably less even (1,104 vs.&nbsp;896). That gap tells you something about the shape of the distribution: the mean (≈ 0.131) is a bit higher than the median (≈ 0.120), which happens when a distribution is <strong>right-skewed</strong> — most tracts cluster at low-to-moderate NDVI, with a smaller number of much-greener tracts pulling the mean upward. Because more of the sample sits below that higher mean value, fewer participants end up in the “high” group under a mean split.</p>
-<p><strong>What you gain and lose by dichotomizing:</strong> you gain simplicity — a single “high vs.&nbsp;low” comparison is about as easy to interpret and communicate as a result gets. You lose the variation <em>within</em> each group (someone just barely above the cutoff is treated identically to someone with the highest NDVI in the whole sample), which costs you statistical power and can hide a dose-response pattern entirely — if risk actually climbs gradually across the full range of NDVI, a single high/low split will only ever show you the average difference between the two halves, not the shape of that climb.</p>
-<p><strong>Fixed threshold vs.&nbsp;data-driven split:</strong> a sample-based split (median or mean) is relative to <em>this</em> dataset — the “high” group here might not be “high” in a different city or a different sample. A fixed threshold grounded in prior literature or a policy standard (like NDVI &gt; 0.3, or the EPA’s ozone standard) instead reflects a threshold that means something on its own, independent of your sample, which makes your results more directly comparable across studies and often more directly relevant to policy. You’d reach for a fixed threshold when that kind of external comparability matters more than describing this particular sample’s own internal distribution.</p>
-</div>
-</div>
-</div>
-</section>
-<section id="a-coding-wrinkle-negative-ndvi-values" class="level2">
-<h2 class="anchored" data-anchor-id="a-coding-wrinkle-negative-ndvi-values">A coding wrinkle: negative NDVI values</h2>
-<p>NDVI ranges from -1 to 1. Negative values indicate water, clouds, snow, or extreme barren land — not “very low greenness” in the way a small positive value would mean. Should tracts with negative NDVI be treated as just another point on the continuous scale, excluded, or coded as their own category?</p>
-<p>There is no universally correct answer — it depends on what negative NDVI <em>means</em> for your research question. Here, we’ll give it its own category rather than either lumping it in with the lowest true-greenness tracts or discarding it outright:</p>
-<div id="qwebr-insertion-location-13"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>Only a handful of participants fall in category 0. A cell that small can cause a regression model to fail to converge later on — so, for this teaching example, we’ll drop them:</p>
 <div id="qwebr-insertion-location-14"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p><strong>Questions to consider:</strong></p>
-<ul>
-<li>Does the row count in <code>new_data</code> match what you’d expect, given how many participants were in category 0?</li>
-<li>Dropping observations is not free — it changes who your study describes. Is dropping 7 people out of ~2,000 participants likely to matter much here? Would your answer change if it were 700 out of 2,000?</li>
-</ul>
-<hr>
-</section>
-</section>
-<section id="part-2-exposure-misclassification" class="level1">
-<h1>Part 2: Exposure Misclassification</h1>
-<p>Coding decisions assume you have an accurate measurement to begin with. Part 2 asks: what if the exposure measurement itself has error?</p>
-<p><strong>Exposure misclassification</strong> occurs when a participant’s true exposure status or level differs from what was recorded. It comes in two flavors, and the distinction matters enormously for how your results should be interpreted:</p>
-<ul>
-<li><strong>Non-differential misclassification</strong>: the error in exposure measurement is unrelated to outcome status. Example: a study estimates each participant’s air pollution exposure using the reading from the nearest monitor, but monitors are only scattered at a handful of fixed locations across a city — not everyone lives equally close to one. That means the monitor someone gets <em>assigned</em> often doesn’t perfectly reflect the air they actually breathe at home, so some participants end up with a misclassified exposure value simply because of how far they happen to live from the nearest monitor. Critically, how far someone lives from a monitor has nothing to do with whether they developed the outcome — the error is essentially random noise with respect to the outcome, which is what makes it non-differential.</li>
-<li><strong>Differential misclassification</strong>: the error in exposure measurement is systematically related to outcome status. Example: a case-control study of pesticide exposure and adverse birth outcomes relying on self-report — parents of an affected child may recall and report past pesticide exposure differently than parents of an unaffected child (recall bias).</li>
-</ul>
-<p><strong>The consequences differ too:</strong></p>
-<ul>
-<li>Non-differential misclassification of a binary exposure <strong>usually</strong> biases the estimate <strong>toward the null</strong> — it dilutes a real association, making it look weaker than it truly is. This is the typical pattern, but it is not an absolute guarantee in every possible scenario (for example, with more than two exposure categories the math can get more complicated) — which is exactly why “usually” is doing real work in that sentence, not just hedging.</li>
-<li>Differential misclassification can bias the estimate <strong>in either direction</strong> — toward or away from the null — because the error itself depends on the very thing you’re trying to measure the effect on.</li>
-</ul>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="images/bias_figure.jpg" class="img-fluid figure-img"></p>
-<figcaption>Non-differential misclassification biases the odds ratio (OR) toward the null; differential misclassification can bias the OR in either direction. Adapted from Grubic et al., <em>Canadian Journal of Cardiology</em>.</figcaption>
-</figure>
-</div>
-<section id="a-simulated-dataset-where-we-know-the-truth" class="level2">
-<h2 class="anchored" data-anchor-id="a-simulated-dataset-where-we-know-the-truth">A simulated dataset where we know the truth</h2>
-<p>In a real study we never observe the <em>true</em> exposure alongside the <em>misclassified</em> one — if we could measure the true value, we wouldn’t have a misclassification problem. So how can we possibly <em>show</em> what misclassification does to an estimate?</p>
-<p>By using <strong>simulated</strong> data. A simulated dataset isn’t collected from real people at all — it’s generated by a computer program that follows rules a researcher specifies in advance. For example: “asthma risk increases with true ozone exposure according to this exact mathematical formula, and then a second, ‘measured’ version of ozone is created by adding some random noise to the true value.” The “participants” aren’t real children, but the relationships in the data are built to resemble a real study closely enough to be a useful stand-in for one. The advantage is total control: because we wrote the rules, we already know the ground truth — the <em>true</em> relationship between ozone and asthma, and exactly how the misclassified versions were generated from it — something that is never available in a real dataset. That lets us compare “true” results against “misclassified” results directly, which is exactly what we need to see misclassification’s consequences with our own eyes rather than just taking the theory on faith.</p>
-<p>To see those consequences, we’ll use a dataset built specifically for this purpose: 500 simulated children in Philadelphia, with <strong>doctor-diagnosed asthma</strong> (yes/no) as the outcome and <strong>three versions of the same ozone exposure</strong> — the true value, and two different misclassified versions.</p>
-<p>In RStudio:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"simulated_ozone_asthma_exposuremisclassification.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>In the browser:</p>
-<div id="qwebr-insertion-location-15"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>💻 In your RStudio script
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>df <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"simulated_ozone_asthma_exposuremisclassification.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-</div>
-<div id="qwebr-insertion-location-16"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<ul>
-<li><strong><code>true_ozone</code></strong> — the exposure we would never actually know in a real study, but we do here because we simulated it.</li>
-<li><strong><code>nondiff_misclass_ozone</code></strong> — <code>true_ozone</code> plus random noise, added <em>regardless</em> of asthma status.</li>
-<li><strong><code>diff_misclass_ozone</code></strong> — <code>true_ozone</code> plus noise added <em>only</em> for children with asthma — intentionally mimicking something like differential recall in a case-control design.</li>
-<li><strong><code>asthma</code></strong> — doctor-diagnosed asthma by age 12 (1 = yes, 0 = no).</li>
-</ul>
-<div id="qwebr-insertion-location-17"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-</section>
-<section id="comparing-the-three-exposure-measures" class="level2">
-<h2 class="anchored" data-anchor-id="comparing-the-three-exposure-measures">Comparing the three exposure measures</h2>
-<div id="qwebr-insertion-location-18"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<div id="qwebr-insertion-location-19"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p><strong>Questions to consider:</strong></p>
-<ul>
-<li>Do the three distributions look roughly similar overall? (They should — misclassification adds <em>noise</em> around the true value; it does not necessarily shift the average.)</li>
-</ul>
-</section>
-<section id="does-the-misclassification-differ-by-asthma-status" class="level2">
-<h2 class="anchored" data-anchor-id="does-the-misclassification-differ-by-asthma-status">Does the misclassification differ by asthma status?</h2>
-<p>This is the key diagnostic question: does the size of the measurement error depend on the outcome?</p>
-<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>🧠 Your Turn
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Compute <code>true_ozone - nondiff_misclass_ozone</code> and <code>true_ozone - diff_misclass_ozone</code> as two new columns, then summarize each <strong>separately for children with and without asthma</strong> (<code>group_by(asthma)</code> + <code>summarise()</code>, or filter into two subsets — either approach works).</p>
-</div>
-</div>
-<div id="qwebr-insertion-location-20"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-14-contents" aria-controls="callout-14" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 Solution — click to reveal
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-14" class="callout-14-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<div id="qwebr-insertion-location-21"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 </div>
 </div>
 </div>
-<p><strong>Questions to consider:</strong></p>
-<ul>
-<li>For the non-differential measure, is the size of the error similar for children with and without asthma?</li>
-<li>For the differential measure, is the error noticeably larger (or more variable) in one group? Given how this dataset was simulated — extra noise added specifically to children <em>with</em> asthma — does that match what you see?</li>
-</ul>
-</section>
-<section id="what-does-this-do-to-our-effect-estimate" class="level2">
-<h2 class="anchored" data-anchor-id="what-does-this-do-to-our-effect-estimate">What does this do to our effect estimate?</h2>
-<p>We’ll fit three logistic regression models — one per exposure measure — to estimate the association between ozone and asthma. (We haven’t covered regression modeling yet; the details of <code>glm()</code> are not the point here. Focus on the <strong>odds ratio</strong> each model produces and how it compares to the “true” one.)</p>
-<div id="qwebr-insertion-location-22"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<div id="qwebr-insertion-location-23"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>An odds ratio of 1 is the null value — no association. Values above 1 indicate higher odds of asthma with higher ozone; values below 1 indicate lower odds.</p>
-<p><strong>Questions to consider:</strong></p>
-<ul>
-<li>Which OR is closest to the “true” one, and which is furthest?</li>
-<li>Does the non-differentially misclassified estimate move toward 1 (the null) relative to the true estimate, as the theory predicts?</li>
-<li>Does the differentially misclassified estimate move in a <em>predictable</em> direction, or does this example show why differential misclassification is harder to reason about in advance?</li>
-<li>If you only had the misclassified data in a real study — which is always true, since you never actually observe <code>true_ozone</code> — would you have any way of knowing which direction, or how far, your estimate had been pushed?</li>
-</ul>
 <hr>
 </section>
 </section>
@@ -2500,45 +2372,74 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Setup ----</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Exposure coding ----</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>))</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Quartiles</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">YOUR_EXPOSURE_quartile =</span> <span class="fu">ntile</span>(YOUR_EXPOSURE, <span class="dv">4</span>))</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(data<span class="sc">$</span>YOUR_EXPOSURE_quartile)</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Median split</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">YOUR_EXPOSURE_high =</span> <span class="fu">ifelse</span>(YOUR_EXPOSURE <span class="sc">&gt;</span> <span class="fu">median</span>(YOUR_EXPOSURE, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="dv">1</span>, <span class="dv">0</span>))</span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(data<span class="sc">$</span>YOUR_EXPOSURE_high)</span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(data, <span class="fu">aes</span>(<span class="at">x =</span> <span class="fu">factor</span>(YOUR_EXPOSURE_quartile), <span class="at">y =</span> YOUR_EXPOSURE)) <span class="sc">+</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_boxplot</span>(<span class="at">fill =</span> <span class="st">"lightblue"</span>) <span class="sc">+</span></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Quartile"</span>, <span class="at">y =</span> <span class="st">"[Exposure label]"</span>, <span class="at">title =</span> <span class="st">"[Exposure] by Quartile"</span>) <span class="sc">+</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Exploring misclassification concepts ----</span></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="co"># There is no "true vs. misclassified" pair for your own project exposure -- that's exactly the</span></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="co"># point: in a real study you never observe ground truth. Use the simulated ozone/asthma example</span></span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="co"># above to reason qualitatively about which kind of misclassification (differential or</span></span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="co"># non-differential) is more plausible for how *your* exposure was measured, and in which</span></span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="co"># direction it's likely to have biased your future regression estimates.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Setup ----</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Read in your processed data ----</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>))</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Helper: exponentiate coefficients and 95% CIs ----</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>extract_ratio <span class="ot">&lt;-</span> <span class="cf">function</span>(model, label) {</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  b  <span class="ot">&lt;-</span> <span class="fu">coef</span>(model)[<span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(<span class="fu">vcov</span>(model)))[<span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(<span class="at">Model =</span> label, <span class="at">Term =</span> <span class="fu">names</span>(b), <span class="at">Estimate =</span> <span class="fu">exp</span>(b),</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>             <span class="at">CI_Lower =</span> <span class="fu">exp</span>(b <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> se), <span class="at">CI_Upper =</span> <span class="fu">exp</span>(b <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> se),</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>             <span class="at">row.names =</span> <span class="cn">NULL</span>)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="co"># ============================================================</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co"># REPLACE: swap in your own exposure and outcome variable names</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="co"># ============================================================</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Outcome: binary or continuous? rare or common? ----</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(data<span class="sc">$</span>YOUR_OUTCOME, <span class="at">useNA =</span> <span class="st">"ifany"</span>)</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="fu">prop.table</span>(<span class="fu">table</span>(data<span class="sc">$</span>YOUR_OUTCOME))</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Crude model, continuous exposure (rescale if needed) ----</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">YOUR_EXPOSURE_scaled =</span> YOUR_EXPOSURE <span class="sc">*</span> <span class="dv">10</span>)   <span class="co"># adjust the scaling</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>model_cont <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE_scaled, <span class="at">data =</span> data,</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>                  <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"log"</span>))   <span class="co"># continuous outcome: lm(YOUR_OUTCOME ~ ...)</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="fu">extract_ratio</span>(model_cont, <span class="st">"Continuous"</span>)</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Linearity check: quartiles as indicator terms ----</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">YOUR_EXPOSURE_quartile =</span> <span class="fu">factor</span>(<span class="fu">ntile</span>(YOUR_EXPOSURE, <span class="dv">4</span>)))</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>model_quart <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE_quartile, <span class="at">data =</span> data,</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>                   <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>medians <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(YOUR_EXPOSURE_quartile) <span class="sc">%&gt;%</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">median_exposure =</span> <span class="fu">median</span>(YOUR_EXPOSURE, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">extract_ratio</span>(model_quart, <span class="st">"Quartiles"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">YOUR_EXPOSURE_quartile =</span> <span class="fu">factor</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">4</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">data.frame</span>(<span class="at">YOUR_EXPOSURE_quartile =</span> <span class="fu">factor</span>(<span class="dv">1</span>), <span class="at">Estimate =</span> <span class="dv">1</span>,</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>                       <span class="at">CI_Lower =</span> <span class="dv">1</span>, <span class="at">CI_Upper =</span> <span class="dv">1</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(medians, <span class="at">by =</span> <span class="st">"YOUR_EXPOSURE_quartile"</span>)</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(results, <span class="fu">aes</span>(<span class="at">x =</span> median_exposure, <span class="at">y =</span> Estimate)) <span class="sc">+</span></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">1</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> CI_Lower, <span class="at">ymax =</span> CI_Upper), <span class="at">width =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span></span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Median [exposure] in quartile"</span>, <span class="at">y =</span> <span class="st">"Prevalence ratio (95% CI)"</span>,</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"[Outcome] by [exposure] quartile (reference = Q1)"</span>) <span class="sc">+</span></span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 <hr>
 </section>
 <section id="wrap-up" class="level1">
 <h1>Wrap Up</h1>
+<p>This tutorial covered:</p>
 <ul>
-<li>Exposure coding decisions (continuous, categorical, dichotomized) trade off statistical power and the ability to detect non-linear patterns against interpretability — there’s no universally correct choice, only a justified one.</li>
-<li>Exposure misclassification is the gap between what you measured and what’s actually true, and it comes in two kinds: <strong>non-differential</strong> (error unrelated to outcome status) and <strong>differential</strong> (error related to outcome status).</li>
-<li>Non-differential misclassification of a binary exposure usually biases toward the null. Differential misclassification can bias in either direction.</li>
-<li>Because we never observe ground truth in a real study, thinking carefully about <em>how</em> an exposure was measured — and what could make that error differ by outcome status — is often the only tool available for reasoning about the direction of bias.</li>
+<li>Choosing a model from the outcome type, and preferring the log-binomial model (prevalence ratio) over logistic regression (odds ratio) when a binary outcome is common</li>
+<li>Reproducing a hand-calculated two-by-two table estimate with a regression model, and exponentiating coefficients and confidence intervals to get ratio measures</li>
+<li>Rescaling a continuous exposure so that “one unit” is a meaningful comparison</li>
+<li>Checking the linearity assumption with categorical indicator terms, plotting the estimates, and deciding whether to keep a continuous term, collapse categories, or use a spline</li>
 </ul>
-<p><strong>Next in the course:</strong> regression modeling — how we actually estimate and interpret the exposure-outcome associations we’ve been setting up to study since Lesson 2.</p>
+<p>The crude model and linearity check you completed for your own project are the core of Milestone 2. See the <strong>Apply</strong> page for what’s due.</p>
+<p><strong>Next week (Week 6):</strong> Confounding and causal diagrams — every model in this tutorial was <strong>crude</strong> (unadjusted). Next week you’ll use a DAG to decide which variables belong in the model alongside your exposure, and see how adjusting for them changes your estimate.</p>
 
 
 </section>
