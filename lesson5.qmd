@@ -328,30 +328,39 @@ Dichotomizing at the median throws away information: someone at the 51st percent
 canopy is treated the same as someone at the 99th. Entering `hrlctree` as a continuous term uses
 all the information available. But recall that `hrlctree` is a **proportion** (0 to 1), so a
 "one-unit increase" would mean going from 0% to 100% canopy — a meaningless comparison. We rescale
-so that one unit equals a **10-percentage-point** increase in tree canopy cover (for example, from
-10% to 20%).
+by multiplying by 100, so that the exposure is a **percentage** (0 to 100) and a one-unit increase
+means a **one-percentage-point** increase in tree canopy cover (for example, from 12% to 13%).
 
 ```{webr-r}
 data <- data %>%
-  mutate(hrlctree_10 = hrlctree * 10)   # 1 unit = 10 percentage points of canopy
+  mutate(hrlctree_pct = hrlctree * 100)   # percent canopy: 1 unit = 1 percentage point
 
-model_cont <- glm(high_blood_pressure ~ hrlctree_10, data = data,
+summary(data$hrlctree_pct)                # check the rescaling: now about 2 to 63
+
+model_cont <- glm(high_blood_pressure ~ hrlctree_pct, data = data,
                   family = binomial(link = "log"))
 
 summary(model_cont)
 
-extract_ratio(model_cont, "Log-binomial, continuous (per 10 percentage points)")
+extract_ratio(model_cont, "Log-binomial, continuous (per 1 percentage point)")
 ```
 
 **Questions to consider:**
 
-- Interpret the PR per 10-percentage-point increase in tree canopy.
-- This model assumes that *every* 10-point increase — from 5% to 15%, or from 40% to 50% —
+- Interpret the PR per one-percentage-point increase in tree canopy.
+- This model assumes that *every* one-point increase — from 5% to 6%, or from 40% to 41% —
   multiplies prevalence by the same amount. Is that a reasonable assumption?
 
 ::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
-- Each 10-percentage-point increase in census-tract tree canopy cover was associated with a
-  **24% lower prevalence** of high blood pressure (PR = 0.76; 95% CI: 0.70, 0.84).
+- Each one-percentage-point increase in census-tract tree canopy cover was associated with a
+  **2.7% lower prevalence** of high blood pressure (PR = 0.973; 95% CI: 0.964, 0.983). Because the
+  PR for a single percentage point is close to 1, report it to three decimal places so the
+  estimate and CI are distinguishable.
+- A one-point change is small relative to the range of canopy (about 2% to 63%). Because the model
+  multiplies the PR for each additional point, you can also describe a larger contrast by raising
+  the PR to that power: for a 10-point increase, 0.973¹⁰ ≈ 0.76, or about 24% lower prevalence.
+  (In R: `exp(10 * coef(model_cont)[2])`.) The model and its assumptions are the same; only the size
+  of the comparison you report changes.
 - We can't tell from this model — a single continuous term will return one PR no matter what the
   true shape of the relationship is. That is exactly what Part 2 checks.
 :::
@@ -375,7 +384,7 @@ library(sandwich)
 library(lmtest)
 
 # Fit a Poisson model with a log link (same outcome and exposure as the log-binomial model)
-model_pois <- glm(high_blood_pressure ~ hrlctree_10, data = data,
+model_pois <- glm(high_blood_pressure ~ hrlctree_pct, data = data,
                   family = poisson(link = "log"))
 
 # Replace the usual standard errors with robust ones
@@ -578,7 +587,7 @@ what range of the exposure each category covers before interpreting the shape.
 There is no single right answer about what to do next — reasonable options include:
 
 - **Keep the continuous term**, if you judge the departure from linearity to be small. It is the
-  most efficient and easiest to communicate (one PR per 10 percentage points).
+  most efficient and easiest to communicate (one PR per percentage point of canopy).
 - **Collapse categories that look alike.** Here, Q1–Q3 could be combined into one reference group
   and compared with Q4 (the top quartile): fewer coefficients, and the estimate reflects where the
   change actually appears.
@@ -676,7 +685,7 @@ a single straight line on the log scale (the AICs differ by less than 1). The tw
 mainly at the lowest canopy values, where the spline levels off, and slightly at the highest values,
 where few participants live. So, for tree canopy and high
 blood pressure, the linearity assumption appears to be a reasonable approximation, and a
-continuous term per 10 percentage points is a defensible choice. The quartile plot is still
+continuous term (per percentage point of canopy) is a defensible choice. The quartile plot is still
 valuable: it shows *where* along the canopy range the association is concentrated.
 :::
 
@@ -776,10 +785,11 @@ hist(data$YOUR_EXPOSURE)
 
 # ---- OPTIONAL: rescale a continuous exposure ----
 # Only needed if a one-unit change isn't meaningful for your exposure. For a proportion
-# (0-1, like tree canopy), multiplying by 10 makes one unit = 10 percentage points.
+# (0-1, like tree canopy), multiplying by 100 converts it to a percentage, so one unit =
+# one percentage point.
 # Choose the scaling based on your exposure's units and distribution -- or skip this step
 # and use YOUR_EXPOSURE directly below.
-data <- data %>% mutate(YOUR_EXPOSURE_scaled = YOUR_EXPOSURE * 10)   # adjust the scaling
+data <- data %>% mutate(YOUR_EXPOSURE_scaled = YOUR_EXPOSURE * 100)   # adjust the scaling
 
 # ---- Crude model, continuous exposure ----
 model_cont <- glm(YOUR_OUTCOME ~ YOUR_EXPOSURE_scaled, data = data,
