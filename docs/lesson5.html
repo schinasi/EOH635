@@ -2170,6 +2170,14 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 <p>Before fitting any model, let’s calculate the association the old-fashioned way, so you can see exactly what the regression model will reproduce. We’ll use tree canopy <strong>dichotomized at the median</strong> — the same kind of binary exposure you created in Lesson 4.</p>
 <div id="qwebr-insertion-location-5"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p><strong>What each step of the code does:</strong></p>
+<ol type="1">
+<li><strong>Create a binary exposure.</strong> <code>median(hrlctree, na.rm = TRUE)</code> finds the median tree canopy value (about 0.12, or 12%); <code>na.rm = TRUE</code> tells R to ignore any missing values when doing so. <code>ifelse()</code> then checks each participant: if their tract’s canopy is <em>above</em> the median, the new variable <code>tree_high</code> is set to 1 (“high canopy”); otherwise it is set to 0 (“low canopy”). <code>mutate()</code> adds <code>tree_high</code> to the data as a new column, leaving <code>hrlctree</code> unchanged.</li>
+<li><strong>Build the two-by-two table.</strong> <code>table()</code> counts how many participants fall into each combination of <code>tree_high</code> (the rows) and <code>high_blood_pressure</code> (the columns). The names before the <code>=</code> signs (<code>Tree_high</code>, <code>HBP</code>) are just labels for the printed table. Typing <code>two_by_two</code> on its own line prints it. Participants missing <code>high_blood_pressure</code> are left out of the table.</li>
+<li><strong>Save the four counts.</strong> Each line stores one cell of the table under a letter — A, B, C, or D — so that we can use it in the formulas that follow. The numbers in square brackets tell R which cell to take: the first is the row and the second is the column. The table below the code shows which group of people each letter represents.</li>
+<li><strong>Calculate the prevalence in each group.</strong> Prevalence is the number of people with the outcome divided by everyone in that group. Among high-canopy participants that is A / (A + B); among low-canopy participants it is C / (C + D).</li>
+<li><strong>Calculate the measures of association.</strong> The prevalence ratio divides the prevalence in the high-canopy group by the prevalence in the low-canopy group. The odds ratio is the cross-product (A × D) / (B × C). <code>c()</code> combines the four results into one labeled list, so they print together.</li>
+</ol>
 <p>Each of the four cells in the table counts a different group of people:</p>
 <table class="caption-top table">
 <colgroup>

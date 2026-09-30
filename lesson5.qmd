@@ -182,6 +182,29 @@ c(prevalence_exposed = prev_exposed,
   odds_ratio = (A * D) / (B * C))
 ```
 
+**What each step of the code does:**
+
+1. **Create a binary exposure.** `median(hrlctree, na.rm = TRUE)` finds the median tree canopy
+   value (about 0.12, or 12%); `na.rm = TRUE` tells R to ignore any missing values when doing so.
+   `ifelse()` then checks each participant: if their tract's canopy is *above* the median, the new
+   variable `tree_high` is set to 1 ("high canopy"); otherwise it is set to 0 ("low canopy").
+   `mutate()` adds `tree_high` to the data as a new column, leaving `hrlctree` unchanged.
+2. **Build the two-by-two table.** `table()` counts how many participants fall into each
+   combination of `tree_high` (the rows) and `high_blood_pressure` (the columns). The names before
+   the `=` signs (`Tree_high`, `HBP`) are just labels for the printed table. Typing `two_by_two` on
+   its own line prints it. Participants missing `high_blood_pressure` are left out of the table.
+3. **Save the four counts.** Each line stores one cell of the table under a letter — A, B, C, or D —
+   so that we can use it in the formulas that follow. The numbers in square brackets tell R which
+   cell to take: the first is the row and the second is the column. The table below the code shows
+   which group of people each letter represents.
+4. **Calculate the prevalence in each group.** Prevalence is the number of people with the outcome
+   divided by everyone in that group. Among high-canopy participants that is A / (A + B); among
+   low-canopy participants it is C / (C + D).
+5. **Calculate the measures of association.** The prevalence ratio divides the prevalence in the
+   high-canopy group by the prevalence in the low-canopy group. The odds ratio is the
+   cross-product (A × D) / (B × C). `c()` combines the four results into one labeled list, so they
+   print together.
+
 Each of the four cells in the table counts a different group of people:
 
 | | High blood pressure (HBP = 1) | No high blood pressure (HBP = 0) |
