@@ -324,8 +324,10 @@ bind_rows(
 
 ## Step 4: Entering the exposure as a continuous term
 
-Dichotomizing at the median throws away information: someone at the 51st percentile of tree
-canopy is treated the same as someone at the 99th. Entering `hrlctree` as a continuous term uses
+Dichotomizing at the median throws away information. By creating a binary variable in this way,
+we are in essence treating someone who lives in a census tract with 13% tree canopy coverage (just
+greater than the median) the same as someone living in a tract with ~63% coverage (the maximum of
+the distribution). Entering `hrlctree` as a continuous term uses
 all the information available. But recall that `hrlctree` is a **proportion** (0 to 1), so a
 "one-unit increase" would mean going from 0% to 100% canopy — a meaningless comparison. We rescale
 by multiplying by 100, so that the exposure is a **percentage** (0 to 100) and a one-unit increase
