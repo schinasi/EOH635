@@ -18,13 +18,13 @@ filters:
   - webr
 ---
 
-In [Lesson 4](lesson4.qmd) you decided how to code your exposure. In this week's Learn materials you saw how to choose a regression model based on your outcome,
-how to interpret the estimate it produces, and why the assumption that an exposure is related to
-the outcome "in a straight line" needs to be checked rather than assumed. This tutorial is the
-**Practice** half, in two parts:
+In [Lesson 4](lesson4.qmd) you decided how to code your exposure. This lesson puts that exposure
+into a regression model: choosing a model based on your outcome, interpreting the estimate it
+produces, and checking whether the assumption that the exposure is related to the outcome "in a
+straight line" actually holds. It has two parts:
 
 1. **Choosing, fitting, and interpreting a crude model** — starting from a two-by-two table you
-   can calculate by hand, then fitting the same comparison as a logistic and a log-binomial
+   can calculate by hand, then making the same comparison with a logistic and a log-binomial
    regression model, then entering the exposure as a continuous term. Worked example: tree
    canopy cover and high blood pressure, the course's primary exposure–outcome relationship.
 2. **Checking the linearity assumption** — categorizing the exposure, fitting a model with one
@@ -32,8 +32,7 @@ the outcome "in a straight line" needs to be checked rather than assumed. This t
    really is a straight line.
 
 Both parts end with a **🧠 Your Turn** for the exposure and outcome in your own project. Together
-they produce the crude model and the evaluation of functional form that Milestone 2 asks for (see
-the **Apply** page).
+they produce the crude model and the evaluation of functional form that Milestone 2 asks for.
 
 ::: {.callout-important}
 ## How to use this tutorial
@@ -48,6 +47,8 @@ just refresh the page to start that box over.
 
 Sections marked **🧠 Your Turn** give you a task and a blank or partially blank code editor. Try
 writing the code yourself before revealing the solution, hidden in a collapsed box underneath.
+Boxes labeled **💡 Answers** work the same way: think through the questions first, then click to
+check your reasoning.
 
 **A note on browser vs. RStudio code:** chunks labeled `#| autorun: true` fetch data from the web
 in the background so it's available in your browser. **When you write your own scripts in
@@ -58,8 +59,8 @@ labeled **"In your RStudio script"** shows the simpler code you'll actually use.
 ::: {.callout-note}
 ## Doing this in RStudio instead of (or in addition to) the browser?
 
-This tutorial uses **`class_data_processed.csv`**, the same merged file from Weeks 1, 3, and 4.
-If you saved your Week 4 exposure coding in your project script, run that code first so your
+This tutorial uses **`class_data_processed.csv`**, the same merged file from Lessons 1, 3, and 4.
+If you saved your Lesson 4 exposure coding in your project script, run that code first so your
 categorical and binary exposure variables exist. See the [Data Codebook](codebook.qmd) for
 variable definitions.
 :::
@@ -100,77 +101,170 @@ data <- read.csv(file.path("data_processed", "class_data_processed.csv"))
 ```
 :::
 
-## Step 1: What kind of outcome do you have — and is it rare or common?
+## A reminder: how is tree canopy coded?
 
-The type of outcome determines the model (see the model-choice table in the Learn materials).
-`high_blood_pressure` is **binary** (1 = diagnosed, 0 = not), so a linear regression model is not
-appropriate — we need logistic or log-binomial regression. Which of those two to prefer depends on
-whether the outcome is rare or common.
+Before modeling an exposure, remind yourself what its values mean and what its distribution looks
+like — you characterized this in Lesson 3, and it matters again here.
 
 ```{webr-r}
-table(data$high_blood_pressure, useNA = "ifany")
-prop.table(table(data$high_blood_pressure))
+summary(data$hrlctree)
+
+ggplot(data, aes(x = hrlctree)) +
+  geom_histogram(bins = 30, fill = "seagreen", color = "white") +
+  labs(x = "Tree canopy cover (proportion of census tract)", y = "Number of participants",
+       title = "Distribution of tree canopy cover among participants") +
+  theme_minimal()
+```
+
+A few things to keep in mind about `hrlctree`:
+
+- It is a **proportion**, from 0 to 1: a value of 0.12 means 12% of the participant's census
+  tract is covered by tree canopy. In our data it ranges from about 0.02 (2%) to 0.63 (63%), with
+  a median of about 0.12 (12%).
+- It is measured at the **census-tract level**, not for each person: every participant who lives
+  in the same tract has the same value. The 2,000 participants live in 363 tracts.
+- It is **right-skewed**: most participants live in tracts with 5–20% canopy, and a small number
+  live in much greener tracts. Keep this in mind in Part 2 — it affects how wide each quartile is.
+
+## Step 1: What kind of outcome do you have — and is it rare or common?
+
+The type of outcome determines the model. `high_blood_pressure` is **binary** (1 = diagnosed,
+0 = not), so a linear regression model is not appropriate — we need logistic or log-binomial
+regression. Which of those two to prefer depends on whether the outcome is rare or common.
+
+```{webr-r}
+table(data$high_blood_pressure, useNA = "ifany")   # counts, including missing (NA)
+prop.table(table(data$high_blood_pressure))        # proportions among those with data
 ```
 
 **Questions to consider:**
 
 - What proportion of participants have high blood pressure? Would you call that rare or common?
-- How many participants are missing this outcome? (These will be dropped from every model below.)
+- How many participants are missing this outcome?
+
+::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
+- About **30%** of participants with data (606 of 1,988) have high blood pressure. That is a
+  **common** outcome — a rough rule of thumb is that an outcome is "rare" if it affects fewer than
+  about 10% of people.
+- **12** participants are missing `high_blood_pressure`. R will drop them automatically from every
+  model below, so all models are fit on the 1,988 participants with data.
+:::
 
 ## Step 2: A two-by-two table you can calculate by hand
 
 Before fitting any model, let's calculate the association the old-fashioned way, so you can see
-exactly what the regression model will reproduce. We'll use a median split of tree canopy cover —
-the same kind of binary exposure you created in Week 4.
+exactly what the regression model will reproduce. We'll use tree canopy **dichotomized at the
+median** — the same kind of binary exposure you created in Lesson 4.
 
 ```{webr-r}
+# 1. Create a binary exposure: 1 = tract canopy above the median ("high canopy"), 0 = at or below it
 data <- data %>%
   mutate(tree_high = ifelse(hrlctree > median(hrlctree, na.rm = TRUE), 1, 0))
 
+# 2. Cross-tabulate exposure (rows) by outcome (columns) and print the table
 two_by_two <- table(Tree_high = data$tree_high, HBP = data$high_blood_pressure)
 two_by_two
 
-A <- two_by_two[2, 2]  # exposed (high canopy), cases
-B <- two_by_two[2, 1]  # exposed, non-cases
-C <- two_by_two[1, 2]  # unexposed (low canopy), cases
-D <- two_by_two[1, 1]  # unexposed, non-cases
+# 3. Pull out the four cell counts (see the table below the code for what each one is)
+A <- two_by_two[2, 2]  # high canopy, high blood pressure
+B <- two_by_two[2, 1]  # high canopy, no high blood pressure
+C <- two_by_two[1, 2]  # low canopy,  high blood pressure
+D <- two_by_two[1, 1]  # low canopy,  no high blood pressure
 
-prev_exposed   <- A / (A + B)
-prev_unexposed <- C / (C + D)
+# 4. Prevalence of high blood pressure in each exposure group = cases / everyone in that group
+prev_exposed   <- A / (A + B)   # among people in high-canopy tracts
+prev_unexposed <- C / (C + D)   # among people in low-canopy tracts
 
+# 5. The prevalence ratio divides the two prevalences; the odds ratio uses the cross-product
 c(prevalence_exposed = prev_exposed,
   prevalence_unexposed = prev_unexposed,
   prevalence_ratio = prev_exposed / prev_unexposed,
   odds_ratio = (A * D) / (B * C))
 ```
 
-Recall the bracket syntax `[row, column]`: row 2 is `tree_high = 1`, column 2 is
-`high_blood_pressure = 1`.
+Each of the four cells in the table counts a different group of people:
+
+| | High blood pressure (HBP = 1) | No high blood pressure (HBP = 0) |
+|---|---|---|
+| **High canopy** (`tree_high = 1`) | **A** = people in high-canopy tracts *with* high blood pressure | **B** = people in high-canopy tracts *without* high blood pressure |
+| **Low canopy** (`tree_high = 0`) | **C** = people in low-canopy tracts *with* high blood pressure | **D** = people in low-canopy tracts *without* high blood pressure |
+
+Note that R prints the table with the `0` (low canopy, no high blood pressure) row and column
+first, so the printed table is arranged D, C / B, A — which is why the code picks each count out
+by position.
+
+::: {.callout-note}
+## Prevalence, not risk
+
+Because the class dataset is a **cross-sectional** survey — everyone was surveyed at one point in
+time — we are comparing the *prevalence* of high blood pressure (who has it now), not the *risk*
+of developing it over follow-up. That is why we call this a **prevalence ratio** rather than a
+risk ratio.
+:::
 
 **Questions to consider:**
 
+- What is the prevalence of high blood pressure in each canopy group?
 - Is the prevalence ratio (PR) or the odds ratio (OR) further from the null value of 1? Why does
   that happen with an outcome this common?
-- Because this is a **cross-sectional** survey, we are comparing *prevalence*, not *risk*. That is
-  why we call this a prevalence ratio rather than a risk ratio.
+
+::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
+- The prevalence is **25.5%** in high-canopy tracts (252 of 987) and **35.4%** in low-canopy
+  tracts (354 of 1,001).
+- PR = 0.255 / 0.354 = **0.72**; OR = **0.63**. The **OR is further from the null**. Odds are
+  prevalence divided by one minus prevalence, p / (1 − p). When p is small, 1 − p is close to 1,
+  so odds and prevalence are nearly the same. When p is large (here, around 0.3), dividing by
+  1 − p stretches the odds away from the prevalence, and the OR ends up further from 1 than the
+  PR. Describing the OR of 0.63 as if it were a PR would overstate how much lower high blood
+  pressure is in greener tracts.
+:::
 
 ## Step 3: The same comparison as a regression model
 
-Now fit the same median-split comparison two ways. The `extract_ratio()` helper below
-exponentiates a model's coefficient and its 95% confidence interval — the same steps as the
-`extract_or()` function from Week 4, just renamed because it now produces prevalence ratios as
-well as odds ratios.
+Now, we will make the same comparison, running both a logistic and a log-binomial regression
+model. We will use the results from these models to calculate the odds ratio and its 95%
+confidence interval (CI), and the prevalence ratio and its 95% CI.
+
+The two models differ only in their **link function** — what the model treats as a straight-line
+function of the exposure:
+
+- **Logistic regression**, `binomial(link = "logit")`, models the **log odds** of the outcome.
+- **Log-binomial regression**, `binomial(link = "log")`, models the **log prevalence**.
+
+::: {.callout-note}
+## Why do we exponentiate the coefficient and the CI?
+
+Because both models work on the **log scale**, the coefficient R reports for `tree_high` is not a
+ratio — it is a *difference in logs*. For the log-binomial model:
+
+- log(prevalence in high-canopy tracts) = β₀ + β₁
+- log(prevalence in low-canopy tracts) = β₀
+- the difference, **β₁**, is log(prevalence high) − log(prevalence low) = **log(PR)**
+
+To get back from log(PR) to the PR itself, we undo the log by exponentiating: **PR = exp(β₁)**.
+(The same logic applied to log odds gives OR = exp(β₁) for the logistic model.)
+
+The 95% CI is built on the same log scale, as β₁ ± 1.96 × SE, so we exponentiate its two
+endpoints the same way: **exp(β₁ − 1.96 × SE)** and **exp(β₁ + 1.96 × SE)**. That is also why ratio
+CIs are not symmetric around the estimate — they are symmetric on the log scale, not on the
+ratio scale.
+:::
+
+The `extract_ratio()` helper below does these steps for us: it pulls out each coefficient and its
+standard error, then exponentiates the coefficient and both CI endpoints. It is the same idea as
+the `extract_or()` function from Lesson 4, just renamed because it now produces prevalence ratios
+as well as odds ratios.
 
 ```{webr-r}
 extract_ratio <- function(model, label) {
-  b  <- coef(model)[-1]
-  se <- sqrt(diag(vcov(model)))[-1]
+  b  <- coef(model)[-1]                  # coefficients (log scale), dropping the intercept
+  se <- sqrt(diag(vcov(model)))[-1]      # their standard errors
   data.frame(
     Model    = label,
     Term     = names(b),
-    Estimate = exp(b),
-    CI_Lower = exp(b - 1.96 * se),
-    CI_Upper = exp(b + 1.96 * se),
+    Estimate = exp(b),                   # exponentiate -> OR or PR
+    CI_Lower = exp(b - 1.96 * se),       # exponentiate the lower CI endpoint
+    CI_Upper = exp(b + 1.96 * se),       # exponentiate the upper CI endpoint
     row.names = NULL
   )
 }
@@ -189,30 +283,30 @@ bind_rows(
 )
 ```
 
-The two models differ only in their **link function**: `binomial(link = "logit")` models the log
-odds of the outcome, while `binomial(link = "log")` models the log prevalence.
-
 **Questions to consider:**
 
 - Compare each estimate to the one you calculated by hand in Step 2. Do they match?
-- Write a one-sentence interpretation of the PR. (Check your wording against the interpretation
-  template in the Learn materials.)
+- Write a one-sentence interpretation of the PR and its 95% CI.
 
-::: {.callout-note collapse="true" title="💡 Example interpretation — click to reveal after you've written your own"}
-The prevalence of high blood pressure among participants living in census tracts with
-above-median tree canopy cover was 0.72 times the prevalence among those living in tracts with
-below-median canopy (95% CI: 0.63, 0.83) — about 28% lower. The odds ratio (0.63) is further from
-the null than the PR (0.72) because high blood pressure is common here (about 30% prevalence);
-reporting the OR as if it were a PR would overstate the strength of the association.
+::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've written your own"}
+- Yes — the logistic model's OR (0.63) and the log-binomial model's PR (0.72) match the
+  two-by-two table exactly. A crude model with a single binary exposure is doing the same
+  calculation as the table; what the model adds is a confidence interval, and (from next week)
+  the ability to adjust for other variables.
+- *Example interpretation:* The prevalence of high blood pressure among participants living in
+  census tracts with tree canopy above the median was 0.72 times the prevalence among those living
+  in tracts at or below the median (95% CI: 0.63, 0.83) — about 28% lower. Because the whole CI is
+  below 1, the data are not consistent with no association (a PR of 1).
 :::
 
 ## Step 4: Entering the exposure as a continuous term
 
-A median split throws away information: someone at the 51st percentile of tree canopy is treated
-the same as someone at the 99th. Entering `hrlctree` as a continuous term uses all of it. But
-`hrlctree` is a **proportion** (0 to 1), so a "one-unit increase" would mean going from 0% to 100%
-canopy — a meaningless comparison. We rescale so that one unit equals a **10-percentage-point**
-increase in tree canopy cover.
+Dichotomizing at the median throws away information: someone at the 51st percentile of tree
+canopy is treated the same as someone at the 99th. Entering `hrlctree` as a continuous term uses
+all the information available. But recall that `hrlctree` is a **proportion** (0 to 1), so a
+"one-unit increase" would mean going from 0% to 100% canopy — a meaningless comparison. We rescale
+so that one unit equals a **10-percentage-point** increase in tree canopy cover (for example, from
+10% to 20%).
 
 ```{webr-r}
 data <- data %>%
@@ -230,30 +324,43 @@ extract_ratio(model_cont, "Log-binomial, continuous (per 10 percentage points)")
 
 - Interpret the PR per 10-percentage-point increase in tree canopy.
 - This model assumes that *every* 10-point increase — from 5% to 15%, or from 40% to 50% —
-  multiplies prevalence by the same amount. Is that a reasonable assumption? That is exactly what
-  Part 2 checks.
+  multiplies prevalence by the same amount. Is that a reasonable assumption?
+
+::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
+- Each 10-percentage-point increase in census-tract tree canopy cover was associated with a
+  **24% lower prevalence** of high blood pressure (PR = 0.76; 95% CI: 0.70, 0.84).
+- We can't tell from this model — a single continuous term will return one PR no matter what the
+  true shape of the relationship is. That is exactly what Part 2 checks.
+:::
 
 ::: {.callout-note collapse="true" title="💡 What if my log-binomial model won't converge?"}
 Log-binomial models sometimes fail with an error like *"no valid set of coefficients has been
 found: please supply starting values"*. This happens because predicted prevalences must stay below
-1, which the fitting algorithm can struggle with. Two common fixes:
+1, which the fitting algorithm can struggle with — especially when an exposure has a few extremely
+high values. Two common fixes:
 
 1. **Supply starting values.** Set the intercept to the log of the overall prevalence and the other
    coefficients to 0, e.g. `start = c(log(0.3), 0)` for a model with one exposure term.
 2. **Use a modified Poisson model** — a Poisson model with robust ("sandwich") standard errors,
-   which also estimates a prevalence ratio. In RStudio:
+   which also estimates a prevalence ratio.
+
+**Code: running a modified Poisson model (in RStudio)**
 
 ```r
+# Packages for robust ("sandwich") standard errors -- install once with install.packages()
 library(sandwich)
 library(lmtest)
 
+# Fit a Poisson model with a log link (same outcome and exposure as the log-binomial model)
 model_pois <- glm(high_blood_pressure ~ hrlctree_10, data = data,
                   family = poisson(link = "log"))
 
+# Replace the usual standard errors with robust ones
 robust_se <- vcovHC(model_pois, type = "HC0")
-coeftest(model_pois, vcov = robust_se)                 # coefficients with robust SEs
-exp(coefci(model_pois, vcov = robust_se))              # PR 95% CI
-exp(coef(model_pois))                                  # PR point estimate
+
+coeftest(model_pois, vcov = robust_se)      # coefficients with robust SEs
+exp(coef(model_pois))                       # PR point estimate
+exp(coefci(model_pois, vcov = robust_se))   # PR 95% CI
 ```
 :::
 
@@ -261,12 +368,12 @@ exp(coef(model_pois))                                  # PR point estimate
 
 ::: {.callout-tip title="🧠 Your Turn: Fit a crude model for your own project"}
 Using the **exposure and outcome from your project** (and the exposure coding you decided on in
-Week 4):
+Lesson 4):
 
 1. Check whether your outcome is binary or continuous and, if binary, how common it is.
 2. Fit the appropriate crude model: log-binomial (or logistic, if you can justify it) for a binary
-   outcome, or `lm()` for a continuous one. If your exposure is a proportion or has large units,
-   rescale it first so a one-unit change is meaningful.
+   outcome, or `lm()` for a continuous one. If your exposure is continuous and a one-unit change
+   isn't meaningful (e.g., it's a proportion), rescale it first.
 3. Use `extract_ratio()` to get your estimate and 95% CI (skip the exponentiating for a linear
    model — use `coef()` and `confint()` instead), and write a one-sentence interpretation.
 :::
@@ -281,31 +388,31 @@ Week 4):
 # Asthma is binary; how common is it?
 prop.table(table(data$asthma))
 
-# ctb1traff is strongly right-skewed (recall your Week 3 histogram), so we use a
-# log2 transformation: 1 unit = a doubling of traffic density
+# Traffic density dichotomized at the median: 1 = above the median, 0 = at or below it
 data <- data %>%
-  mutate(traffic_log2 = log2(ctb1traff))
+  mutate(traffic_high = ifelse(ctb1traff > median(ctb1traff, na.rm = TRUE), 1, 0))
 
-model_asthma <- glm(asthma ~ traffic_log2, data = data,
-                    family = binomial(link = "log"))
+model_asthma_pr <- glm(asthma ~ traffic_high, data = data, family = binomial(link = "log"))
+model_asthma_or <- glm(asthma ~ traffic_high, data = data, family = binomial(link = "logit"))
 
 bind_rows(
-  extract_ratio(model_asthma, "Log-binomial (PR)"),
-  extract_ratio(glm(asthma ~ traffic_log2, data = data, family = binomial), "Logistic (OR)")
+  extract_ratio(model_asthma_pr, "Log-binomial (PR)"),
+  extract_ratio(model_asthma_or, "Logistic (OR)")
 )
 ```
 
-Interpretation: each doubling of census-tract traffic density was associated with a 1.66-fold
-higher prevalence of asthma (95% CI: 1.49, 1.84).
+Interpretation: the prevalence of asthma among participants living in census tracts with traffic
+density above the median was 1.81 times the prevalence among those in tracts at or below the median
+(95% CI: 1.37, 2.38).
 
-Asthma affects about 10% of participants, so the OR (1.73) and PR are closer to each other here
-than they were for high blood pressure — the rarer the outcome, the better the OR approximates the
-PR.
+Asthma affects only about 10% of participants, so the OR (1.93) and PR are closer to each other
+here than they were for high blood pressure — the rarer the outcome, the better the OR approximates
+the PR.
 
-Why not simply rescale to "per 10,000 units," as we did for tree canopy? Try it: a log-binomial
-model with `ctb1traff / 10000` fails with *"no valid set of coefficients has been found"*. The
-handful of tracts with extremely high traffic push predicted prevalence above 1, which a log link
-cannot allow. The log transformation handles the skew and fixes the convergence problem together.
+Why dichotomize rather than enter traffic as a continuous term? Traffic density is very
+right-skewed — a handful of tracts have traffic many times higher than everyone else — and a
+log-binomial model with continuous traffic fails to converge for exactly the reason described in
+the "won't converge" box above. The quartile approach in Part 2 is another way to handle it.
 :::
 
 ---
@@ -313,15 +420,15 @@ cannot allow. The log transformation handles the skew and fixes the convergence 
 # Part 2: Checking the Linearity Assumption
 
 The continuous model in Step 4 produced **one** number to summarize the whole relationship. The
-check below asks whether that one number is a fair summary. The steps (from the Learn materials):
+check below asks whether that one number is a fair summary. The steps:
 
 1. Categorize the exposure into several groups (quartiles here).
 2. Fit a model with a separate **indicator term** for each category, compared with a reference
    category.
-3. Plot the estimates. If they fall roughly along a straight line, the linearity assumption is
-   reasonable; if they bend, level off, or jump, it isn't.
+3. Plot the estimates. If they change by roughly the same amount from one category to the next,
+   the linearity assumption is reasonable; if they bend, level off, or jump, it isn't.
 
-## Steps 1 and 2: Quartiles as indicator terms
+## Step 1: Categorize tree canopy into quartiles
 
 ```{webr-r}
 data <- data %>%
@@ -337,65 +444,113 @@ data %>%
     max_canopy = max(hrlctree),
     prevalence_hbp = mean(high_blood_pressure, na.rm = TRUE)
   )
+```
 
+`ntile(hrlctree, 4)` sorts participants from lowest to highest tree canopy and splits them into
+four groups of (nearly) equal size — 500 participants each:
+
+- **Q1** — the 25% of participants living in the **least green** tracts (about 2% to 8% canopy)
+- **Q2** — the next 25% (about 8% to 12% canopy)
+- **Q3** — the next 25% (about 12% to 18% canopy)
+- **Q4** — the 25% of participants living in the **greenest** tracts (about 18% to 63% canopy)
+
+Notice that the quartiles have equal numbers of *people*, not equal ranges of *canopy*: because
+canopy is right-skewed, Q4 spans a much wider range of canopy (about 45 percentage points) than
+Q1–Q3 combined (about 16).
+
+Look at the last column: prevalence of high blood pressure is about 35–36% in Q1 and Q2, 31% in
+Q3, and 20% in Q4.
+
+## Step 2: Fit the model with quartiles as indicator terms
+
+```{webr-r}
 model_quart <- glm(high_blood_pressure ~ tree_quartile, data = data,
                    family = binomial(link = "log"))
 
 extract_ratio(model_quart, "Log-binomial, quartiles (ref = Q1)")
 ```
 
-Wrapping the quartile variable in `factor()` is what tells R to create a separate indicator term for
-each category. Without it, R treats 1, 2, 3, 4 as a continuous number and returns a single
-coefficient — which would assume linearity instead of testing it. The first level (Q1, lowest
-canopy) is the reference category and drops out of the model; every PR is a comparison with Q1.
+Wrapping the quartile variable in `factor()` is what tells R to create a separate indicator term
+for each category. Without it, R treats 1, 2, 3, 4 as a continuous number and returns a single
+coefficient — which would *assume* linearity instead of testing it.
+
+**What "ref = Q1" means.** With a categorical exposure, R needs a **reference category** that every
+other category is compared with. By default it uses the first level — here, Q1, the least green
+quartile. Q1 therefore does not get its own row in the output: its PR is 1 by definition. Each
+PR you see is the prevalence of high blood pressure in that quartile **divided by the prevalence
+in Q1**. That is why every interpretation below says "compared with participants in the lowest
+quartile."
+
+**Interpreting the results:**
+
+| Quartile | PR (95% CI) | Interpretation |
+|---|---|---|
+| Q1 (2–8% canopy) | 1 (reference) | The comparison group for every other row |
+| Q2 (8–12%) | 1.03 (0.87, 1.22) | Prevalence essentially the same as Q1 (3% higher). The CI includes 1, so the data are consistent with no difference. |
+| Q3 (12–18%) | 0.89 (0.74, 1.06) | Prevalence 11% lower than Q1, but the CI still includes 1, so this could plausibly be no difference. |
+| Q4 (18–63%) | 0.58 (0.47, 0.72) | Prevalence 42% lower than Q1. The whole CI is below 1: the data are not consistent with no difference. |
+
+In words, for Q4: *the prevalence of high blood pressure among participants living in the greenest
+quarter of tracts was 0.58 times the prevalence among those in the least green quarter (95% CI:
+0.47, 0.72).*
 
 ## Step 3: Plot the estimates
 
-We plot each quartile's PR (with Q1 fixed at 1) against the **median canopy in that quartile**,
-not just the quartile number. This matters: look at the table above — the top quartile spans a much
-wider range of canopy than the other three.
+We plot each quartile's PR, with Q1 fixed at 1, against the quartile itself. Each quartile gets the
+same amount of space on the x-axis, so you can see directly how much the PR changes from one
+quartile to the next. The canopy range of each quartile is shown under its label.
 
 ```{webr-r}
-quartile_medians <- data %>%
+quartile_labels <- data %>%
   group_by(tree_quartile) %>%
-  summarise(median_canopy = median(hrlctree))
+  summarise(label = paste0("Q", first(tree_quartile), "\n(",
+                           round(min(hrlctree) * 100), "–", round(max(hrlctree) * 100), "%)"))
 
 quartile_results <- extract_ratio(model_quart, "Quartiles") %>%
   mutate(tree_quartile = factor(2:4)) %>%
   bind_rows(data.frame(tree_quartile = factor(1), Estimate = 1, CI_Lower = 1, CI_Upper = 1)) %>%
-  left_join(quartile_medians, by = "tree_quartile")
+  left_join(quartile_labels, by = "tree_quartile") %>%
+  mutate(tree_quartile = factor(tree_quartile, levels = 1:4)) %>%   # put Q1 first
+  arrange(tree_quartile)
 
-ggplot(quartile_results, aes(x = median_canopy * 100, y = Estimate)) +
+ggplot(quartile_results, aes(x = tree_quartile, y = Estimate, group = 1)) +
   geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
-  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0.8) +
+  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0.15) +
   geom_point(size = 3, color = "blue") +
   geom_line(color = "blue") +
-  geom_text(aes(label = paste0("Q", tree_quartile)), vjust = -1.2, hjust = 1.2) +
+  scale_x_discrete(labels = quartile_results$label) +
   scale_y_log10() +
-  labs(x = "Median tree canopy cover in quartile (%)",
+  labs(x = "Tree canopy quartile (canopy range)",
        y = "Prevalence ratio (95% CI, log scale)",
        title = "High blood pressure by tree canopy quartile (reference = Q1)") +
   theme_minimal()
 ```
 
 The y-axis is on a **log scale** because the log-binomial model is linear on the log scale: if the
-linearity assumption holds, the points should fall along a straight line on this plot.
+linearity assumption holds, the PRs should step down (or up) by about the same amount from each
+quartile to the next.
 
 **Questions to consider:**
 
 - Do Q1, Q2, and Q3 look different from each other? Where does most of the change happen?
-- If you had plotted these against quartile *number* (1, 2, 3, 4) instead of median canopy, would
-  the relationship look more or less linear? Why?
+- Does the line fall at a steady rate across the quartiles, or does it stay flat and then drop?
+- Now look at the canopy ranges under each label. How does the width of Q4 change your reading of
+  the "drop"?
 - Given this plot, would you keep tree canopy as a single continuous term, use the quartile
   categories, or collapse some categories together?
 
 ::: {.callout-note collapse="true" title="💡 Discussion — click to reveal after you've looked at the plot yourself"}
-Q2 is essentially the same as Q1, Q3 is slightly lower, and Q4 is much lower (PR ≈ 0.58). Plotted
-against quartile number, this looks like a "flat, then a sudden drop" pattern — strongly
-non-linear. Plotted against actual canopy, the picture is less dramatic: part of the "jump" is
-simply that Q4 covers a much wider range of canopy (roughly 18% to 63%) than the lower quartiles
-put together. On the canopy scale, the data suggest little difference between the two lowest
-quartiles and a fairly steady decline above roughly 10% canopy.
+Q2 is essentially the same as Q1, Q3 is slightly lower, and Q4 is much lower (PR ≈ 0.58). On
+this plot the line is roughly **flat from Q1 to Q3 and then drops sharply to Q4** — not the steady,
+equal-sized steps we would expect if the linearity assumption held. That is a sign the assumption
+may not hold.
+
+The canopy ranges add an important caveat. The quartiles are equal-sized groups of *people*, not
+equal-width ranges of *canopy*: Q1–Q3 together cover only about 2% to 18% canopy, while Q4 alone
+covers about 18% to 63%. Part of the "sudden drop" is simply that Q4 contains a much wider — and
+much greener — range of tracts. Measured in canopy percentage points, the decline above roughly
+10% canopy is more gradual than this plot makes it look. This is why it is always worth checking
+what range of the exposure each category covers before interpreting the shape.
 
 There is no single right answer about what to do next — reasonable options include:
 
@@ -424,8 +579,19 @@ model_top <- glm(high_blood_pressure ~ tree_top_quartile, data = data,
 extract_ratio(model_top, "Log-binomial, top quartile vs. Q1-Q3")
 ```
 
-**Question to consider:** interpret this PR. How is it different from the median-split PR in Step 3
-of Part 1, and why?
+**Question to consider:** interpret this PR. How is it different from the PR for tree canopy
+dichotomized at the median (Part 1, Step 3), and why?
+
+::: {.callout-note collapse="true" title="💡 Answer — click to reveal after you've thought about it"}
+The prevalence of high blood pressure among participants in the top quartile of tree canopy was
+0.60 times the prevalence among participants in the lower three quartiles combined (95% CI: 0.49,
+0.72) — about 40% lower.
+
+This is further from the null than the median-dichotomized PR (0.72) because the comparison is
+different. Dichotomizing at the median puts Q3 in the "high canopy" group, even though Q3's
+prevalence is close to Q1 and Q2's; that dilutes the contrast. Comparing Q4 with Q1–Q3 separates
+the groups where the difference actually appears.
+:::
 
 ## Optional: relaxing linearity with a spline
 
@@ -448,7 +614,7 @@ canopy_grid <- data.frame(hrlctree = seq(0.02, 0.60, by = 0.01))
 canopy_grid$Spline <- predict(model_spline, newdata = canopy_grid, type = "response")
 canopy_grid$Linear <- predict(model_linear, newdata = canopy_grid, type = "response")
 
-canopy_grid %>%
+spline_plot <- canopy_grid %>%
   pivot_longer(c(Spline, Linear), names_to = "Model", values_to = "Predicted") %>%
   ggplot(aes(x = hrlctree * 100, y = Predicted, color = Model)) +
   geom_line(linewidth = 1) +
@@ -456,13 +622,40 @@ canopy_grid %>%
        title = "Linear vs. spline model for tree canopy") +
   theme_minimal()
 
+spline_plot                                    # prevalence scale
+
+spline_plot + scale_y_log10() +                # log scale
+  labs(y = "Predicted prevalence (log scale)", title = "The same models on a log scale")
+
 # Compare model fit: lower AIC = better fit (after penalizing for extra terms)
 AIC(model_linear, model_spline, model_quart, model_top)
 ```
 
+::: {.callout-note}
+## Why doesn't the "linear" model look like a straight line?
+
+In the first plot, the curve labeled "Linear" bends. That's because the log-binomial model is
+linear in the **log** of prevalence, not in prevalence itself: log(P) = β₀ + β₁ × canopy. Undoing
+the log gives P = exp(β₀ + β₁ × canopy), which is a curve — each additional percentage point of
+canopy *multiplies* prevalence by the same amount (the PR), rather than subtracting the same
+amount. In the second plot, with the y-axis on a log scale, the "Linear" model is a straight line.
+The linearity assumption we are checking is always about the scale the model works on — here, the
+log scale.
+:::
+
 **Question to consider:** the spline and the linear model have almost identical AIC values. What
 does that suggest about how much the linearity assumption actually matters for this particular
 exposure and outcome?
+
+::: {.callout-note collapse="true" title="💡 Answer — click to reveal after you've thought about it"}
+The spline allows the curve to bend wherever the data suggest, yet it fits the data no better than
+a single straight line on the log scale (the AICs differ by less than 1). The two curves differ
+mainly at the lowest canopy values, where the spline levels off, and slightly at the highest values,
+where few participants live. So, for tree canopy and high
+blood pressure, the linearity assumption appears to be a reasonable approximation, and a
+continuous term per 10 percentage points is a defensible choice. The quartile plot is still
+valuable: it shows *where* along the canopy range the association is concentrated.
+:::
 
 ---
 
@@ -470,10 +663,10 @@ exposure and outcome?
 Using **your own project's exposure and outcome**:
 
 1. Create quartiles (or quintiles, if your sample size allows) of your exposure with `ntile()`,
-   wrapped in `factor()`.
+   wrapped in `factor()`, and look at the range of your exposure within each category.
 2. Fit your crude model with the categorical exposure and extract the estimates.
-3. Plot the estimates against the median exposure value in each category, with the reference
-   category fixed at 1 (or at 0 for a linear model — and use a regular, not log, y-axis).
+3. Plot the estimates by category, with the reference category fixed at 1 (or at 0 for a linear
+   model — and use a regular, not log, y-axis).
 4. In two or three sentences, state whether the linearity assumption looks reasonable and what
    coding you will use in your models going forward.
 :::
@@ -488,30 +681,39 @@ Using **your own project's exposure and outcome**:
 data <- data %>%
   mutate(traffic_quartile = factor(ntile(ctb1traff, 4)))
 
+# Range of traffic density and asthma prevalence in each quartile
+data %>%
+  group_by(traffic_quartile) %>%
+  summarise(n = n(), min_traffic = min(ctb1traff), max_traffic = max(ctb1traff),
+            prevalence_asthma = mean(asthma))
+
 model_traffic_q <- glm(asthma ~ traffic_quartile, data = data,
                        family = binomial(link = "log"))
-
-traffic_medians <- data %>%
-  group_by(traffic_quartile) %>%
-  summarise(median_traffic = median(ctb1traff))
 
 traffic_results <- extract_ratio(model_traffic_q, "Quartiles") %>%
   mutate(traffic_quartile = factor(2:4)) %>%
   bind_rows(data.frame(traffic_quartile = factor(1), Estimate = 1, CI_Lower = 1, CI_Upper = 1)) %>%
-  left_join(traffic_medians, by = "traffic_quartile")
+  mutate(traffic_quartile = factor(traffic_quartile, levels = 1:4)) %>%   # put Q1 first
+  arrange(traffic_quartile)
 
 traffic_results
 
-ggplot(traffic_results, aes(x = median_traffic, y = Estimate)) +
+ggplot(traffic_results, aes(x = traffic_quartile, y = Estimate, group = 1)) +
   geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
-  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0) +
+  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0.15) +
   geom_point(size = 3, color = "blue") +
   geom_line(color = "blue") +
+  scale_x_discrete(labels = c("Q1", "Q2", "Q3", "Q4")) +
   scale_y_log10() +
-  labs(x = "Median traffic density in quartile", y = "Prevalence ratio (95% CI, log scale)",
+  labs(x = "Traffic density quartile", y = "Prevalence ratio (95% CI, log scale)",
        title = "Asthma by traffic density quartile (reference = Q1)") +
   theme_minimal()
 ```
+
+Compared with Q1 (the lowest-traffic quarter of participants), asthma prevalence is similar in Q2
+(PR 1.09), somewhat higher in Q3 (PR 1.35; CI includes 1), and more than twice as high in Q4 (PR
+2.41; 95% CI: 1.65, 3.53). The rise is steepest at the top, so a continuous term may not capture
+the shape well; the quartile categories, or the top quartile vs. the rest, are reasonable choices.
 :::
 
 ---
@@ -545,34 +747,47 @@ extract_ratio <- function(model, label) {
 table(data$YOUR_OUTCOME, useNA = "ifany")
 prop.table(table(data$YOUR_OUTCOME))
 
-# ---- Crude model, continuous exposure (rescale if needed) ----
+# ---- Look at your exposure's coding and distribution ----
+summary(data$YOUR_EXPOSURE)
+hist(data$YOUR_EXPOSURE)
+
+# ---- OPTIONAL: rescale a continuous exposure ----
+# Only needed if a one-unit change isn't meaningful for your exposure. For a proportion
+# (0-1, like tree canopy), multiplying by 10 makes one unit = 10 percentage points.
+# Choose the scaling based on your exposure's units and distribution -- or skip this step
+# and use YOUR_EXPOSURE directly below.
 data <- data %>% mutate(YOUR_EXPOSURE_scaled = YOUR_EXPOSURE * 10)   # adjust the scaling
+
+# ---- Crude model, continuous exposure ----
 model_cont <- glm(YOUR_OUTCOME ~ YOUR_EXPOSURE_scaled, data = data,
                   family = binomial(link = "log"))   # continuous outcome: lm(YOUR_OUTCOME ~ ...)
 extract_ratio(model_cont, "Continuous")
 
 # ---- Linearity check: quartiles as indicator terms ----
 data <- data %>% mutate(YOUR_EXPOSURE_quartile = factor(ntile(YOUR_EXPOSURE, 4)))
+
+data %>%                                   # exposure range in each quartile
+  group_by(YOUR_EXPOSURE_quartile) %>%
+  summarise(n = n(), min = min(YOUR_EXPOSURE, na.rm = TRUE), max = max(YOUR_EXPOSURE, na.rm = TRUE))
+
 model_quart <- glm(YOUR_OUTCOME ~ YOUR_EXPOSURE_quartile, data = data,
                    family = binomial(link = "log"))
-
-medians <- data %>%
-  group_by(YOUR_EXPOSURE_quartile) %>%
-  summarise(median_exposure = median(YOUR_EXPOSURE, na.rm = TRUE))
 
 results <- extract_ratio(model_quart, "Quartiles") %>%
   mutate(YOUR_EXPOSURE_quartile = factor(2:4)) %>%
   bind_rows(data.frame(YOUR_EXPOSURE_quartile = factor(1), Estimate = 1,
                        CI_Lower = 1, CI_Upper = 1)) %>%
-  left_join(medians, by = "YOUR_EXPOSURE_quartile")
+  mutate(YOUR_EXPOSURE_quartile = factor(YOUR_EXPOSURE_quartile, levels = 1:4)) %>%   # put Q1 first
+  arrange(YOUR_EXPOSURE_quartile)
 
-ggplot(results, aes(x = median_exposure, y = Estimate)) +
+ggplot(results, aes(x = YOUR_EXPOSURE_quartile, y = Estimate, group = 1)) +
   geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
-  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0) +
+  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0.15) +
   geom_point(size = 3) +
   geom_line() +
+  scale_x_discrete(labels = c("Q1", "Q2", "Q3", "Q4")) +
   scale_y_log10() +
-  labs(x = "Median [exposure] in quartile", y = "Prevalence ratio (95% CI)",
+  labs(x = "[Exposure] quartile", y = "Prevalence ratio (95% CI)",
        title = "[Outcome] by [exposure] quartile (reference = Q1)") +
   theme_minimal()
 ```
@@ -586,15 +801,16 @@ This tutorial covered:
 
 - Choosing a model from the outcome type, and preferring the log-binomial model (prevalence ratio)
   over logistic regression (odds ratio) when a binary outcome is common
-- Reproducing a hand-calculated two-by-two table estimate with a regression model, and exponentiating
-  coefficients and confidence intervals to get ratio measures
+- Reproducing a hand-calculated two-by-two table estimate with a regression model, and why we
+  exponentiate coefficients and confidence intervals to get ratio measures
 - Rescaling a continuous exposure so that "one unit" is a meaningful comparison
-- Checking the linearity assumption with categorical indicator terms, plotting the estimates, and
-  deciding whether to keep a continuous term, collapse categories, or use a spline
+- Checking the linearity assumption with categorical indicator terms, interpreting each category's
+  estimate relative to the reference category, and deciding whether to keep a continuous term,
+  collapse categories, or use a spline
 
-The crude model and linearity check you completed for your own project are the core of Milestone 2.
-See the **Apply** page for what's due.
+The crude model and linearity check you completed for your own project are the core of
+Milestone 2.
 
-**Next week (Week 6):** Confounding and causal diagrams — every model in this tutorial was
-**crude** (unadjusted). Next week you'll use a DAG to decide which variables belong in the model
-alongside your exposure, and see how adjusting for them changes your estimate.
+**Next week:** Confounding and causal diagrams — every model in this tutorial was **crude**
+(unadjusted). Next week you'll use a DAG to decide which variables belong in the model alongside
+your exposure, and see how adjusting for them changes your estimate.

@@ -407,7 +407,7 @@ globalThis.qwebrCustomizedWebROptions = {
 };
 
 // Store cell data
-globalThis.qwebrCellDetails = [{"code":"library(tidyverse)","id":1,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-1","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data_base_url <- \"https://raw.githubusercontent.com/schinasi/EOH635/main/data/\"\n\ndir.create(\"data_processed\", showWarnings = FALSE)\n\ndownload.file(paste0(data_base_url, \"class_data_processed.csv\"), file.path(\"data_processed\", \"class_data_processed.csv\"))\n\ndata <- read.csv(file.path(\"data_processed\", \"class_data_processed.csv\"))","id":2,"options":{"autorun":"true","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-2","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(data$high_blood_pressure, useNA = \"ifany\")\nprop.table(table(data$high_blood_pressure))","id":3,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-3","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(tree_high = ifelse(hrlctree > median(hrlctree, na.rm = TRUE), 1, 0))\n\ntwo_by_two <- table(Tree_high = data$tree_high, HBP = data$high_blood_pressure)\ntwo_by_two\n\nA <- two_by_two[2, 2]  # exposed (high canopy), cases\nB <- two_by_two[2, 1]  # exposed, non-cases\nC <- two_by_two[1, 2]  # unexposed (low canopy), cases\nD <- two_by_two[1, 1]  # unexposed, non-cases\n\nprev_exposed   <- A / (A + B)\nprev_unexposed <- C / (C + D)\n\nc(prevalence_exposed = prev_exposed,\n  prevalence_unexposed = prev_unexposed,\n  prevalence_ratio = prev_exposed / prev_unexposed,\n  odds_ratio = (A * D) / (B * C))","id":4,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-4","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"extract_ratio <- function(model, label) {\n  b  <- coef(model)[-1]\n  se <- sqrt(diag(vcov(model)))[-1]\n  data.frame(\n    Model    = label,\n    Term     = names(b),\n    Estimate = exp(b),\n    CI_Lower = exp(b - 1.96 * se),\n    CI_Upper = exp(b + 1.96 * se),\n    row.names = NULL\n  )\n}\n\n# Logistic regression: logit link -> odds ratio\nmodel_logit <- glm(high_blood_pressure ~ tree_high, data = data,\n                   family = binomial(link = \"logit\"))\n\n# Log-binomial regression: log link -> prevalence ratio\nmodel_logbin <- glm(high_blood_pressure ~ tree_high, data = data,\n                    family = binomial(link = \"log\"))\n\nbind_rows(\n  extract_ratio(model_logit,  \"Logistic (OR)\"),\n  extract_ratio(model_logbin, \"Log-binomial (PR)\")\n)","id":5,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-5","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(hrlctree_10 = hrlctree * 10)   # 1 unit = 10 percentage points of canopy\n\nmodel_cont <- glm(high_blood_pressure ~ hrlctree_10, data = data,\n                  family = binomial(link = \"log\"))\n\nsummary(model_cont)\n\nextract_ratio(model_cont, \"Log-binomial, continuous (per 10 percentage points)\")","id":6,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-6","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — a crude model for your own exposure and outcome","id":7,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-7","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Asthma is binary; how common is it?\nprop.table(table(data$asthma))\n\n# ctb1traff is strongly right-skewed (recall your Week 3 histogram), so we use a\n# log2 transformation: 1 unit = a doubling of traffic density\ndata <- data %>%\n  mutate(traffic_log2 = log2(ctb1traff))\n\nmodel_asthma <- glm(asthma ~ traffic_log2, data = data,\n                    family = binomial(link = \"log\"))\n\nbind_rows(\n  extract_ratio(model_asthma, \"Log-binomial (PR)\"),\n  extract_ratio(glm(asthma ~ traffic_log2, data = data, family = binomial), \"Logistic (OR)\")\n)","id":8,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-8","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(tree_quartile = factor(ntile(hrlctree, 4)))   # factor() -> one indicator per level\n\n# Range of canopy and prevalence of high blood pressure in each quartile\ndata %>%\n  group_by(tree_quartile) %>%\n  summarise(\n    n = n(),\n    min_canopy = min(hrlctree),\n    median_canopy = median(hrlctree),\n    max_canopy = max(hrlctree),\n    prevalence_hbp = mean(high_blood_pressure, na.rm = TRUE)\n  )\n\nmodel_quart <- glm(high_blood_pressure ~ tree_quartile, data = data,\n                   family = binomial(link = \"log\"))\n\nextract_ratio(model_quart, \"Log-binomial, quartiles (ref = Q1)\")","id":9,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-9","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"quartile_medians <- data %>%\n  group_by(tree_quartile) %>%\n  summarise(median_canopy = median(hrlctree))\n\nquartile_results <- extract_ratio(model_quart, \"Quartiles\") %>%\n  mutate(tree_quartile = factor(2:4)) %>%\n  bind_rows(data.frame(tree_quartile = factor(1), Estimate = 1, CI_Lower = 1, CI_Upper = 1)) %>%\n  left_join(quartile_medians, by = \"tree_quartile\")\n\nggplot(quartile_results, aes(x = median_canopy * 100, y = Estimate)) +\n  geom_hline(yintercept = 1, linetype = \"dashed\", color = \"red\") +\n  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0.8) +\n  geom_point(size = 3, color = \"blue\") +\n  geom_line(color = \"blue\") +\n  geom_text(aes(label = paste0(\"Q\", tree_quartile)), vjust = -1.2, hjust = 1.2) +\n  scale_y_log10() +\n  labs(x = \"Median tree canopy cover in quartile (%)\",\n       y = \"Prevalence ratio (95% CI, log scale)\",\n       title = \"High blood pressure by tree canopy quartile (reference = Q1)\") +\n  theme_minimal()","id":10,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-10","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(tree_top_quartile = ifelse(tree_quartile == \"4\", 1, 0))  # Q4 vs. Q1-Q3\n\ntable(data$tree_quartile, data$tree_top_quartile)   # always check a recode\n\nmodel_top <- glm(high_blood_pressure ~ tree_top_quartile, data = data,\n                 family = binomial(link = \"log\"))\n\nextract_ratio(model_top, \"Log-binomial, top quartile vs. Q1-Q3\")","id":11,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-11","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"library(splines)\n\nmodel_spline <- glm(high_blood_pressure ~ ns(hrlctree, df = 3), data = data,\n                    family = binomial(link = \"log\"),\n                    start = c(log(0.3), 0, 0, 0))   # starting values help log-binomial converge\n\nmodel_linear <- glm(high_blood_pressure ~ hrlctree, data = data,\n                    family = binomial(link = \"log\"))\n\n# Predicted prevalence across the range of canopy, from each model\ncanopy_grid <- data.frame(hrlctree = seq(0.02, 0.60, by = 0.01))\ncanopy_grid$Spline <- predict(model_spline, newdata = canopy_grid, type = \"response\")\ncanopy_grid$Linear <- predict(model_linear, newdata = canopy_grid, type = \"response\")\n\ncanopy_grid %>%\n  pivot_longer(c(Spline, Linear), names_to = \"Model\", values_to = \"Predicted\") %>%\n  ggplot(aes(x = hrlctree * 100, y = Predicted, color = Model)) +\n  geom_line(linewidth = 1) +\n  labs(x = \"Tree canopy cover (%)\", y = \"Predicted prevalence of high blood pressure\",\n       title = \"Linear vs. spline model for tree canopy\") +\n  theme_minimal()\n\n# Compare model fit: lower AIC = better fit (after penalizing for extra terms)\nAIC(model_linear, model_spline, model_quart, model_top)","id":12,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-12","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — linearity check for your own exposure","id":13,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-13","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(traffic_quartile = factor(ntile(ctb1traff, 4)))\n\nmodel_traffic_q <- glm(asthma ~ traffic_quartile, data = data,\n                       family = binomial(link = \"log\"))\n\ntraffic_medians <- data %>%\n  group_by(traffic_quartile) %>%\n  summarise(median_traffic = median(ctb1traff))\n\ntraffic_results <- extract_ratio(model_traffic_q, \"Quartiles\") %>%\n  mutate(traffic_quartile = factor(2:4)) %>%\n  bind_rows(data.frame(traffic_quartile = factor(1), Estimate = 1, CI_Lower = 1, CI_Upper = 1)) %>%\n  left_join(traffic_medians, by = \"traffic_quartile\")\n\ntraffic_results\n\nggplot(traffic_results, aes(x = median_traffic, y = Estimate)) +\n  geom_hline(yintercept = 1, linetype = \"dashed\", color = \"red\") +\n  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0) +\n  geom_point(size = 3, color = \"blue\") +\n  geom_line(color = \"blue\") +\n  scale_y_log10() +\n  labs(x = \"Median traffic density in quartile\", y = \"Prevalence ratio (95% CI, log scale)\",\n       title = \"Asthma by traffic density quartile (reference = Q1)\") +\n  theme_minimal()","id":14,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-14","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}}];
+globalThis.qwebrCellDetails = [{"code":"library(tidyverse)","id":1,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-1","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data_base_url <- \"https://raw.githubusercontent.com/schinasi/EOH635/main/data/\"\n\ndir.create(\"data_processed\", showWarnings = FALSE)\n\ndownload.file(paste0(data_base_url, \"class_data_processed.csv\"), file.path(\"data_processed\", \"class_data_processed.csv\"))\n\ndata <- read.csv(file.path(\"data_processed\", \"class_data_processed.csv\"))","id":2,"options":{"autorun":"true","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-2","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"summary(data$hrlctree)\n\nggplot(data, aes(x = hrlctree)) +\n  geom_histogram(bins = 30, fill = \"seagreen\", color = \"white\") +\n  labs(x = \"Tree canopy cover (proportion of census tract)\", y = \"Number of participants\",\n       title = \"Distribution of tree canopy cover among participants\") +\n  theme_minimal()","id":3,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-3","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(data$high_blood_pressure, useNA = \"ifany\")   # counts, including missing (NA)\nprop.table(table(data$high_blood_pressure))        # proportions among those with data","id":4,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-4","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# 1. Create a binary exposure: 1 = tract canopy above the median (\"high canopy\"), 0 = at or below it\ndata <- data %>%\n  mutate(tree_high = ifelse(hrlctree > median(hrlctree, na.rm = TRUE), 1, 0))\n\n# 2. Cross-tabulate exposure (rows) by outcome (columns) and print the table\ntwo_by_two <- table(Tree_high = data$tree_high, HBP = data$high_blood_pressure)\ntwo_by_two\n\n# 3. Pull out the four cell counts (see the table below the code for what each one is)\nA <- two_by_two[2, 2]  # high canopy, high blood pressure\nB <- two_by_two[2, 1]  # high canopy, no high blood pressure\nC <- two_by_two[1, 2]  # low canopy,  high blood pressure\nD <- two_by_two[1, 1]  # low canopy,  no high blood pressure\n\n# 4. Prevalence of high blood pressure in each exposure group = cases / everyone in that group\nprev_exposed   <- A / (A + B)   # among people in high-canopy tracts\nprev_unexposed <- C / (C + D)   # among people in low-canopy tracts\n\n# 5. The prevalence ratio divides the two prevalences; the odds ratio uses the cross-product\nc(prevalence_exposed = prev_exposed,\n  prevalence_unexposed = prev_unexposed,\n  prevalence_ratio = prev_exposed / prev_unexposed,\n  odds_ratio = (A * D) / (B * C))","id":5,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-5","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"extract_ratio <- function(model, label) {\n  b  <- coef(model)[-1]                  # coefficients (log scale), dropping the intercept\n  se <- sqrt(diag(vcov(model)))[-1]      # their standard errors\n  data.frame(\n    Model    = label,\n    Term     = names(b),\n    Estimate = exp(b),                   # exponentiate -> OR or PR\n    CI_Lower = exp(b - 1.96 * se),       # exponentiate the lower CI endpoint\n    CI_Upper = exp(b + 1.96 * se),       # exponentiate the upper CI endpoint\n    row.names = NULL\n  )\n}\n\n# Logistic regression: logit link -> odds ratio\nmodel_logit <- glm(high_blood_pressure ~ tree_high, data = data,\n                   family = binomial(link = \"logit\"))\n\n# Log-binomial regression: log link -> prevalence ratio\nmodel_logbin <- glm(high_blood_pressure ~ tree_high, data = data,\n                    family = binomial(link = \"log\"))\n\nbind_rows(\n  extract_ratio(model_logit,  \"Logistic (OR)\"),\n  extract_ratio(model_logbin, \"Log-binomial (PR)\")\n)","id":6,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-6","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(hrlctree_10 = hrlctree * 10)   # 1 unit = 10 percentage points of canopy\n\nmodel_cont <- glm(high_blood_pressure ~ hrlctree_10, data = data,\n                  family = binomial(link = \"log\"))\n\nsummary(model_cont)\n\nextract_ratio(model_cont, \"Log-binomial, continuous (per 10 percentage points)\")","id":7,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-7","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — a crude model for your own exposure and outcome","id":8,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-8","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Asthma is binary; how common is it?\nprop.table(table(data$asthma))\n\n# Traffic density dichotomized at the median: 1 = above the median, 0 = at or below it\ndata <- data %>%\n  mutate(traffic_high = ifelse(ctb1traff > median(ctb1traff, na.rm = TRUE), 1, 0))\n\nmodel_asthma_pr <- glm(asthma ~ traffic_high, data = data, family = binomial(link = \"log\"))\nmodel_asthma_or <- glm(asthma ~ traffic_high, data = data, family = binomial(link = \"logit\"))\n\nbind_rows(\n  extract_ratio(model_asthma_pr, \"Log-binomial (PR)\"),\n  extract_ratio(model_asthma_or, \"Logistic (OR)\")\n)","id":9,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-9","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(tree_quartile = factor(ntile(hrlctree, 4)))   # factor() -> one indicator per level\n\n# Range of canopy and prevalence of high blood pressure in each quartile\ndata %>%\n  group_by(tree_quartile) %>%\n  summarise(\n    n = n(),\n    min_canopy = min(hrlctree),\n    median_canopy = median(hrlctree),\n    max_canopy = max(hrlctree),\n    prevalence_hbp = mean(high_blood_pressure, na.rm = TRUE)\n  )","id":10,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-10","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_quart <- glm(high_blood_pressure ~ tree_quartile, data = data,\n                   family = binomial(link = \"log\"))\n\nextract_ratio(model_quart, \"Log-binomial, quartiles (ref = Q1)\")","id":11,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-11","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"quartile_labels <- data %>%\n  group_by(tree_quartile) %>%\n  summarise(label = paste0(\"Q\", first(tree_quartile), \"\\n(\",\n                           round(min(hrlctree) * 100), \"–\", round(max(hrlctree) * 100), \"%)\"))\n\nquartile_results <- extract_ratio(model_quart, \"Quartiles\") %>%\n  mutate(tree_quartile = factor(2:4)) %>%\n  bind_rows(data.frame(tree_quartile = factor(1), Estimate = 1, CI_Lower = 1, CI_Upper = 1)) %>%\n  left_join(quartile_labels, by = \"tree_quartile\") %>%\n  mutate(tree_quartile = factor(tree_quartile, levels = 1:4)) %>%   # put Q1 first\n  arrange(tree_quartile)\n\nggplot(quartile_results, aes(x = tree_quartile, y = Estimate, group = 1)) +\n  geom_hline(yintercept = 1, linetype = \"dashed\", color = \"red\") +\n  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0.15) +\n  geom_point(size = 3, color = \"blue\") +\n  geom_line(color = \"blue\") +\n  scale_x_discrete(labels = quartile_results$label) +\n  scale_y_log10() +\n  labs(x = \"Tree canopy quartile (canopy range)\",\n       y = \"Prevalence ratio (95% CI, log scale)\",\n       title = \"High blood pressure by tree canopy quartile (reference = Q1)\") +\n  theme_minimal()","id":12,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-12","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(tree_top_quartile = ifelse(tree_quartile == \"4\", 1, 0))  # Q4 vs. Q1-Q3\n\ntable(data$tree_quartile, data$tree_top_quartile)   # always check a recode\n\nmodel_top <- glm(high_blood_pressure ~ tree_top_quartile, data = data,\n                 family = binomial(link = \"log\"))\n\nextract_ratio(model_top, \"Log-binomial, top quartile vs. Q1-Q3\")","id":13,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-13","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"library(splines)\n\nmodel_spline <- glm(high_blood_pressure ~ ns(hrlctree, df = 3), data = data,\n                    family = binomial(link = \"log\"),\n                    start = c(log(0.3), 0, 0, 0))   # starting values help log-binomial converge\n\nmodel_linear <- glm(high_blood_pressure ~ hrlctree, data = data,\n                    family = binomial(link = \"log\"))\n\n# Predicted prevalence across the range of canopy, from each model\ncanopy_grid <- data.frame(hrlctree = seq(0.02, 0.60, by = 0.01))\ncanopy_grid$Spline <- predict(model_spline, newdata = canopy_grid, type = \"response\")\ncanopy_grid$Linear <- predict(model_linear, newdata = canopy_grid, type = \"response\")\n\nspline_plot <- canopy_grid %>%\n  pivot_longer(c(Spline, Linear), names_to = \"Model\", values_to = \"Predicted\") %>%\n  ggplot(aes(x = hrlctree * 100, y = Predicted, color = Model)) +\n  geom_line(linewidth = 1) +\n  labs(x = \"Tree canopy cover (%)\", y = \"Predicted prevalence of high blood pressure\",\n       title = \"Linear vs. spline model for tree canopy\") +\n  theme_minimal()\n\nspline_plot                                    # prevalence scale\n\nspline_plot + scale_y_log10() +                # log scale\n  labs(y = \"Predicted prevalence (log scale)\", title = \"The same models on a log scale\")\n\n# Compare model fit: lower AIC = better fit (after penalizing for extra terms)\nAIC(model_linear, model_spline, model_quart, model_top)","id":14,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-14","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — linearity check for your own exposure","id":15,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-15","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(traffic_quartile = factor(ntile(ctb1traff, 4)))\n\n# Range of traffic density and asthma prevalence in each quartile\ndata %>%\n  group_by(traffic_quartile) %>%\n  summarise(n = n(), min_traffic = min(ctb1traff), max_traffic = max(ctb1traff),\n            prevalence_asthma = mean(asthma))\n\nmodel_traffic_q <- glm(asthma ~ traffic_quartile, data = data,\n                       family = binomial(link = \"log\"))\n\ntraffic_results <- extract_ratio(model_traffic_q, \"Quartiles\") %>%\n  mutate(traffic_quartile = factor(2:4)) %>%\n  bind_rows(data.frame(traffic_quartile = factor(1), Estimate = 1, CI_Lower = 1, CI_Upper = 1)) %>%\n  mutate(traffic_quartile = factor(traffic_quartile, levels = 1:4)) %>%   # put Q1 first\n  arrange(traffic_quartile)\n\ntraffic_results\n\nggplot(traffic_results, aes(x = traffic_quartile, y = Estimate, group = 1)) +\n  geom_hline(yintercept = 1, linetype = \"dashed\", color = \"red\") +\n  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0.15) +\n  geom_point(size = 3, color = \"blue\") +\n  geom_line(color = \"blue\") +\n  scale_x_discrete(labels = c(\"Q1\", \"Q2\", \"Q3\", \"Q4\")) +\n  scale_y_log10() +\n  labs(x = \"Traffic density quartile\", y = \"Prevalence ratio (95% CI, log scale)\",\n       title = \"Asthma by traffic density quartile (reference = Q1)\") +\n  theme_minimal()","id":16,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-16","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}}];
 
 </script>
 <script type="module">
@@ -1727,6 +1727,7 @@ globalThis.qwebrExecuteCode = async function (
   <ul class="collapse">
   <li><a href="#part-1-choosing-fitting-and-interpreting-a-crude-model" id="toc-part-1-choosing-fitting-and-interpreting-a-crude-model" class="nav-link active" data-scroll-target="#part-1-choosing-fitting-and-interpreting-a-crude-model">Part 1: Choosing, Fitting, and Interpreting a Crude Model</a>
   <ul class="collapse">
+  <li><a href="#a-reminder-how-is-tree-canopy-coded" id="toc-a-reminder-how-is-tree-canopy-coded" class="nav-link" data-scroll-target="#a-reminder-how-is-tree-canopy-coded">A reminder: how is tree canopy coded?</a></li>
   <li><a href="#step-1-what-kind-of-outcome-do-you-have-and-is-it-rare-or-common" id="toc-step-1-what-kind-of-outcome-do-you-have-and-is-it-rare-or-common" class="nav-link" data-scroll-target="#step-1-what-kind-of-outcome-do-you-have-and-is-it-rare-or-common">Step 1: What kind of outcome do you have — and is it rare or common?</a></li>
   <li><a href="#step-2-a-two-by-two-table-you-can-calculate-by-hand" id="toc-step-2-a-two-by-two-table-you-can-calculate-by-hand" class="nav-link" data-scroll-target="#step-2-a-two-by-two-table-you-can-calculate-by-hand">Step 2: A two-by-two table you can calculate by hand</a></li>
   <li><a href="#step-3-the-same-comparison-as-a-regression-model" id="toc-step-3-the-same-comparison-as-a-regression-model" class="nav-link" data-scroll-target="#step-3-the-same-comparison-as-a-regression-model">Step 3: The same comparison as a regression model</a></li>
@@ -1734,7 +1735,8 @@ globalThis.qwebrExecuteCode = async function (
   </ul></li>
   <li><a href="#part-2-checking-the-linearity-assumption" id="toc-part-2-checking-the-linearity-assumption" class="nav-link" data-scroll-target="#part-2-checking-the-linearity-assumption">Part 2: Checking the Linearity Assumption</a>
   <ul class="collapse">
-  <li><a href="#steps-1-and-2-quartiles-as-indicator-terms" id="toc-steps-1-and-2-quartiles-as-indicator-terms" class="nav-link" data-scroll-target="#steps-1-and-2-quartiles-as-indicator-terms">Steps 1 and 2: Quartiles as indicator terms</a></li>
+  <li><a href="#step-1-categorize-tree-canopy-into-quartiles" id="toc-step-1-categorize-tree-canopy-into-quartiles" class="nav-link" data-scroll-target="#step-1-categorize-tree-canopy-into-quartiles">Step 1: Categorize tree canopy into quartiles</a></li>
+  <li><a href="#step-2-fit-the-model-with-quartiles-as-indicator-terms" id="toc-step-2-fit-the-model-with-quartiles-as-indicator-terms" class="nav-link" data-scroll-target="#step-2-fit-the-model-with-quartiles-as-indicator-terms">Step 2: Fit the model with quartiles as indicator terms</a></li>
   <li><a href="#step-3-plot-the-estimates" id="toc-step-3-plot-the-estimates" class="nav-link" data-scroll-target="#step-3-plot-the-estimates">Step 3: Plot the estimates</a></li>
   <li><a href="#collapsing-categories-that-look-alike" id="toc-collapsing-categories-that-look-alike" class="nav-link" data-scroll-target="#collapsing-categories-that-look-alike">Collapsing categories that look alike</a></li>
   <li><a href="#optional-relaxing-linearity-with-a-spline" id="toc-optional-relaxing-linearity-with-a-spline" class="nav-link" data-scroll-target="#optional-relaxing-linearity-with-a-spline">Optional: relaxing linearity with a spline</a></li>
@@ -2063,12 +2065,12 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </header>
 
 
-<p>In <a href="./lesson4.html">Lesson 4</a> you decided how to code your exposure. In this week’s Learn materials you saw how to choose a regression model based on your outcome, how to interpret the estimate it produces, and why the assumption that an exposure is related to the outcome “in a straight line” needs to be checked rather than assumed. This tutorial is the <strong>Practice</strong> half, in two parts:</p>
+<p>In <a href="./lesson4.html">Lesson 4</a> you decided how to code your exposure. This lesson puts that exposure into a regression model: choosing a model based on your outcome, interpreting the estimate it produces, and checking whether the assumption that the exposure is related to the outcome “in a straight line” actually holds. It has two parts:</p>
 <ol type="1">
-<li><strong>Choosing, fitting, and interpreting a crude model</strong> — starting from a two-by-two table you can calculate by hand, then fitting the same comparison as a logistic and a log-binomial regression model, then entering the exposure as a continuous term. Worked example: tree canopy cover and high blood pressure, the course’s primary exposure–outcome relationship.</li>
+<li><strong>Choosing, fitting, and interpreting a crude model</strong> — starting from a two-by-two table you can calculate by hand, then making the same comparison with a logistic and a log-binomial regression model, then entering the exposure as a continuous term. Worked example: tree canopy cover and high blood pressure, the course’s primary exposure–outcome relationship.</li>
 <li><strong>Checking the linearity assumption</strong> — categorizing the exposure, fitting a model with one indicator term per category, and plotting the estimates to see whether the relationship really is a straight line.</li>
 </ol>
-<p>Both parts end with a <strong>🧠 Your Turn</strong> for the exposure and outcome in your own project. Together they produce the crude model and the evaluation of functional form that Milestone 2 asks for (see the <strong>Apply</strong> page).</p>
+<p>Both parts end with a <strong>🧠 Your Turn</strong> for the exposure and outcome in your own project. Together they produce the crude model and the evaluation of functional form that Milestone 2 asks for.</p>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -2081,7 +2083,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 <div class="callout-body-container callout-body">
 <p>The gray boxes below are <strong>live R editors</strong> — the code actually runs in your browser (no install needed). Click the green <strong>Run Code</strong> arrow in the top-left corner of a box to run it. The output will appear directly underneath.</p>
 <p>You can also edit the code first — click inside the box, change something, then click <strong>Run Code</strong> to run your edited version. Nothing you do here can break anything; if you make a mess, just refresh the page to start that box over.</p>
-<p>Sections marked <strong>🧠 Your Turn</strong> give you a task and a blank or partially blank code editor. Try writing the code yourself before revealing the solution, hidden in a collapsed box underneath.</p>
+<p>Sections marked <strong>🧠 Your Turn</strong> give you a task and a blank or partially blank code editor. Try writing the code yourself before revealing the solution, hidden in a collapsed box underneath. Boxes labeled <strong>💡 Answers</strong> work the same way: think through the questions first, then click to check your reasoning.</p>
 <p><strong>A note on browser vs.&nbsp;RStudio code:</strong> chunks labeled <code>#| autorun: true</code> fetch data from the web in the background so it’s available in your browser. <strong>When you write your own scripts in RStudio, you will not include this fetching code.</strong> Immediately after each one, a green box labeled <strong>“In your RStudio script”</strong> shows the simpler code you’ll actually use.</p>
 </div>
 </div>
@@ -2095,7 +2097,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>This tutorial uses <strong><code>class_data_processed.csv</code></strong>, the same merged file from Weeks 1, 3, and 4. If you saved your Week 4 exposure coding in your project script, run that code first so your categorical and binary exposure variables exist. See the <a href="./codebook.html">Data Codebook</a> for variable definitions.</p>
+<p>This tutorial uses <strong><code>class_data_processed.csv</code></strong>, the same merged file from Lessons 1, 3, and 4. If you saved your Lesson 4 exposure coding in your project script, run that code first so your categorical and binary exposure variables exist. See the <a href="./codebook.html">Data Codebook</a> for variable definitions.</p>
 </div>
 </div>
 <hr>
@@ -2121,69 +2123,206 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
+<section id="a-reminder-how-is-tree-canopy-coded" class="level2">
+<h2 class="anchored" data-anchor-id="a-reminder-how-is-tree-canopy-coded">A reminder: how is tree canopy coded?</h2>
+<p>Before modeling an exposure, remind yourself what its values mean and what its distribution looks like — you characterized this in Lesson 3, and it matters again here.</p>
+<div id="qwebr-insertion-location-3"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>A few things to keep in mind about <code>hrlctree</code>:</p>
+<ul>
+<li>It is a <strong>proportion</strong>, from 0 to 1: a value of 0.12 means 12% of the participant’s census tract is covered by tree canopy. In our data it ranges from about 0.02 (2%) to 0.63 (63%), with a median of about 0.12 (12%).</li>
+<li>It is measured at the <strong>census-tract level</strong>, not for each person: every participant who lives in the same tract has the same value. The 2,000 participants live in 363 tracts.</li>
+<li>It is <strong>right-skewed</strong>: most participants live in tracts with 5–20% canopy, and a small number live in much greener tracts. Keep this in mind in Part 2 — it affects how wide each quartile is.</li>
+</ul>
+</section>
 <section id="step-1-what-kind-of-outcome-do-you-have-and-is-it-rare-or-common" class="level2">
 <h2 class="anchored" data-anchor-id="step-1-what-kind-of-outcome-do-you-have-and-is-it-rare-or-common">Step 1: What kind of outcome do you have — and is it rare or common?</h2>
-<p>The type of outcome determines the model (see the model-choice table in the Learn materials). <code>high_blood_pressure</code> is <strong>binary</strong> (1 = diagnosed, 0 = not), so a linear regression model is not appropriate — we need logistic or log-binomial regression. Which of those two to prefer depends on whether the outcome is rare or common.</p>
-<div id="qwebr-insertion-location-3"></div>
+<p>The type of outcome determines the model. <code>high_blood_pressure</code> is <strong>binary</strong> (1 = diagnosed, 0 = not), so a linear regression model is not appropriate — we need logistic or log-binomial regression. Which of those two to prefer depends on whether the outcome is rare or common.</p>
+<div id="qwebr-insertion-location-4"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p><strong>Questions to consider:</strong></p>
 <ul>
 <li>What proportion of participants have high blood pressure? Would you call that rare or common?</li>
-<li>How many participants are missing this outcome? (These will be dropped from every model below.)</li>
+<li>How many participants are missing this outcome?</li>
 </ul>
-</section>
-<section id="step-2-a-two-by-two-table-you-can-calculate-by-hand" class="level2">
-<h2 class="anchored" data-anchor-id="step-2-a-two-by-two-table-you-can-calculate-by-hand">Step 2: A two-by-two table you can calculate by hand</h2>
-<p>Before fitting any model, let’s calculate the association the old-fashioned way, so you can see exactly what the regression model will reproduce. We’ll use a median split of tree canopy cover — the same kind of binary exposure you created in Week 4.</p>
-<div id="qwebr-insertion-location-4"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>Recall the bracket syntax <code>[row, column]</code>: row 2 is <code>tree_high = 1</code>, column 2 is <code>high_blood_pressure = 1</code>.</p>
-<p><strong>Questions to consider:</strong></p>
-<ul>
-<li>Is the prevalence ratio (PR) or the odds ratio (OR) further from the null value of 1? Why does that happen with an outcome this common?</li>
-<li>Because this is a <strong>cross-sectional</strong> survey, we are comparing <em>prevalence</em>, not <em>risk</em>. That is why we call this a prevalence ratio rather than a risk ratio.</li>
-</ul>
-</section>
-<section id="step-3-the-same-comparison-as-a-regression-model" class="level2">
-<h2 class="anchored" data-anchor-id="step-3-the-same-comparison-as-a-regression-model">Step 3: The same comparison as a regression model</h2>
-<p>Now fit the same median-split comparison two ways. The <code>extract_ratio()</code> helper below exponentiates a model’s coefficient and its 95% confidence interval — the same steps as the <code>extract_or()</code> function from Week 4, just renamed because it now produces prevalence ratios as well as odds ratios.</p>
-<div id="qwebr-insertion-location-5"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>The two models differ only in their <strong>link function</strong>: <code>binomial(link = "logit")</code> models the log odds of the outcome, while <code>binomial(link = "log")</code> models the log prevalence.</p>
-<p><strong>Questions to consider:</strong></p>
-<ul>
-<li>Compare each estimate to the one you calculated by hand in Step 2. Do they match?</li>
-<li>Write a one-sentence interpretation of the PR. (Check your wording against the interpretation template in the Learn materials.)</li>
-</ul>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 Example interpretation — click to reveal after you've written your own">
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 Example interpretation — click to reveal after you’ve written your own
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
 <div id="callout-4" class="callout-4-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>The prevalence of high blood pressure among participants living in census tracts with above-median tree canopy cover was 0.72 times the prevalence among those living in tracts with below-median canopy (95% CI: 0.63, 0.83) — about 28% lower. The odds ratio (0.63) is further from the null than the PR (0.72) because high blood pressure is common here (about 30% prevalence); reporting the OR as if it were a PR would overstate the strength of the association.</p>
+<ul>
+<li>About <strong>30%</strong> of participants with data (606 of 1,988) have high blood pressure. That is a <strong>common</strong> outcome — a rough rule of thumb is that an outcome is “rare” if it affects fewer than about 10% of people.</li>
+<li><strong>12</strong> participants are missing <code>high_blood_pressure</code>. R will drop them automatically from every model below, so all models are fit on the 1,988 participants with data.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="step-2-a-two-by-two-table-you-can-calculate-by-hand" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-a-two-by-two-table-you-can-calculate-by-hand">Step 2: A two-by-two table you can calculate by hand</h2>
+<p>Before fitting any model, let’s calculate the association the old-fashioned way, so you can see exactly what the regression model will reproduce. We’ll use tree canopy <strong>dichotomized at the median</strong> — the same kind of binary exposure you created in Lesson 4.</p>
+<div id="qwebr-insertion-location-5"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>Each of the four cells in the table counts a different group of people:</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th></th>
+<th>High blood pressure (HBP = 1)</th>
+<th>No high blood pressure (HBP = 0)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><strong>High canopy</strong> (<code>tree_high = 1</code>)</td>
+<td><strong>A</strong> = people in high-canopy tracts <em>with</em> high blood pressure</td>
+<td><strong>B</strong> = people in high-canopy tracts <em>without</em> high blood pressure</td>
+</tr>
+<tr class="even">
+<td><strong>Low canopy</strong> (<code>tree_high = 0</code>)</td>
+<td><strong>C</strong> = people in low-canopy tracts <em>with</em> high blood pressure</td>
+<td><strong>D</strong> = people in low-canopy tracts <em>without</em> high blood pressure</td>
+</tr>
+</tbody>
+</table>
+<p>Note that R prints the table with the <code>0</code> (low canopy, no high blood pressure) row and column first, so the printed table is arranged D, C / B, A — which is why the code picks each count out by position.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Prevalence, not risk
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Because the class dataset is a <strong>cross-sectional</strong> survey — everyone was surveyed at one point in time — we are comparing the <em>prevalence</em> of high blood pressure (who has it now), not the <em>risk</em> of developing it over follow-up. That is why we call this a <strong>prevalence ratio</strong> rather than a risk ratio.</p>
+</div>
+</div>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>What is the prevalence of high blood pressure in each canopy group?</li>
+<li>Is the prevalence ratio (PR) or the odds ratio (OR) further from the null value of 1? Why does that happen with an outcome this common?</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>The prevalence is <strong>25.5%</strong> in high-canopy tracts (252 of 987) and <strong>35.4%</strong> in low-canopy tracts (354 of 1,001).</li>
+<li>PR = 0.255 / 0.354 = <strong>0.72</strong>; OR = <strong>0.63</strong>. The <strong>OR is further from the null</strong>. Odds are prevalence divided by one minus prevalence, p / (1 − p). When p is small, 1 − p is close to 1, so odds and prevalence are nearly the same. When p is large (here, around 0.3), dividing by 1 − p stretches the odds away from the prevalence, and the OR ends up further from 1 than the PR. Describing the OR of 0.63 as if it were a PR would overstate how much lower high blood pressure is in greener tracts.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="step-3-the-same-comparison-as-a-regression-model" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-the-same-comparison-as-a-regression-model">Step 3: The same comparison as a regression model</h2>
+<p>Now, we will make the same comparison, running both a logistic and a log-binomial regression model. We will use the results from these models to calculate the odds ratio and its 95% confidence interval (CI), and the prevalence ratio and its 95% CI.</p>
+<p>The two models differ only in their <strong>link function</strong> — what the model treats as a straight-line function of the exposure:</p>
+<ul>
+<li><strong>Logistic regression</strong>, <code>binomial(link = "logit")</code>, models the <strong>log odds</strong> of the outcome.</li>
+<li><strong>Log-binomial regression</strong>, <code>binomial(link = "log")</code>, models the <strong>log prevalence</strong>.</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Why do we exponentiate the coefficient and the CI?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Because both models work on the <strong>log scale</strong>, the coefficient R reports for <code>tree_high</code> is not a ratio — it is a <em>difference in logs</em>. For the log-binomial model:</p>
+<ul>
+<li>log(prevalence in high-canopy tracts) = β₀ + β₁</li>
+<li>log(prevalence in low-canopy tracts) = β₀</li>
+<li>the difference, <strong>β₁</strong>, is log(prevalence high) − log(prevalence low) = <strong>log(PR)</strong></li>
+</ul>
+<p>To get back from log(PR) to the PR itself, we undo the log by exponentiating: <strong>PR = exp(β₁)</strong>. (The same logic applied to log odds gives OR = exp(β₁) for the logistic model.)</p>
+<p>The 95% CI is built on the same log scale, as β₁ ± 1.96 × SE, so we exponentiate its two endpoints the same way: <strong>exp(β₁ − 1.96 × SE)</strong> and <strong>exp(β₁ + 1.96 × SE)</strong>. That is also why ratio CIs are not symmetric around the estimate — they are symmetric on the log scale, not on the ratio scale.</p>
+</div>
+</div>
+<p>The <code>extract_ratio()</code> helper below does these steps for us: it pulls out each coefficient and its standard error, then exponentiates the coefficient and both CI endpoints. It is the same idea as the <code>extract_or()</code> function from Lesson 4, just renamed because it now produces prevalence ratios as well as odds ratios.</p>
+<div id="qwebr-insertion-location-6"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>Compare each estimate to the one you calculated by hand in Step 2. Do they match?</li>
+<li>Write a one-sentence interpretation of the PR and its 95% CI.</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've written your own">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve written your own
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>Yes — the logistic model’s OR (0.63) and the log-binomial model’s PR (0.72) match the two-by-two table exactly. A crude model with a single binary exposure is doing the same calculation as the table; what the model adds is a confidence interval, and (from next week) the ability to adjust for other variables.</li>
+<li><em>Example interpretation:</em> The prevalence of high blood pressure among participants living in census tracts with tree canopy above the median was 0.72 times the prevalence among those living in tracts at or below the median (95% CI: 0.63, 0.83) — about 28% lower. Because the whole CI is below 1, the data are not consistent with no association (a PR of 1).</li>
+</ul>
 </div>
 </div>
 </div>
 </section>
 <section id="step-4-entering-the-exposure-as-a-continuous-term" class="level2">
 <h2 class="anchored" data-anchor-id="step-4-entering-the-exposure-as-a-continuous-term">Step 4: Entering the exposure as a continuous term</h2>
-<p>A median split throws away information: someone at the 51st percentile of tree canopy is treated the same as someone at the 99th. Entering <code>hrlctree</code> as a continuous term uses all of it. But <code>hrlctree</code> is a <strong>proportion</strong> (0 to 1), so a “one-unit increase” would mean going from 0% to 100% canopy — a meaningless comparison. We rescale so that one unit equals a <strong>10-percentage-point</strong> increase in tree canopy cover.</p>
-<div id="qwebr-insertion-location-6"></div>
+<p>Dichotomizing at the median throws away information: someone at the 51st percentile of tree canopy is treated the same as someone at the 99th. Entering <code>hrlctree</code> as a continuous term uses all the information available. But recall that <code>hrlctree</code> is a <strong>proportion</strong> (0 to 1), so a “one-unit increase” would mean going from 0% to 100% canopy — a meaningless comparison. We rescale so that one unit equals a <strong>10-percentage-point</strong> increase in tree canopy cover (for example, from 10% to 20%).</p>
+<div id="qwebr-insertion-location-7"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <p><strong>Questions to consider:</strong></p>
 <ul>
 <li>Interpret the PR per 10-percentage-point increase in tree canopy.</li>
-<li>This model assumes that <em>every</em> 10-point increase — from 5% to 15%, or from 40% to 50% — multiplies prevalence by the same amount. Is that a reasonable assumption? That is exactly what Part 2 checks.</li>
+<li>This model assumes that <em>every</em> 10-point increase — from 5% to 15%, or from 40% to 50% — multiplies prevalence by the same amount. Is that a reasonable assumption?</li>
 </ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>Each 10-percentage-point increase in census-tract tree canopy cover was associated with a <strong>24% lower prevalence</strong> of high blood pressure (PR = 0.76; 95% CI: 0.70, 0.84).</li>
+<li>We can’t tell from this model — a single continuous term will return one PR no matter what the true shape of the relationship is. That is exactly what Part 2 checks.</li>
+</ul>
+</div>
+</div>
+</div>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 What if my log-binomial model won't converge?">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2192,23 +2331,28 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>Log-binomial models sometimes fail with an error like <em>“no valid set of coefficients has been found: please supply starting values”</em>. This happens because predicted prevalences must stay below 1, which the fitting algorithm can struggle with. Two common fixes:</p>
+<p>Log-binomial models sometimes fail with an error like <em>“no valid set of coefficients has been found: please supply starting values”</em>. This happens because predicted prevalences must stay below 1, which the fitting algorithm can struggle with — especially when an exposure has a few extremely high values. Two common fixes:</p>
 <ol type="1">
 <li><strong>Supply starting values.</strong> Set the intercept to the log of the overall prevalence and the other coefficients to 0, e.g.&nbsp;<code>start = c(log(0.3), 0)</code> for a model with one exposure term.</li>
-<li><strong>Use a modified Poisson model</strong> — a Poisson model with robust (“sandwich”) standard errors, which also estimates a prevalence ratio. In RStudio:</li>
+<li><strong>Use a modified Poisson model</strong> — a Poisson model with robust (“sandwich”) standard errors, which also estimates a prevalence ratio.</li>
 </ol>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sandwich)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lmtest)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>model_pois <span class="ot">&lt;-</span> <span class="fu">glm</span>(high_blood_pressure <span class="sc">~</span> hrlctree_10, <span class="at">data =</span> data,</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                  <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>robust_se <span class="ot">&lt;-</span> <span class="fu">vcovHC</span>(model_pois, <span class="at">type =</span> <span class="st">"HC0"</span>)</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="fu">coeftest</span>(model_pois, <span class="at">vcov =</span> robust_se)                 <span class="co"># coefficients with robust SEs</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">coefci</span>(model_pois, <span class="at">vcov =</span> robust_se))              <span class="co"># PR 95% CI</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">coef</span>(model_pois))                                  <span class="co"># PR point estimate</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Code: running a modified Poisson model (in RStudio)</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Packages for robust ("sandwich") standard errors -- install once with install.packages()</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sandwich)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lmtest)</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit a Poisson model with a log link (same outcome and exposure as the log-binomial model)</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>model_pois <span class="ot">&lt;-</span> <span class="fu">glm</span>(high_blood_pressure <span class="sc">~</span> hrlctree_10, <span class="at">data =</span> data,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>                  <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Replace the usual standard errors with robust ones</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>robust_se <span class="ot">&lt;-</span> <span class="fu">vcovHC</span>(model_pois, <span class="at">type =</span> <span class="st">"HC0"</span>)</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="fu">coeftest</span>(model_pois, <span class="at">vcov =</span> robust_se)      <span class="co"># coefficients with robust SEs</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">coef</span>(model_pois))                       <span class="co"># PR point estimate</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">coefci</span>(model_pois, <span class="at">vcov =</span> robust_se))   <span class="co"># PR 95% CI</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </div>
@@ -2223,18 +2367,18 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Using the <strong>exposure and outcome from your project</strong> (and the exposure coding you decided on in Week 4):</p>
+<p>Using the <strong>exposure and outcome from your project</strong> (and the exposure coding you decided on in Lesson 4):</p>
 <ol type="1">
 <li>Check whether your outcome is binary or continuous and, if binary, how common it is.</li>
-<li>Fit the appropriate crude model: log-binomial (or logistic, if you can justify it) for a binary outcome, or <code>lm()</code> for a continuous one. If your exposure is a proportion or has large units, rescale it first so a one-unit change is meaningful.</li>
+<li>Fit the appropriate crude model: log-binomial (or logistic, if you can justify it) for a binary outcome, or <code>lm()</code> for a continuous one. If your exposure is continuous and a one-unit change isn’t meaningful (e.g., it’s a proportion), rescale it first.</li>
 <li>Use <code>extract_ratio()</code> to get your estimate and 95% CI (skip the exponentiating for a linear model — use <code>coef()</code> and <code>confint()</code> instead), and write a one-sentence interpretation.</li>
 </ol>
 </div>
 </div>
-<div id="qwebr-insertion-location-7"></div>
+<div id="qwebr-insertion-location-8"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Example: traffic density (ctb1traff) and asthma — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2243,13 +2387,13 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div id="callout-12" class="callout-12-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div id="qwebr-insertion-location-8"></div>
+<div id="qwebr-insertion-location-9"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>Interpretation: each doubling of census-tract traffic density was associated with a 1.66-fold higher prevalence of asthma (95% CI: 1.49, 1.84).</p>
-<p>Asthma affects about 10% of participants, so the OR (1.73) and PR are closer to each other here than they were for high blood pressure — the rarer the outcome, the better the OR approximates the PR.</p>
-<p>Why not simply rescale to “per 10,000 units,” as we did for tree canopy? Try it: a log-binomial model with <code>ctb1traff / 10000</code> fails with <em>“no valid set of coefficients has been found”</em>. The handful of tracts with extremely high traffic push predicted prevalence above 1, which a log link cannot allow. The log transformation handles the skew and fixes the convergence problem together.</p>
+<p>Interpretation: the prevalence of asthma among participants living in census tracts with traffic density above the median was 1.81 times the prevalence among those in tracts at or below the median (95% CI: 1.37, 2.38).</p>
+<p>Asthma affects only about 10% of participants, so the OR (1.93) and PR are closer to each other here than they were for high blood pressure — the rarer the outcome, the better the OR approximates the PR.</p>
+<p>Why dichotomize rather than enter traffic as a continuous term? Traffic density is very right-skewed — a handful of tracts have traffic many times higher than everyone else — and a log-binomial model with continuous traffic fails to converge for exactly the reason described in the “won’t converge” box above. The quartile approach in Part 2 is another way to handle it.</p>
 </div>
 </div>
 </div>
@@ -2258,32 +2402,86 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </section>
 <section id="part-2-checking-the-linearity-assumption" class="level1">
 <h1>Part 2: Checking the Linearity Assumption</h1>
-<p>The continuous model in Step 4 produced <strong>one</strong> number to summarize the whole relationship. The check below asks whether that one number is a fair summary. The steps (from the Learn materials):</p>
+<p>The continuous model in Step 4 produced <strong>one</strong> number to summarize the whole relationship. The check below asks whether that one number is a fair summary. The steps:</p>
 <ol type="1">
 <li>Categorize the exposure into several groups (quartiles here).</li>
 <li>Fit a model with a separate <strong>indicator term</strong> for each category, compared with a reference category.</li>
-<li>Plot the estimates. If they fall roughly along a straight line, the linearity assumption is reasonable; if they bend, level off, or jump, it isn’t.</li>
+<li>Plot the estimates. If they change by roughly the same amount from one category to the next, the linearity assumption is reasonable; if they bend, level off, or jump, it isn’t.</li>
 </ol>
-<section id="steps-1-and-2-quartiles-as-indicator-terms" class="level2">
-<h2 class="anchored" data-anchor-id="steps-1-and-2-quartiles-as-indicator-terms">Steps 1 and 2: Quartiles as indicator terms</h2>
-<div id="qwebr-insertion-location-9"></div>
+<section id="step-1-categorize-tree-canopy-into-quartiles" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-categorize-tree-canopy-into-quartiles">Step 1: Categorize tree canopy into quartiles</h2>
+<div id="qwebr-insertion-location-10"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>Wrapping the quartile variable in <code>factor()</code> is what tells R to create a separate indicator term for each category. Without it, R treats 1, 2, 3, 4 as a continuous number and returns a single coefficient — which would assume linearity instead of testing it. The first level (Q1, lowest canopy) is the reference category and drops out of the model; every PR is a comparison with Q1.</p>
+<p><code>ntile(hrlctree, 4)</code> sorts participants from lowest to highest tree canopy and splits them into four groups of (nearly) equal size — 500 participants each:</p>
+<ul>
+<li><strong>Q1</strong> — the 25% of participants living in the <strong>least green</strong> tracts (about 2% to 8% canopy)</li>
+<li><strong>Q2</strong> — the next 25% (about 8% to 12% canopy)</li>
+<li><strong>Q3</strong> — the next 25% (about 12% to 18% canopy)</li>
+<li><strong>Q4</strong> — the 25% of participants living in the <strong>greenest</strong> tracts (about 18% to 63% canopy)</li>
+</ul>
+<p>Notice that the quartiles have equal numbers of <em>people</em>, not equal ranges of <em>canopy</em>: because canopy is right-skewed, Q4 spans a much wider range of canopy (about 45 percentage points) than Q1–Q3 combined (about 16).</p>
+<p>Look at the last column: prevalence of high blood pressure is about 35–36% in Q1 and Q2, 31% in Q3, and 20% in Q4.</p>
+</section>
+<section id="step-2-fit-the-model-with-quartiles-as-indicator-terms" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-fit-the-model-with-quartiles-as-indicator-terms">Step 2: Fit the model with quartiles as indicator terms</h2>
+<div id="qwebr-insertion-location-11"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>Wrapping the quartile variable in <code>factor()</code> is what tells R to create a separate indicator term for each category. Without it, R treats 1, 2, 3, 4 as a continuous number and returns a single coefficient — which would <em>assume</em> linearity instead of testing it.</p>
+<p><strong>What “ref = Q1” means.</strong> With a categorical exposure, R needs a <strong>reference category</strong> that every other category is compared with. By default it uses the first level — here, Q1, the least green quartile. Q1 therefore does not get its own row in the output: its PR is 1 by definition. Each PR you see is the prevalence of high blood pressure in that quartile <strong>divided by the prevalence in Q1</strong>. That is why every interpretation below says “compared with participants in the lowest quartile.”</p>
+<p><strong>Interpreting the results:</strong></p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Quartile</th>
+<th>PR (95% CI)</th>
+<th>Interpretation</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Q1 (2–8% canopy)</td>
+<td>1 (reference)</td>
+<td>The comparison group for every other row</td>
+</tr>
+<tr class="even">
+<td>Q2 (8–12%)</td>
+<td>1.03 (0.87, 1.22)</td>
+<td>Prevalence essentially the same as Q1 (3% higher). The CI includes 1, so the data are consistent with no difference.</td>
+</tr>
+<tr class="odd">
+<td>Q3 (12–18%)</td>
+<td>0.89 (0.74, 1.06)</td>
+<td>Prevalence 11% lower than Q1, but the CI still includes 1, so this could plausibly be no difference.</td>
+</tr>
+<tr class="even">
+<td>Q4 (18–63%)</td>
+<td>0.58 (0.47, 0.72)</td>
+<td>Prevalence 42% lower than Q1. The whole CI is below 1: the data are not consistent with no difference.</td>
+</tr>
+</tbody>
+</table>
+<p>In words, for Q4: <em>the prevalence of high blood pressure among participants living in the greenest quarter of tracts was 0.58 times the prevalence among those in the least green quarter (95% CI: 0.47, 0.72).</em></p>
 </section>
 <section id="step-3-plot-the-estimates" class="level2">
 <h2 class="anchored" data-anchor-id="step-3-plot-the-estimates">Step 3: Plot the estimates</h2>
-<p>We plot each quartile’s PR (with Q1 fixed at 1) against the <strong>median canopy in that quartile</strong>, not just the quartile number. This matters: look at the table above — the top quartile spans a much wider range of canopy than the other three.</p>
-<div id="qwebr-insertion-location-10"></div>
+<p>We plot each quartile’s PR, with Q1 fixed at 1, against the quartile itself. Each quartile gets the same amount of space on the x-axis, so you can see directly how much the PR changes from one quartile to the next. The canopy range of each quartile is shown under its label.</p>
+<div id="qwebr-insertion-location-12"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>The y-axis is on a <strong>log scale</strong> because the log-binomial model is linear on the log scale: if the linearity assumption holds, the points should fall along a straight line on this plot.</p>
+<p>The y-axis is on a <strong>log scale</strong> because the log-binomial model is linear on the log scale: if the linearity assumption holds, the PRs should step down (or up) by about the same amount from each quartile to the next.</p>
 <p><strong>Questions to consider:</strong></p>
 <ul>
 <li>Do Q1, Q2, and Q3 look different from each other? Where does most of the change happen?</li>
-<li>If you had plotted these against quartile <em>number</em> (1, 2, 3, 4) instead of median canopy, would the relationship look more or less linear? Why?</li>
+<li>Does the line fall at a steady rate across the quartiles, or does it stay flat and then drop?</li>
+<li>Now look at the canopy ranges under each label. How does the width of Q4 change your reading of the “drop”?</li>
 <li>Given this plot, would you keep tree canopy as a single continuous term, use the quartile categories, or collapse some categories together?</li>
 </ul>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Discussion — click to reveal after you've looked at the plot yourself">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-13-contents" aria-controls="callout-13" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2292,9 +2490,10 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div id="callout-13" class="callout-13-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>Q2 is essentially the same as Q1, Q3 is slightly lower, and Q4 is much lower (PR ≈ 0.58). Plotted against quartile number, this looks like a “flat, then a sudden drop” pattern — strongly non-linear. Plotted against actual canopy, the picture is less dramatic: part of the “jump” is simply that Q4 covers a much wider range of canopy (roughly 18% to 63%) than the lower quartiles put together. On the canopy scale, the data suggest little difference between the two lowest quartiles and a fairly steady decline above roughly 10% canopy.</p>
+<p>Q2 is essentially the same as Q1, Q3 is slightly lower, and Q4 is much lower (PR ≈ 0.58). On this plot the line is roughly <strong>flat from Q1 to Q3 and then drops sharply to Q4</strong> — not the steady, equal-sized steps we would expect if the linearity assumption held. That is a sign the assumption may not hold.</p>
+<p>The canopy ranges add an important caveat. The quartiles are equal-sized groups of <em>people</em>, not equal-width ranges of <em>canopy</em>: Q1–Q3 together cover only about 2% to 18% canopy, while Q4 alone covers about 18% to 63%. Part of the “sudden drop” is simply that Q4 contains a much wider — and much greener — range of tracts. Measured in canopy percentage points, the decline above roughly 10% canopy is more gradual than this plot makes it look. This is why it is always worth checking what range of the exposure each category covers before interpreting the shape.</p>
 <p>There is no single right answer about what to do next — reasonable options include:</p>
 <ul>
 <li><strong>Keep the continuous term</strong>, if you judge the departure from linearity to be small. It is the most efficient and easiest to communicate (one PR per 10 percentage points).</li>
@@ -2308,16 +2507,62 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </section>
 <section id="collapsing-categories-that-look-alike" class="level2">
 <h2 class="anchored" data-anchor-id="collapsing-categories-that-look-alike">Collapsing categories that look alike</h2>
-<div id="qwebr-insertion-location-11"></div>
+<div id="qwebr-insertion-location-13"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p><strong>Question to consider:</strong> interpret this PR. How is it different from the median-split PR in Step 3 of Part 1, and why?</p>
+<p><strong>Question to consider:</strong> interpret this PR. How is it different from the PR for tree canopy dichotomized at the median (Part 1, Step 3), and why?</p>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answer — click to reveal after you've thought about it">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-14-contents" aria-controls="callout-14" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answer — click to reveal after you’ve thought about it
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-14" class="callout-14-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The prevalence of high blood pressure among participants in the top quartile of tree canopy was 0.60 times the prevalence among participants in the lower three quartiles combined (95% CI: 0.49, 0.72) — about 40% lower.</p>
+<p>This is further from the null than the median-dichotomized PR (0.72) because the comparison is different. Dichotomizing at the median puts Q3 in the “high canopy” group, even though Q3’s prevalence is close to Q1 and Q2’s; that dilutes the contrast. Comparing Q4 with Q1–Q3 separates the groups where the difference actually appears.</p>
+</div>
+</div>
+</div>
 </section>
 <section id="optional-relaxing-linearity-with-a-spline" class="level2">
 <h2 class="anchored" data-anchor-id="optional-relaxing-linearity-with-a-spline">Optional: relaxing linearity with a spline</h2>
 <p>You will not be required to use splines in this course, but they are common in environmental epidemiology (for example, temperature–mortality curves). A <strong>natural cubic spline</strong> lets the relationship bend smoothly instead of forcing a straight line. <code>df</code> sets how flexible the curve is.</p>
-<div id="qwebr-insertion-location-12"></div>
+<div id="qwebr-insertion-location-14"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Why doesn’t the “linear” model look like a straight line?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>In the first plot, the curve labeled “Linear” bends. That’s because the log-binomial model is linear in the <strong>log</strong> of prevalence, not in prevalence itself: log(P) = β₀ + β₁ × canopy. Undoing the log gives P = exp(β₀ + β₁ × canopy), which is a curve — each additional percentage point of canopy <em>multiplies</em> prevalence by the same amount (the PR), rather than subtracting the same amount. In the second plot, with the y-axis on a log scale, the “Linear” model is a straight line. The linearity assumption we are checking is always about the scale the model works on — here, the log scale.</p>
+</div>
+</div>
 <p><strong>Question to consider:</strong> the spline and the linear model have almost identical AIC values. What does that suggest about how much the linearity assumption actually matters for this particular exposure and outcome?</p>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answer — click to reveal after you've thought about it">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-16-contents" aria-controls="callout-16" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answer — click to reveal after you’ve thought about it
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-16" class="callout-16-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>The spline allows the curve to bend wherever the data suggest, yet it fits the data no better than a single straight line on the log scale (the AICs differ by less than 1). The two curves differ mainly at the lowest canopy values, where the spline levels off, and slightly at the highest values, where few participants live. So, for tree canopy and high blood pressure, the linearity assumption appears to be a reasonable approximation, and a continuous term per 10 percentage points is a defensible choice. The quartile plot is still valuable: it shows <em>where</em> along the canopy range the association is concentrated.</p>
+</div>
+</div>
+</div>
 <hr>
 <div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn: Check linearity for your own exposure">
 <div class="callout-header d-flex align-content-center">
@@ -2331,17 +2576,17 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 <div class="callout-body-container callout-body">
 <p>Using <strong>your own project’s exposure and outcome</strong>:</p>
 <ol type="1">
-<li>Create quartiles (or quintiles, if your sample size allows) of your exposure with <code>ntile()</code>, wrapped in <code>factor()</code>.</li>
+<li>Create quartiles (or quintiles, if your sample size allows) of your exposure with <code>ntile()</code>, wrapped in <code>factor()</code>, and look at the range of your exposure within each category.</li>
 <li>Fit your crude model with the categorical exposure and extract the estimates.</li>
-<li>Plot the estimates against the median exposure value in each category, with the reference category fixed at 1 (or at 0 for a linear model — and use a regular, not log, y-axis).</li>
+<li>Plot the estimates by category, with the reference category fixed at 1 (or at 0 for a linear model — and use a regular, not log, y-axis).</li>
 <li>In two or three sentences, state whether the linearity assumption looks reasonable and what coding you will use in your models going forward.</li>
 </ol>
 </div>
 </div>
-<div id="qwebr-insertion-location-13"></div>
+<div id="qwebr-insertion-location-15"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Example: traffic density (ctb1traff) and asthma — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-18-contents" aria-controls="callout-18" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2350,10 +2595,11 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div id="callout-18" class="callout-18-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div id="qwebr-insertion-location-14"></div>
+<div id="qwebr-insertion-location-16"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>Compared with Q1 (the lowest-traffic quarter of participants), asthma prevalence is similar in Q2 (PR 1.09), somewhat higher in Q3 (PR 1.35; CI includes 1), and more than twice as high in Q4 (PR 2.41; 95% CI: 1.65, 3.53). The rise is steepest at the top, so a continuous term may not capture the shape well; the quartile categories, or the top quartile vs.&nbsp;the rest, are reasonable choices.</p>
 </div>
 </div>
 </div>
@@ -2395,36 +2641,49 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 <span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(data<span class="sc">$</span>YOUR_OUTCOME, <span class="at">useNA =</span> <span class="st">"ifany"</span>)</span>
 <span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="fu">prop.table</span>(<span class="fu">table</span>(data<span class="sc">$</span>YOUR_OUTCOME))</span>
 <span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Crude model, continuous exposure (rescale if needed) ----</span></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">YOUR_EXPOSURE_scaled =</span> YOUR_EXPOSURE <span class="sc">*</span> <span class="dv">10</span>)   <span class="co"># adjust the scaling</span></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>model_cont <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE_scaled, <span class="at">data =</span> data,</span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>                  <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"log"</span>))   <span class="co"># continuous outcome: lm(YOUR_OUTCOME ~ ...)</span></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="fu">extract_ratio</span>(model_cont, <span class="st">"Continuous"</span>)</span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Linearity check: quartiles as indicator terms ----</span></span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">YOUR_EXPOSURE_quartile =</span> <span class="fu">factor</span>(<span class="fu">ntile</span>(YOUR_EXPOSURE, <span class="dv">4</span>)))</span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>model_quart <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE_quartile, <span class="at">data =</span> data,</span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>                   <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Look at your exposure's coding and distribution ----</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(data<span class="sc">$</span>YOUR_EXPOSURE)</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="fu">hist</span>(data<span class="sc">$</span>YOUR_EXPOSURE)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- OPTIONAL: rescale a continuous exposure ----</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Only needed if a one-unit change isn't meaningful for your exposure. For a proportion</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="co"># (0-1, like tree canopy), multiplying by 10 makes one unit = 10 percentage points.</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Choose the scaling based on your exposure's units and distribution -- or skip this step</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="co"># and use YOUR_EXPOSURE directly below.</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">YOUR_EXPOSURE_scaled =</span> YOUR_EXPOSURE <span class="sc">*</span> <span class="dv">10</span>)   <span class="co"># adjust the scaling</span></span>
 <span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>medians <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(YOUR_EXPOSURE_quartile) <span class="sc">%&gt;%</span></span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">median_exposure =</span> <span class="fu">median</span>(YOUR_EXPOSURE, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">extract_ratio</span>(model_quart, <span class="st">"Quartiles"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">YOUR_EXPOSURE_quartile =</span> <span class="fu">factor</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">4</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">data.frame</span>(<span class="at">YOUR_EXPOSURE_quartile =</span> <span class="fu">factor</span>(<span class="dv">1</span>), <span class="at">Estimate =</span> <span class="dv">1</span>,</span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>                       <span class="at">CI_Lower =</span> <span class="dv">1</span>, <span class="at">CI_Upper =</span> <span class="dv">1</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(medians, <span class="at">by =</span> <span class="st">"YOUR_EXPOSURE_quartile"</span>)</span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(results, <span class="fu">aes</span>(<span class="at">x =</span> median_exposure, <span class="at">y =</span> Estimate)) <span class="sc">+</span></span>
-<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">1</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
-<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> CI_Lower, <span class="at">ymax =</span> CI_Upper), <span class="at">width =</span> <span class="dv">0</span>) <span class="sc">+</span></span>
-<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
-<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
-<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span></span>
-<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"Median [exposure] in quartile"</span>, <span class="at">y =</span> <span class="st">"Prevalence ratio (95% CI)"</span>,</span>
-<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"[Outcome] by [exposure] quartile (reference = Q1)"</span>) <span class="sc">+</span></span>
-<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Crude model, continuous exposure ----</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>model_cont <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE_scaled, <span class="at">data =</span> data,</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>                  <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"log"</span>))   <span class="co"># continuous outcome: lm(YOUR_OUTCOME ~ ...)</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a><span class="fu">extract_ratio</span>(model_cont, <span class="st">"Continuous"</span>)</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Linearity check: quartiles as indicator terms ----</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">YOUR_EXPOSURE_quartile =</span> <span class="fu">factor</span>(<span class="fu">ntile</span>(YOUR_EXPOSURE, <span class="dv">4</span>)))</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>data <span class="sc">%&gt;%</span>                                   <span class="co"># exposure range in each quartile</span></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(YOUR_EXPOSURE_quartile) <span class="sc">%&gt;%</span></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">n =</span> <span class="fu">n</span>(), <span class="at">min =</span> <span class="fu">min</span>(YOUR_EXPOSURE, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">max =</span> <span class="fu">max</span>(YOUR_EXPOSURE, <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>model_quart <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE_quartile, <span class="at">data =</span> data,</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>                   <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>results <span class="ot">&lt;-</span> <span class="fu">extract_ratio</span>(model_quart, <span class="st">"Quartiles"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">YOUR_EXPOSURE_quartile =</span> <span class="fu">factor</span>(<span class="dv">2</span><span class="sc">:</span><span class="dv">4</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>  <span class="fu">bind_rows</span>(<span class="fu">data.frame</span>(<span class="at">YOUR_EXPOSURE_quartile =</span> <span class="fu">factor</span>(<span class="dv">1</span>), <span class="at">Estimate =</span> <span class="dv">1</span>,</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>                       <span class="at">CI_Lower =</span> <span class="dv">1</span>, <span class="at">CI_Upper =</span> <span class="dv">1</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">YOUR_EXPOSURE_quartile =</span> <span class="fu">factor</span>(YOUR_EXPOSURE_quartile, <span class="at">levels =</span> <span class="dv">1</span><span class="sc">:</span><span class="dv">4</span>)) <span class="sc">%&gt;%</span>   <span class="co"># put Q1 first</span></span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(YOUR_EXPOSURE_quartile)</span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(results, <span class="fu">aes</span>(<span class="at">x =</span> YOUR_EXPOSURE_quartile, <span class="at">y =</span> Estimate, <span class="at">group =</span> <span class="dv">1</span>)) <span class="sc">+</span></span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">1</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>, <span class="at">color =</span> <span class="st">"red"</span>) <span class="sc">+</span></span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_errorbar</span>(<span class="fu">aes</span>(<span class="at">ymin =</span> CI_Lower, <span class="at">ymax =</span> CI_Upper), <span class="at">width =</span> <span class="fl">0.15</span>) <span class="sc">+</span></span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_point</span>(<span class="at">size =</span> <span class="dv">3</span>) <span class="sc">+</span></span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_x_discrete</span>(<span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Q1"</span>, <span class="st">"Q2"</span>, <span class="st">"Q3"</span>, <span class="st">"Q4"</span>)) <span class="sc">+</span></span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span></span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">x =</span> <span class="st">"[Exposure] quartile"</span>, <span class="at">y =</span> <span class="st">"Prevalence ratio (95% CI)"</span>,</span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>       <span class="at">title =</span> <span class="st">"[Outcome] by [exposure] quartile (reference = Q1)"</span>) <span class="sc">+</span></span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>  <span class="fu">theme_minimal</span>()</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 <hr>
@@ -2434,12 +2693,12 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 <p>This tutorial covered:</p>
 <ul>
 <li>Choosing a model from the outcome type, and preferring the log-binomial model (prevalence ratio) over logistic regression (odds ratio) when a binary outcome is common</li>
-<li>Reproducing a hand-calculated two-by-two table estimate with a regression model, and exponentiating coefficients and confidence intervals to get ratio measures</li>
+<li>Reproducing a hand-calculated two-by-two table estimate with a regression model, and why we exponentiate coefficients and confidence intervals to get ratio measures</li>
 <li>Rescaling a continuous exposure so that “one unit” is a meaningful comparison</li>
-<li>Checking the linearity assumption with categorical indicator terms, plotting the estimates, and deciding whether to keep a continuous term, collapse categories, or use a spline</li>
+<li>Checking the linearity assumption with categorical indicator terms, interpreting each category’s estimate relative to the reference category, and deciding whether to keep a continuous term, collapse categories, or use a spline</li>
 </ul>
-<p>The crude model and linearity check you completed for your own project are the core of Milestone 2. See the <strong>Apply</strong> page for what’s due.</p>
-<p><strong>Next week (Week 6):</strong> Confounding and causal diagrams — every model in this tutorial was <strong>crude</strong> (unadjusted). Next week you’ll use a DAG to decide which variables belong in the model alongside your exposure, and see how adjusting for them changes your estimate.</p>
+<p>The crude model and linearity check you completed for your own project are the core of Milestone 2.</p>
+<p><strong>Next week:</strong> Confounding and causal diagrams — every model in this tutorial was <strong>crude</strong> (unadjusted). Next week you’ll use a DAG to decide which variables belong in the model alongside your exposure, and see how adjusting for them changes your estimate.</p>
 
 
 </section>
