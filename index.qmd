@@ -26,6 +26,10 @@ Welcome! These tutorials walk through the R and analysis skills used in this cou
   — choosing and fitting a crude regression model (logistic vs. log-binomial) for tree canopy and
   high blood pressure, interpreting the estimate, and checking the linearity assumption with
   categorical indicator terms
+- [Lesson 6: Confounding & Directed Acyclic Graphs (DAGs)](lesson6.qmd)
+  — drawing a DAG in R to find a minimally sufficient adjustment set, then checking confounding
+  in the data with the change-in-estimate approach (including modified Poisson regression when a
+  log-binomial model won't converge)
 
 ## Reference
 

@@ -29,6 +29,11 @@ no R or RStudio installation required. Built with [Quarto](https://quarto.org) a
   — choosing a model from the outcome type, logistic vs. log-binomial regression for a common
   outcome, interpreting exponentiated estimates, and checking the linearity assumption with
   categorical indicator terms (tree canopy and high blood pressure).
+- **[Lesson 6: Confounding & Directed Acyclic Graphs](https://schinasi.github.io/EOH635/lesson6.html)**
+  — writing a DAG with `dagitty`, listing causal and backdoor paths, finding a minimally
+  sufficient adjustment set, then the change-in-estimate approach (one covariate at a time, same
+  participants), modified Poisson regression with robust standard errors, and a final adjusted
+  model.
 - **[Data Codebook](https://schinasi.github.io/EOH635/codebook.html)** — full variable
   reference for the class dataset: what each column means, how it's coded, known missingness,
   and known data quirks to watch for.
@@ -67,7 +72,7 @@ relationship by education, while gender is deliberately left unrelated to tree c
 quarto_tutorials/
 ├── _quarto.yml                 # Project + site config (output-dir: docs, for GitHub Pages)
 ├── index.qmd                   # Landing page listing lessons
-├── lesson1.qmd / lesson2.qmd / lesson3.qmd   # The three lessons
+├── lesson1.qmd ... lesson6.qmd   # The lessons
 ├── codebook.qmd                # Data codebook
 ├── data/                       # Class data files, fetched by students' browsers at runtime
 │   ├── class_data_raw.csv

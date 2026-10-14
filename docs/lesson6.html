@@ -1,0 +1,3317 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Leah Schinasi">
+<meta name="dcterms.date" content="2026-10-14">
+
+<title>Lesson 6: Confounding &amp; Directed Acyclic Graphs (DAGs) – EOH 635: Environmental Epidemiology Methods</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<script src="site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap-172ba59bd5e0b52282274ba0c0cc16fc.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/monaco-editor@0.47.0/min/vs/editor/editor.main.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  
+<style type="text/css">
+.monaco-editor pre {
+  background-color: unset !important;
+}
+
+.qwebr-editor-toolbar {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+
+.qwebr-editor-toolbar-left-buttons, .qwebr-editor-toolbar-right-buttons {
+  display: flex;
+}
+
+.qwebr-non-interactive-loading-container.qwebr-cell-needs-evaluation, .qwebr-non-interactive-loading-container.qwebr-cell-evaluated {
+  justify-content: center;
+  display: flex;
+  background-color: rgba(250, 250, 250, 0.65);
+  border: 1px solid rgba(233, 236, 239, 0.65);
+  border-radius: 0.5rem;
+  margin-top: 15px;
+  margin-bottom: 15px;
+}
+
+.qwebr-r-project-logo {
+  color: #2767B0; /* R Project's blue color */
+}
+
+.qwebr-icon-status-spinner {
+  color: #7894c4;
+}
+
+.qwebr-icon-run-code {
+  color: #0d9c29
+}
+
+body.quarto-light .qwebr-output-code-stdout {
+  color: #111;
+}
+
+body.quarto-dark .qwebr-output-code-stdout {
+  color: #EEE;
+}
+
+.qwebr-output-code-stderr {
+  color: #db4133;
+}
+
+body.quarto-light .qwebr-editor {
+  border: 1px solid #EEEEEE;
+}
+
+body.quarto-light .qwebr-editor-toolbar {
+  background-color: #EEEEEE;
+  padding: 0.2rem 0.5rem;
+}
+
+body.quarto-dark .qwebr-editor {
+  border: 1px solid #111;
+}
+
+body.quarto-dark .qwebr-editor-toolbar {
+  background-color: #111;
+  padding: 0.2rem 0.5rem;
+}
+
+.qwebr-button {
+  display: inline-block;
+  font-weight: 400;
+  line-height: 1;
+  text-decoration: none;
+  text-align: center;
+  padding: 0.375rem 0.75rem;
+  font-size: .9rem;
+  border-radius: 0.25rem;
+  transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+body.quarto-light .qwebr-button {
+  background-color: #EEEEEE;
+  color: #000;
+  border-color: #dee2e6;
+  border: 1px solid rgba(0,0,0,0);
+}
+
+body.quarto-dark .qwebr-button {
+  background-color: #111;
+  color: #EEE;
+  border-color: #dee2e6;
+  border: 1px solid rgba(0,0,0,0);
+}
+
+body.quarto-light .qwebr-button:hover {
+  color: #000;
+  background-color: #d9dce0;
+  border-color: #c8ccd0;
+}
+
+body.quarto-dark .qwebr-button:hover {
+  color: #d9dce0;
+  background-color: #323232;
+  border-color: #d9dce0;
+}
+
+.qwebr-button:disabled,.qwebr-button.disabled,fieldset:disabled .qwebr-button {
+  pointer-events: none;
+  opacity: .65
+}
+
+.qwebr-button-reset {
+  color: #696969; /*#4682b4;*/
+}
+
+.qwebr-button-copy {
+  color: #696969;
+}
+
+/* Style the code highlight lines */
+body.quarto-light .qwebr-editor-highlight-line {
+  background-color: lightblue;
+}
+
+body.quarto-dark .qwebr-editor-highlight-line {
+  background-color: darkblue;
+}
+
+/* Style the modal pop-up */
+
+/* The Modal (background) */
+.qwebr-modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+  padding-top: 60px;
+}
+
+/* Modal Content */
+.qwebr-modal-content {
+  background-color: #fefefe;
+  margin: 5% auto; /* 15% from the top and centered */
+  padding: 20px;
+  border: 1px solid #888;
+  width: 80%; /* Could be more or less, depending on screen size */
+}
+
+.qwebr-modal-content-code {
+  max-height: 50vh;
+  min-height: 5vh;
+  overflow: scroll;
+  border: 1px solid #888;
+}
+
+/* The Close Button */
+.qwebr-modal-close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.qwebr-modal-close:hover,
+.qwebr-modal-close:focus {
+  color: black;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.qwebr-download-btn {
+  margin-top: 10px;
+  text-decoration: none !important;
+}
+
+/* Styling to download image that is created */
+
+.qwebr-canvas-image {
+  position: relative;
+  display: inline-block;
+  margin: 10px;
+}
+
+.qwebr-canvas-image-download-btn {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  cursor: pointer;
+  display: none;
+}
+
+figure:hover .qwebr-canvas-image-download-btn {
+  display: block;
+}
+
+/* Custom styling for RevealJS Presentations*/
+
+/* Reset the style of the interactive area */
+.reveal div.qwebr-interactive-area {
+  display: block;
+  box-shadow: none;
+  max-width: 100%;
+  max-height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Provide space to entries */
+.reveal div.qwebr-output-code-area pre div {
+  margin: 1px 2px 1px 10px;
+}
+
+/* Collapse the inside code tags to avoid extra space between line outputs */
+.reveal pre div code.qwebr-output-code-stdout, .reveal pre div code.qwebr-output-code-stderr {
+  padding: 0;
+  display: contents;
+}
+
+body.reveal.quarto-light pre div code.qwebr-output-code-stdout {
+  color: #111;
+}
+
+body.reveal.quarto-dark pre div code.qwebr-output-code-stdout {
+  color: #EEEEEE;
+}
+
+.reveal pre div code.qwebr-output-code-stderr {
+  color: #db4133;
+}
+
+
+/* Create a border around console and output (does not effect graphs) */
+body.reveal.quarto-light div.qwebr-console-area {
+  border: 1px solid #EEEEEE;
+  box-shadow: 2px 2px 10px #EEEEEE;
+}
+
+body.reveal.quarto-dark div.qwebr-console-area {
+  border: 1px solid #111;
+  box-shadow: 2px 2px 10px #111;
+}
+
+
+/* Cap output height and allow text to scroll */
+/* TODO: Is there a better way to fit contents/max it parallel to the monaco editor size? */
+.reveal div.qwebr-output-code-area pre {
+  max-height: 400px;
+  overflow: scroll;
+}
+
+iframe.qwebr-output-code-browse {
+  width: 100%;
+
+  /*
+    TODO: How to make the height automatic according to the widget size,
+    or respect the quarto code block options?
+  */
+  min-height: 500px;
+}
+
+</style>
+<script type="module">
+// Document level settings ----
+
+// Determine if we need to install R packages
+globalThis.qwebrInstallRPackagesList = ['tidyverse', 'sandwich', 'dagitty'];
+
+// Specify possible locations to search for the repository
+globalThis.qwebrPackageRepoURLS = ['https://repo.r-wasm.org/'];
+
+// Check to see if we have an empty array, if we do set to skip the installation.
+globalThis.qwebrSetupRPackages = !(qwebrInstallRPackagesList.indexOf("") !== -1);
+globalThis.qwebrAutoloadRPackages = true;
+
+// Display a startup message?
+globalThis.qwebrShowStartupMessage = true;
+globalThis.qwebrShowHeaderMessage = false;
+
+// Describe the webR settings that should be used
+globalThis.qwebrCustomizedWebROptions = {
+  "baseURL": "https://webr.r-wasm.org/v0.5.2/",
+  "serviceWorkerUrl": "",
+  "homedir": "/home/web_user", 
+  "channelType": "ChannelType.Automatic"
+};
+
+// Store cell data
+globalThis.qwebrCellDetails = [{"code":"library(tidyverse)\nlibrary(sandwich)\nlibrary(dagitty)","id":1,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-1","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data_base_url <- \"https://raw.githubusercontent.com/schinasi/EOH635/main/data/\"\n\ndir.create(\"data_processed\", showWarnings = FALSE)\n\ndownload.file(paste0(data_base_url, \"class_data_processed.csv\"), file.path(\"data_processed\", \"class_data_processed.csv\"))\n\ndata <- read.csv(file.path(\"data_processed\", \"class_data_processed.csv\"))","id":2,"options":{"autorun":"true","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-2","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(\n    r_age = ifelse(age > 105, NA, age),                       # Lesson 3: implausible ages -> missing\n    tree_quartile = factor(ntile(hrlctree, 4)),               # Lesson 5: canopy quartiles\n    tree_top_quartile = ifelse(tree_quartile == \"4\", 1, 0)    # Lesson 5: Q4 (1) vs. Q1-Q3 (0)\n  )\n\ntable(data$tree_quartile, data$tree_top_quartile)   # always check a recode","id":3,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-3","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"dag <- dagitty('dag {\n  tree_canopy       [exposure, pos=\"0,0\"]\n  high_bp           [outcome,  pos=\"4,0\"]\n  race_ethnicity    [pos=\"0.2,-2.2\"]\n  tract_poverty     [pos=\"1.3,-1.2\"]\n  education         [pos=\"2.7,-1.2\"]\n  age               [pos=\"3.8,-2.2\"]\n  gender            [pos=\"4.6,-1.1\"]\n  physical_activity [pos=\"1.3,1.2\"]\n  obesity           [pos=\"2.7,1.2\"]\n\n  tree_canopy -> high_bp\n  tree_canopy -> physical_activity -> obesity -> high_bp\n  education -> tree_canopy\n  education -> high_bp\n  tract_poverty -> tree_canopy\n  tract_poverty -> high_bp\n  tract_poverty -> education\n  race_ethnicity -> tract_poverty\n  race_ethnicity -> high_bp\n  age -> education\n  age -> high_bp\n  gender -> high_bp\n}')\n\nplot(dag)","id":4,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-4","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"paths(dag)","id":5,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-5","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"adjustmentSets(dag)","id":6,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-6","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"paths(dag, Z = c(\"education\", \"tract_poverty\"))","id":7,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-7","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"adjustmentSets(dag, type = \"all\")","id":8,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-8","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — a DAG for your own exposure and outcome","id":9,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-9","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"dag_asthma <- dagitty('dag {\n  traffic_density  [exposure, pos=\"0,0\"]\n  asthma           [outcome,  pos=\"3,0\"]\n  tract_poverty    [pos=\"1.5,-1.3\"]\n  current_smoker   [pos=\"2.4,-1.3\"]\n  education        [pos=\"3.2,-2.2\"]\n  air_pollution    [pos=\"1.5,1\"]\n\n  traffic_density -> air_pollution -> asthma\n  tract_poverty -> traffic_density\n  tract_poverty -> asthma\n  tract_poverty -> current_smoker\n  education -> current_smoker\n  current_smoker -> asthma\n}')\n\nplot(dag_asthma)\nadjustmentSets(dag_asthma)","id":10,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-10","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"extract_ratio <- function(model, label, robust = FALSE) {\n  # Robust (\"sandwich\") variance if requested; otherwise the usual model-based variance\n  vc <- if (robust) vcovHC(model, type = \"HC0\") else vcov(model)\n  b  <- coef(model)[-1]                  # coefficients (log scale), dropping the intercept\n  se <- sqrt(diag(vc))[-1]               # their standard errors\n  data.frame(\n    Model    = label,\n    Term     = names(b),\n    Estimate = exp(b),                   # exponentiate -> PR (or OR)\n    CI_Lower = exp(b - 1.96 * se),\n    CI_Upper = exp(b + 1.96 * se),\n    row.names = NULL\n  )\n}\n\nmodel_crude <- glm(high_blood_pressure ~ tree_top_quartile, data = data,\n                   family = binomial(link = \"log\"))\n\nextract_ratio(model_crude, \"Crude, log-binomial\")","id":11,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-11","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Make a 0/1 version of education to use as a predictor and as an outcome\ndata <- data %>%\n  mutate(educ_ba = ifelse(education == \"Bachelor's degree or higher\", 1, 0))\n\ntable(data$education, data$educ_ba)   # check the recode\n\n# (a) Education and the EXPOSURE: who lives in the greenest quarter of tracts?\ndata %>%\n  group_by(education) %>%\n  summarise(n = n(), prop_top_quartile = mean(tree_top_quartile))\n\nmodel_educ_exp <- glm(tree_top_quartile ~ educ_ba, data = data,\n                      family = binomial(link = \"log\"))\nextract_ratio(model_educ_exp, \"Exposure ~ education\")\n\n# (b) Education and the OUTCOME\nmodel_educ_out <- glm(high_blood_pressure ~ educ_ba, data = data,\n                      family = binomial(link = \"log\"))\nextract_ratio(model_educ_out, \"Outcome ~ education\")","id":12,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-12","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_adj_educ <- glm(high_blood_pressure ~ tree_top_quartile + education, data = data,\n                      family = binomial(link = \"log\"))\n\nextract_ratio(model_adj_educ, \"Adjusted for education, log-binomial\")","id":13,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-13","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"pr_crude <- unname(exp(coef(model_crude)[\"tree_top_quartile\"]))      # unname() just tidies\npr_adj   <- unname(exp(coef(model_adj_educ)[\"tree_top_quartile\"]))   # the printed labels\n\nc(PR_crude = pr_crude, PR_adjusted = pr_adj,\n  pct_change = (pr_crude - pr_adj) / pr_crude * 100)","id":14,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-14","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_adj_age_lb <- glm(high_blood_pressure ~ tree_top_quartile + r_age, data = data,\n                        family = binomial(link = \"log\"))","id":15,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-15","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_adj_age <- glm(high_blood_pressure ~ tree_top_quartile + r_age, data = data,\n                     family = poisson(link = \"log\"))\n\nextract_ratio(model_adj_age, \"Adjusted for age, modified Poisson\", robust = TRUE)","id":16,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-16","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_crude_mp <- glm(high_blood_pressure ~ tree_top_quartile, data = data,\n                      family = poisson(link = \"log\"))\nmodel_adj_educ_mp <- glm(high_blood_pressure ~ tree_top_quartile + education, data = data,\n                         family = poisson(link = \"log\"))\n\nbind_rows(\n  extract_ratio(model_crude, \"Crude, log-binomial\"),\n  extract_ratio(model_crude_mp, \"Crude, modified Poisson\", robust = TRUE),\n  extract_ratio(model_adj_educ, \"+ education, log-binomial\"),\n  extract_ratio(model_adj_educ_mp, \"+ education, modified Poisson\", robust = TRUE)\n) %>%\n  filter(Term == \"tree_top_quartile\")","id":17,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-17","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data_age <- data %>%\n  filter(!is.na(high_blood_pressure), !is.na(tree_top_quartile), !is.na(r_age))\n\nnrow(data_age)\n\nmodel_crude_age_sample <- glm(high_blood_pressure ~ tree_top_quartile, data = data_age,\n                              family = poisson(link = \"log\"))\n\nbind_rows(\n  extract_ratio(model_crude_mp, \"Crude, everyone with outcome data\", robust = TRUE),\n  extract_ratio(model_crude_age_sample, \"Crude, participants with age data\", robust = TRUE)\n)","id":18,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-18","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"candidates <- c(\"education\", \"pov_allage\", \"r_age\", \"gender\", \"race_ethnicity\", \"obese\")\n\ncie_table <- data.frame()\n\nfor (covariate in candidates) {\n\n  # 1. Keep participants with no missing data on the outcome, exposure, or this covariate\n  data_cc <- data %>%\n    filter(!is.na(high_blood_pressure), !is.na(tree_top_quartile), !is.na(.data[[covariate]]))\n\n  # 2. Crude model in those participants\n  crude <- glm(high_blood_pressure ~ tree_top_quartile, data = data_cc,\n               family = poisson(link = \"log\"))\n\n  # 3. Model adjusted for this covariate only\n  adj_formula <- as.formula(paste(\"high_blood_pressure ~ tree_top_quartile +\", covariate))\n  adjusted <- glm(adj_formula, data = data_cc, family = poisson(link = \"log\"))\n\n  # 4. Pull out the tree canopy PRs (robust CIs) and calculate the percent change\n  pr_c <- extract_ratio(crude, \"crude\", robust = TRUE) %>% filter(Term == \"tree_top_quartile\")\n  pr_a <- extract_ratio(adjusted, covariate, robust = TRUE) %>% filter(Term == \"tree_top_quartile\")\n\n  cie_table <- bind_rows(cie_table, data.frame(\n    Covariate   = covariate,\n    N           = nobs(adjusted),\n    PR_crude    = pr_c$Estimate,\n    PR_adjusted = pr_a$Estimate,\n    CI_Lower    = pr_a$CI_Lower,\n    CI_Upper    = pr_a$CI_Upper,\n    Pct_change  = (pr_c$Estimate - pr_a$Estimate) / pr_c$Estimate * 100\n  ))\n}\n\ncie_table %>%\n  mutate(across(PR_crude:CI_Upper, ~ round(.x, 2)),\n         Pct_change = round(Pct_change, 1)) %>%\n  arrange(desc(abs(Pct_change)))","id":19,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-19","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>% mutate(hrlctree_pct = hrlctree * 100)   # as in Lesson 5: 1 unit = 1 percentage point\n\nm_c <- glm(high_blood_pressure ~ hrlctree_pct, data = data, family = poisson(link = \"log\"))\nm_a <- glm(high_blood_pressure ~ hrlctree_pct + education, data = data, family = poisson(link = \"log\"))\n\nb_c <- coef(m_c)[\"hrlctree_pct\"]\nb_a <- coef(m_a)[\"hrlctree_pct\"]\n\ndata.frame(\n  Contrast    = c(\"Per 1 percentage point\", \"Per 10 percentage points\"),\n  PR_crude    = exp(c(1, 10) * b_c),\n  PR_adjusted = exp(c(1, 10) * b_a)\n) %>%\n  mutate(Pct_change = (PR_crude - PR_adjusted) / PR_crude * 100)","id":20,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-20","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_final <- glm(high_blood_pressure ~ tree_top_quartile + education + pov_allage,\n                   data = data, family = poisson(link = \"log\"))\n\nfinal_pr <- extract_ratio(model_final, \"Adjusted for education and tract poverty\", robust = TRUE)\nfinal_pr\n\n# Crude vs. adjusted, side by side -- the start of Table 2 in your final report\nbind_rows(\n  extract_ratio(model_crude_mp, \"Crude\", robust = TRUE),\n  final_pr\n) %>%\n  filter(Term == \"tree_top_quartile\") %>%\n  mutate(across(Estimate:CI_Upper, ~ round(.x, 2)))","id":21,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-21","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — change-in-estimate table and final model for your own project","id":22,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-22","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(traffic_high = ifelse(ctb1traff > median(ctb1traff, na.rm = TRUE), 1, 0))\n\ncandidates <- c(\"pov_allage\", \"current_smoker\", \"education\")\ncie_asthma <- data.frame()\n\nfor (covariate in candidates) {\n  data_cc <- data %>%\n    filter(!is.na(asthma), !is.na(traffic_high), !is.na(.data[[covariate]]))\n\n  crude <- glm(asthma ~ traffic_high, data = data_cc, family = poisson(link = \"log\"))\n  adjusted <- glm(as.formula(paste(\"asthma ~ traffic_high +\", covariate)),\n                  data = data_cc, family = poisson(link = \"log\"))\n\n  pr_c <- extract_ratio(crude, \"crude\", robust = TRUE) %>% filter(Term == \"traffic_high\")\n  pr_a <- extract_ratio(adjusted, covariate, robust = TRUE) %>% filter(Term == \"traffic_high\")\n\n  cie_asthma <- bind_rows(cie_asthma, data.frame(\n    Covariate = covariate, N = nobs(adjusted),\n    PR_crude = pr_c$Estimate, PR_adjusted = pr_a$Estimate,\n    CI_Lower = pr_a$CI_Lower, CI_Upper = pr_a$CI_Upper,\n    Pct_change = (pr_c$Estimate - pr_a$Estimate) / pr_c$Estimate * 100\n  ))\n}\n\ncie_asthma %>% mutate(across(PR_crude:Pct_change, ~ round(.x, 2)))\n\n# Final model: the DAG's minimally sufficient set was {tract_poverty}\nmodel_asthma_final <- glm(asthma ~ traffic_high + pov_allage, data = data,\n                          family = poisson(link = \"log\"))\nextract_ratio(model_asthma_final, \"Adjusted for tract poverty\", robust = TRUE)","id":23,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-23","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}}];
+
+</script>
+<script type="module">
+// Declare startupMessageQWebR globally
+globalThis.qwebrStartupMessage = document.createElement("p");
+
+// Verify if OffScreenCanvas is supported
+globalThis.qwebrOffScreenCanvasSupport = function() {
+  return typeof OffscreenCanvas !== 'undefined'
+}
+
+// Function to set the button text
+globalThis.qwebrSetInteractiveButtonState = function(buttonText, enableCodeButton = true) {
+  document.querySelectorAll(".qwebr-button-run").forEach((btn) => {
+    btn.innerHTML = buttonText;
+    btn.disabled = !enableCodeButton;
+  });
+}
+
+// Function to update the status message in non-interactive cells
+globalThis.qwebrUpdateStatusMessage = function(message) {
+  document.querySelectorAll(".qwebr-status-text.qwebr-cell-needs-evaluation").forEach((elem) => {
+    elem.innerText = message;
+  });
+}
+
+// Function to update the status message
+globalThis.qwebrUpdateStatusHeader = function(message) {
+  qwebrStartupMessage.innerHTML = `
+    <i class="fa-solid fa-spinner fa-spin qwebr-icon-status-spinner"></i>
+    <span>${message}</span>`;
+}
+
+// Function to return true if element is found, false if not
+globalThis.qwebrCheckHTMLElementExists = function(selector) {
+  const element = document.querySelector(selector);
+  return !!element;
+}
+
+// Function that detects whether reveal.js slides are present
+globalThis.qwebrIsRevealJS = function() {
+  // If the '.reveal .slides' selector exists, RevealJS is likely present
+  return qwebrCheckHTMLElementExists('.reveal .slides');
+}
+
+// Initialize the Quarto sidebar element
+function qwebrSetupQuartoSidebar() {
+  var newSideBarDiv = document.createElement('div');
+  newSideBarDiv.id = 'quarto-margin-sidebar';
+  newSideBarDiv.className = 'sidebar margin-sidebar';
+  newSideBarDiv.style.top = '0px';
+  newSideBarDiv.style.maxHeight = 'calc(0px + 100vh)';
+
+  return newSideBarDiv;
+}
+
+// Position the sidebar in the document
+function qwebrPlaceQuartoSidebar() {
+  // Get the reference to the element with id 'quarto-document-content'
+  var referenceNode = document.getElementById('quarto-document-content');
+
+  // Create the new div element
+  var newSideBarDiv = qwebrSetupQuartoSidebar();
+
+  // Insert the new div before the 'quarto-document-content' element
+  referenceNode.parentNode.insertBefore(newSideBarDiv, referenceNode);
+}
+
+function qwebrPlaceMessageContents(content, html_location = "title-block-header", revealjs_location = "title-slide") {
+
+  // Get references to header elements
+  const headerHTML = document.getElementById(html_location);
+  const headerRevealJS = document.getElementById(revealjs_location);
+
+  // Determine where to insert the quartoTitleMeta element
+  if (headerHTML || headerRevealJS) {
+    // Append to the existing "title-block-header" element or "title-slide" div
+    (headerHTML || headerRevealJS).appendChild(content);
+  } else {
+    // If neither headerHTML nor headerRevealJS is found, insert after "webr-monaco-editor-init" script
+    const monacoScript = document.getElementById("qwebr-monaco-editor-init");
+    const header = document.createElement("header");
+    header.setAttribute("id", "title-block-header");
+    header.appendChild(content);
+    monacoScript.after(header);
+  }
+}
+
+
+
+function qwebrOffScreenCanvasSupportWarningMessage() {
+  
+  // Verify canvas is supported.
+  if(qwebrOffScreenCanvasSupport()) return;
+
+  // Create the main container div
+  var calloutContainer = document.createElement('div');
+  calloutContainer.classList.add('callout', 'callout-style-default', 'callout-warning', 'callout-titled');
+
+  // Create the header div
+  var headerDiv = document.createElement('div');
+  headerDiv.classList.add('callout-header', 'd-flex', 'align-content-center');
+
+  // Create the icon container div
+  var iconContainer = document.createElement('div');
+  iconContainer.classList.add('callout-icon-container');
+
+  // Create the icon element
+  var iconElement = document.createElement('i');
+  iconElement.classList.add('callout-icon');
+
+  // Append the icon element to the icon container
+  iconContainer.appendChild(iconElement);
+
+  // Create the title container div
+  var titleContainer = document.createElement('div');
+  titleContainer.classList.add('callout-title-container', 'flex-fill');
+  titleContainer.innerText = 'Warning: Web Browser Does Not Support Graphing!';
+
+  // Append the icon container and title container to the header div
+  headerDiv.appendChild(iconContainer);
+  headerDiv.appendChild(titleContainer);
+
+  // Create the body container div
+  var bodyContainer = document.createElement('div');
+  bodyContainer.classList.add('callout-body-container', 'callout-body');
+
+  // Create the paragraph element for the body content
+  var paragraphElement = document.createElement('p');
+  paragraphElement.innerHTML = 'This web browser does not have support for displaying graphs through the <code>quarto-webr</code> extension since it lacks an <code>OffScreenCanvas</code>. Please upgrade your web browser to one that supports <code>OffScreenCanvas</code>.';
+
+  // Append the paragraph element to the body container
+  bodyContainer.appendChild(paragraphElement);
+
+  // Append the header div and body container to the main container div
+  calloutContainer.appendChild(headerDiv);
+  calloutContainer.appendChild(bodyContainer);
+
+  // Append the main container div to the document depending on format
+  qwebrPlaceMessageContents(calloutContainer, "title-block-header"); 
+
+}
+
+
+// Function that attaches the document status message and diagnostics
+function displayStartupMessage(showStartupMessage, showHeaderMessage) {
+  if (!showStartupMessage) {
+    return;
+  }
+
+  // Create the outermost div element for metadata
+  const quartoTitleMeta = document.createElement("div");
+  quartoTitleMeta.classList.add("quarto-title-meta");
+
+  // Create the first inner div element
+  const firstInnerDiv = document.createElement("div");
+  firstInnerDiv.setAttribute("id", "qwebr-status-message-area");
+
+  // Create the second inner div element for "WebR Status" heading and contents
+  const secondInnerDiv = document.createElement("div");
+  secondInnerDiv.setAttribute("id", "qwebr-status-message-title");
+  secondInnerDiv.classList.add("quarto-title-meta-heading");
+  secondInnerDiv.innerText = "WebR Status";
+
+  // Create another inner div for contents
+  const secondInnerDivContents = document.createElement("div");
+  secondInnerDivContents.setAttribute("id", "qwebr-status-message-body");
+  secondInnerDivContents.classList.add("quarto-title-meta-contents");
+
+  // Describe the WebR state
+  qwebrStartupMessage.innerText = "🟡 Loading...";
+  qwebrStartupMessage.setAttribute("id", "qwebr-status-message-text");
+  // Add `aria-live` to auto-announce the startup status to screen readers
+  qwebrStartupMessage.setAttribute("aria-live", "assertive");
+
+  // Append the startup message to the contents
+  secondInnerDivContents.appendChild(qwebrStartupMessage);
+
+  // Add a status indicator for COOP and COEP Headers if needed
+  if (showHeaderMessage) {
+    const crossOriginMessage = document.createElement("p");
+    crossOriginMessage.innerText = `${crossOriginIsolated ? '🟢' : '🟡'} COOP & COEP Headers`;
+    crossOriginMessage.setAttribute("id", "qwebr-coop-coep-header");
+    secondInnerDivContents.appendChild(crossOriginMessage);
+  }
+
+  // Combine the inner divs and contents
+  firstInnerDiv.appendChild(secondInnerDiv);
+  firstInnerDiv.appendChild(secondInnerDivContents);
+  quartoTitleMeta.appendChild(firstInnerDiv);
+
+  // Place message on webpage
+  qwebrPlaceMessageContents(quartoTitleMeta); 
+}
+
+function qwebrAddCommandHistoryModal() {
+  // Create the modal div
+  var modalDiv = document.createElement('div');
+  modalDiv.id = 'qwebr-history-modal';
+  modalDiv.className = 'qwebr-modal';
+
+  // Create the modal content div
+  var modalContentDiv = document.createElement('div');
+  modalContentDiv.className = 'qwebr-modal-content';
+
+  // Create the span for closing the modal
+  var closeSpan = document.createElement('span');
+  closeSpan.id = 'qwebr-command-history-close-btn';
+  closeSpan.className = 'qwebr-modal-close';
+  closeSpan.innerHTML = '&times;';
+
+  // Create the h1 element for the modal
+  var modalH1 = document.createElement('h1');
+  modalH1.textContent = 'R History Command Contents';
+
+  // Create an anchor element for downloading the Rhistory file 
+  var downloadLink = document.createElement('a');
+  downloadLink.href = '#';
+  downloadLink.id = 'qwebr-download-history-btn';
+  downloadLink.className = 'qwebr-download-btn';
+
+  // Create an 'i' element for the icon
+  var icon = document.createElement('i');
+  icon.className = 'bi bi-file-code';
+
+  // Append the icon to the anchor element
+  downloadLink.appendChild(icon);
+
+  // Add the text 'Download R History' to the anchor element
+  downloadLink.appendChild(document.createTextNode(' Download R History File'));
+
+  // Create the pre for command history contents
+  var commandContentsPre = document.createElement('pre');
+  commandContentsPre.id = 'qwebr-command-history-contents';
+  commandContentsPre.className = 'qwebr-modal-content-code';
+
+  // Append the close span, h1, and history contents pre to the modal content div
+  modalContentDiv.appendChild(closeSpan);
+  modalContentDiv.appendChild(modalH1);
+  modalContentDiv.appendChild(downloadLink);
+  modalContentDiv.appendChild(commandContentsPre);
+
+  // Append the modal content div to the modal div
+  modalDiv.appendChild(modalContentDiv);
+
+  // Append the modal div to the body
+  document.body.appendChild(modalDiv);
+}
+
+function qwebrRegisterRevealJSCommandHistoryModal() {
+  // Select the <ul> element inside the <div> with data-panel="Custom0"
+  let ulElement = document.querySelector('div[data-panel="Custom0"] > ul.slide-menu-items');
+
+  // Find the last <li> element with class slide-tool-item
+  let lastItem = ulElement.querySelector('li.slide-tool-item:last-child');
+
+  // Calculate the next data-item value
+  let nextItemValue = 0;
+  if (lastItem) {
+      nextItemValue = parseInt(lastItem.dataset.item) + 1;
+  }
+
+  // Create a new <li> element
+  let newListItem = document.createElement('li');
+  newListItem.className = 'slide-tool-item';
+  newListItem.dataset.item = nextItemValue.toString(); // Set the next available data-item value
+
+  // Create the <a> element inside the <li>
+  let newLink = document.createElement('a');
+  newLink.href = '#';
+  newLink.id = 'qwebrRHistoryButton'; // Set the ID for the new link
+  
+  // Create the <kbd> element inside the <a>
+  let newKbd = document.createElement('kbd');
+  newKbd.textContent = ' '; // Set to empty as we are not registering a keyboard shortcut
+
+  // Create text node for the link text
+  let newText = document.createTextNode(' View R History');
+
+  // Append <kbd> and text node to <a>
+  newLink.appendChild(newKbd);
+  newLink.appendChild(newText);
+
+  // Append <a> to <li>
+  newListItem.appendChild(newLink);
+
+  // Append <li> to <ul>
+  ulElement.appendChild(newListItem);
+}
+
+// Handle setting up the R history modal
+function qwebrCodeLinks() {
+
+  if (qwebrIsRevealJS()) {
+    qwebrRegisterRevealJSCommandHistoryModal();
+    return;
+  }
+
+  // Create the container div
+  var containerDiv = document.createElement('div');
+  containerDiv.className = 'quarto-code-links';
+
+  // Create the h2 element
+  var h2 = document.createElement('h2');
+  h2.textContent = 'webR Code Links';
+
+  // Create the ul element
+  var ul = document.createElement('ul');
+
+  // Create the li element
+  var li = document.createElement('li');
+
+  // Create the a_history_btn element
+  var a_history_btn = document.createElement('a');
+  a_history_btn.href = 'javascript:void(0)';
+  a_history_btn.setAttribute('id', 'qwebrRHistoryButton');
+
+  // Create the i_history_btn element
+  var i_history_btn = document.createElement('i');
+  i_history_btn.className = 'bi bi-file-code';
+
+  // Create the text node for the link text
+  var text_history_btn = document.createTextNode('View R History');
+
+  // Append the icon element and link text to the a element
+  a_history_btn.appendChild(i_history_btn);
+  a_history_btn.appendChild(text_history_btn);
+
+  // Append the a element to the li element
+  li.appendChild(a_history_btn);
+
+  // Append the li element to the ul element
+  ul.appendChild(li);
+
+  // Append the h2 and ul elements to the container div
+  containerDiv.appendChild(h2);
+  containerDiv.appendChild(ul);
+
+  // Append the container div to the element with the ID 'quarto-margin-sidebar'
+  var sidebar = document.getElementById('quarto-margin-sidebar');
+    
+  // If the sidebar element is not found, create it
+  if(!sidebar) {
+    qwebrPlaceQuartoSidebar();
+  }
+  
+  // Re-select the sidebar element (if it was just created)
+  sidebar = document.getElementById('quarto-margin-sidebar');   
+
+
+  // If the sidebar element exists, append the container div to it
+  if(sidebar) {
+    // Append the container div to the sidebar
+    sidebar.appendChild(containerDiv);
+    // Force the sidebar to be clickable by removing the 'zindex-bottom' class
+    // added in pre-release: https://github.com/quarto-dev/quarto-cli/commit/f0c53a1ffcaa1de4eccbf07803b096898248adcc
+    sidebar.className = 'sidebar margin-sidebar';
+  } else {
+    // Get a debugger ...
+    console.warn('Element with ID "quarto-margin-sidebar" not found.');
+  }
+}
+
+// Call the function to append the code links for qwebR into the right sidebar
+qwebrCodeLinks();
+
+// Add the command history modal
+qwebrAddCommandHistoryModal();
+
+displayStartupMessage(qwebrShowStartupMessage, qwebrShowHeaderMessage);
+qwebrOffScreenCanvasSupportWarningMessage();
+</script>
+<script type="module">
+// Define a global storage and retrieval solution ----
+
+// Store commands executed in R
+globalThis.qwebrRCommandHistory = [];
+
+// Function to retrieve the command history
+globalThis.qwebrFormatRHistory = function() {
+   return qwebrRCommandHistory.join("\n\n");
+}
+
+// Retrieve HTML Elements ----
+
+// Get the command modal
+const command_history_modal = document.getElementById("qwebr-history-modal");
+
+// Get the button that opens the command modal
+const command_history_btn = document.getElementById("qwebrRHistoryButton");
+
+// Get the <span> element that closes the command modal
+const command_history_close_span = document.getElementById("qwebr-command-history-close-btn");
+
+// Get the download button for r history information
+const command_history_download_btn = document.getElementById("qwebr-download-history-btn");
+
+// Plug in command history into modal/download button ----
+
+// Function to populate the modal with command history
+function populateCommandHistoryModal() {
+    document.getElementById("qwebr-command-history-contents").innerHTML = qwebrFormatRHistory() || "No commands have been executed yet.";
+}
+
+// Function to format the current date and time to
+// a string with the format YYYY-MM-DD-HH-MM-SS
+function formatDateTime() {
+    const now = new Date();
+
+    const year = now.getFullYear();
+    const day = String(now.getDate()).padStart(2, '0');
+    const month = String(now.getMonth() + 1).padStart(2, '0'); // Months are zero-based
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+
+    return `${year}-${month}-${day}-${hours}-${minutes}-${seconds}`;
+}
+
+
+// Function to convert document title with datetime to a safe filename
+function safeFileName() {
+    // Get the current page title
+    let pageTitle = document.title;
+
+    // Combine the current page title with the current date and time
+    let pageNameWithDateTime = `Rhistory-${pageTitle}-${formatDateTime()}`;
+
+    // Replace unsafe characters with safe alternatives
+    let safeFilename = pageNameWithDateTime.replace(/[\\/:\*\?! "<>\|]/g, '-');
+
+    return safeFilename;
+}
+
+
+// Function to download list contents as text file
+function downloadRHistory() {
+    // Get the current page title + datetime and use it as the filename
+    const filename = `${safeFileName()}.R`;
+
+    // Get the text contents of the R History list
+    const text = qwebrFormatRHistory();
+
+    // Create a new Blob object with the text contents
+    const blob = new Blob([text], { type: 'text/plain' });
+  
+    // Create a new anchor element for the download
+    const a = document.createElement('a');
+    a.style.display = 'none';
+    a.href = URL.createObjectURL(blob);
+    a.download = filename;
+
+    // Append the anchor to the body, click it, and remove it
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+}
+
+// Register event handlers ----
+
+// When the user clicks the View R History button, open the command modal
+command_history_btn.onclick = function() {
+    populateCommandHistoryModal();
+    command_history_modal.style.display = "block";
+}
+
+// When the user clicks on <span> (x), close the command modal
+command_history_close_span.onclick = function() {
+    command_history_modal.style.display = "none";
+}
+
+// When the user clicks anywhere outside of the command modal, close it
+window.onclick = function(event) {
+    if (event.target == command_history_modal) {
+        command_history_modal.style.display = "none";
+    }
+}
+
+// Add an onclick event listener to the download button so that
+// the user can download the R history as a text file
+command_history_download_btn.onclick = function() {
+    downloadRHistory();
+};
+</script>
+<script type="module">
+// Supported Evaluation Types for Context
+globalThis.EvalTypes = Object.freeze({
+  Interactive: 'interactive',
+  Setup: 'setup',
+  Output: 'output',
+});
+
+// Function that obtains the font size for a given element 
+globalThis.qwebrCurrentFontSizeOnElement = function(element, cssProperty = 'font-size') {
+
+  const currentFontSize = parseFloat(
+    window
+    .getComputedStyle(element)
+    .getPropertyValue(cssProperty)
+  );
+  
+  return currentFontSize;
+}
+
+// Function to determine font scaling
+globalThis.qwebrScaledFontSize = function(div, qwebrOptions) {
+  // Determine if we should compute font-size using RevealJS's `--r-main-font-size` 
+  // or if we can directly use the document's `font-size`.
+  const cssProperty = document.body.classList.contains('reveal') ? 
+    "--r-main-font-size" : "font-size";
+  
+  // Get the current font size on the div element
+  const elementFontSize = qwebrCurrentFontSizeOnElement(div, cssProperty);
+
+  // Determine the scaled font size value
+  const scaledFontSize = ((qwebrOptions['editor-font-scale'] ?? 1) * elementFontSize) ?? 17.5;
+
+  return scaledFontSize;
+}
+
+
+// Function that dispatches the creation request
+globalThis.qwebrCreateHTMLElement = function (
+  cellData
+) {
+
+  // Extract key components
+  const evalType = cellData.options.context;
+  const qwebrCounter = cellData.id;
+
+  // We make an assumption that insertion points are defined by the Lua filter as:
+  // qwebr-insertion-location-{qwebrCounter} 
+  const elementLocator = document.getElementById(`qwebr-insertion-location-${qwebrCounter}`);
+
+  // Figure out the routine to use to insert the element.
+  let qwebrElement;
+  switch ( evalType ) {
+    case EvalTypes.Interactive:
+      qwebrElement = qwebrCreateInteractiveElement(qwebrCounter, cellData.options);
+      break;
+    case EvalTypes.Output: 
+      qwebrElement = qwebrCreateNonInteractiveOutputElement(qwebrCounter, cellData.options);
+      break;
+    case EvalTypes.Setup: 
+      qwebrElement = qwebrCreateNonInteractiveSetupElement(qwebrCounter, cellData.options);
+      break;
+    default: 
+      qwebrElement = document.createElement('div');
+      qwebrElement.textContent = 'Error creating `quarto-webr` element';
+  }
+
+  // Insert the dynamically generated object at the document location.
+  elementLocator.appendChild(qwebrElement);
+};
+
+// Function that setups the interactive element creation
+globalThis.qwebrCreateInteractiveElement = function (qwebrCounter, qwebrOptions) {
+
+  // Create main div element
+  var mainDiv = document.createElement('div');
+  mainDiv.id = 'qwebr-interactive-area-' + qwebrCounter;
+  mainDiv.className = `qwebr-interactive-area`;
+  if (qwebrOptions.classes) {
+    mainDiv.className += " " + qwebrOptions.classes
+  }
+
+  // Add a unique cell identifier that users can customize
+  if (qwebrOptions.label) {
+    mainDiv.setAttribute('data-id', qwebrOptions.label);
+  }
+
+  // Create toolbar div
+  var toolbarDiv = document.createElement('div');
+  toolbarDiv.className = 'qwebr-editor-toolbar';
+  toolbarDiv.id = 'qwebr-editor-toolbar-' + qwebrCounter;
+
+  // Create a div to hold the left buttons
+  var leftButtonsDiv = document.createElement('div');
+  leftButtonsDiv.className = 'qwebr-editor-toolbar-left-buttons';
+
+  // Create a div to hold the right buttons
+  var rightButtonsDiv = document.createElement('div');
+  rightButtonsDiv.className = 'qwebr-editor-toolbar-right-buttons';
+
+  // Create Run Code button
+  var runCodeButton = document.createElement('button');
+  runCodeButton.className = 'btn btn-default qwebr-button qwebr-button-run';
+  runCodeButton.disabled = true;
+  runCodeButton.type = 'button';
+  runCodeButton.id = 'qwebr-button-run-' + qwebrCounter;
+  runCodeButton.textContent = '🟡 Loading webR...';
+  runCodeButton.title = `Run code (Shift + Enter)`;
+
+  // Append buttons to the leftButtonsDiv
+  leftButtonsDiv.appendChild(runCodeButton);
+
+  // Create Reset button
+  var resetButton = document.createElement('button');
+  resetButton.className = 'btn btn-light btn-xs qwebr-button qwebr-button-reset';
+  resetButton.type = 'button';
+  resetButton.id = 'qwebr-button-reset-' + qwebrCounter;
+  resetButton.title = 'Start over';
+  resetButton.innerHTML = '<i class="fa-solid fa-arrows-rotate"></i>';
+
+  // Create Copy button
+  var copyButton = document.createElement('button');
+  copyButton.className = 'btn btn-light btn-xs qwebr-button qwebr-button-copy';
+  copyButton.type = 'button';
+  copyButton.id = 'qwebr-button-copy-' + qwebrCounter;
+  copyButton.title = 'Copy code';
+  copyButton.innerHTML = '<i class="fa-regular fa-copy"></i>';
+
+  // Append buttons to the rightButtonsDiv
+  rightButtonsDiv.appendChild(resetButton);
+  rightButtonsDiv.appendChild(copyButton);
+
+  // Create console area div
+  var consoleAreaDiv = document.createElement('div');
+  consoleAreaDiv.id = 'qwebr-console-area-' + qwebrCounter;
+  consoleAreaDiv.className = 'qwebr-console-area';
+
+  // Create editor div
+  var editorDiv = document.createElement('div');
+  editorDiv.id = 'qwebr-editor-' + qwebrCounter;
+  editorDiv.className = 'qwebr-editor';
+
+  // Create output code area div
+  var outputCodeAreaDiv = document.createElement('div');
+  outputCodeAreaDiv.id = 'qwebr-output-code-area-' + qwebrCounter;
+  outputCodeAreaDiv.className = 'qwebr-output-code-area';
+  outputCodeAreaDiv.setAttribute('aria-live', 'assertive');
+
+  // Create pre element inside output code area
+  var preElement = document.createElement('pre');
+  preElement.style.visibility = 'hidden';
+  outputCodeAreaDiv.appendChild(preElement);
+
+  // Create output graph area div
+  var outputGraphAreaDiv = document.createElement('div');
+  outputGraphAreaDiv.id = 'qwebr-output-graph-area-' + qwebrCounter;
+  outputGraphAreaDiv.className = 'qwebr-output-graph-area';
+
+  // Append buttons to the toolbar
+  toolbarDiv.appendChild(leftButtonsDiv);
+  toolbarDiv.appendChild(rightButtonsDiv);
+
+  // Append all elements to the main div
+  mainDiv.appendChild(toolbarDiv);
+  consoleAreaDiv.appendChild(editorDiv);
+  consoleAreaDiv.appendChild(outputCodeAreaDiv);
+  mainDiv.appendChild(consoleAreaDiv);
+  mainDiv.appendChild(outputGraphAreaDiv);
+
+  return mainDiv;
+}
+
+// Function that adds output structure for non-interactive output
+globalThis.qwebrCreateNonInteractiveOutputElement = function(qwebrCounter, qwebrOptions) {
+  // Create main div element
+  var mainDiv = document.createElement('div');
+  mainDiv.id = 'qwebr-noninteractive-area-' + qwebrCounter;
+  mainDiv.className = `qwebr-noninteractive-area`;
+  if (qwebrOptions.classes) {
+    mainDiv.className += " " + qwebrOptions.classes
+  }
+  
+  // Add a unique cell identifier that users can customize
+  if (qwebrOptions.label) {
+    mainDiv.setAttribute('data-id', qwebrOptions.label);
+  }
+  
+  // Create a status container div
+  var statusContainer = createLoadingContainer(qwebrCounter);
+
+  // Create output code area div
+  var outputCodeAreaDiv = document.createElement('div');
+  outputCodeAreaDiv.id = 'qwebr-output-code-area-' + qwebrCounter;
+  outputCodeAreaDiv.className = 'qwebr-output-code-area';
+  outputCodeAreaDiv.setAttribute('aria-live', 'assertive');
+
+  // Create pre element inside output code area
+  var preElement = document.createElement('pre');
+  preElement.style.visibility = 'hidden';
+  outputCodeAreaDiv.appendChild(preElement);
+
+  // Create output graph area div
+  var outputGraphAreaDiv = document.createElement('div');
+  outputGraphAreaDiv.id = 'qwebr-output-graph-area-' + qwebrCounter;
+  outputGraphAreaDiv.className = 'qwebr-output-graph-area';
+
+  // Append all elements to the main div
+  mainDiv.appendChild(statusContainer);
+  mainDiv.appendChild(outputCodeAreaDiv);
+  mainDiv.appendChild(outputGraphAreaDiv);
+
+  return mainDiv;
+};
+
+// Function that adds a stub in the page to indicate a setup cell was used.
+globalThis.qwebrCreateNonInteractiveSetupElement = function(qwebrCounter, qwebrOptions) {
+  // Create main div element
+  var mainDiv = document.createElement('div');
+  mainDiv.id = `qwebr-noninteractive-setup-area-${qwebrCounter}`;
+  mainDiv.className = `qwebr-noninteractive-setup-area`;
+  if (qwebrOptions.classes) {
+    mainDiv.className += " " + qwebrOptions.classes
+  }
+
+
+  // Add a unique cell identifier that users can customize
+  if (qwebrOptions.label) {
+    mainDiv.setAttribute('data-id', qwebrOptions.label);
+  }
+
+  // Create a status container div
+  var statusContainer = createLoadingContainer(qwebrCounter);
+
+  // Append status onto the main div
+  mainDiv.appendChild(statusContainer);
+
+  return mainDiv;
+}
+
+
+// Function to create loading container with specified ID
+globalThis.createLoadingContainer = function(qwebrCounter) {
+
+  // Create a status container
+  const container = document.createElement('div');
+  container.id = `qwebr-non-interactive-loading-container-${qwebrCounter}`;
+  container.className = 'qwebr-non-interactive-loading-container qwebr-cell-needs-evaluation';
+
+  // Create an R project logo to indicate its a code space
+  const rProjectIcon = document.createElement('i');
+  rProjectIcon.className = 'fa-brands fa-r-project fa-3x qwebr-r-project-logo';
+
+  // Setup a loading icon from font awesome
+  const spinnerIcon = document.createElement('i');
+  spinnerIcon.className = 'fa-solid fa-spinner fa-spin fa-1x qwebr-icon-status-spinner';
+
+  // Add a section for status text
+  const statusText = document.createElement('p');
+  statusText.id = `qwebr-status-text-${qwebrCounter}`;
+  statusText.className = `qwebr-status-text qwebr-cell-needs-evaluation`;
+  statusText.innerText = 'Loading webR...';
+
+  // Incorporate an inner container
+  const innerContainer = document.createElement('div');
+
+  // Append elements to the inner container
+  innerContainer.appendChild(spinnerIcon);
+  innerContainer.appendChild(statusText);
+
+  // Append elements to the main container
+  container.appendChild(rProjectIcon);
+  container.appendChild(innerContainer);
+
+  return container;
+}
+</script>
+<script type="module">
+// Function to install a single package
+async function qwebrInstallRPackage(packageName) {
+  await mainWebR.evalRVoid(`webr::install('${packageName}');`);
+}
+
+// Function to load a single package
+async function qwebrLoadRPackage(packageName) {
+  await mainWebR.evalRVoid(`require('${packageName}', quietly = TRUE)`);
+}
+
+// Generic function to process R packages
+async function qwebrProcessRPackagesWithStatus(packages, processType, displayStatusMessageUpdate = true) {
+  // Switch between contexts
+  const messagePrefix = processType === 'install' ? 'Installing' : 'Loading';
+
+  // Modify button state
+  qwebrSetInteractiveButtonState(`🟡 ${messagePrefix} package ...`, false);
+
+  // Iterate over packages
+  for (let i = 0; i < packages.length; i++) {
+    const activePackage = packages[i];
+    const formattedMessage = `${messagePrefix} package ${i + 1} out of ${packages.length}: ${activePackage}`;
+
+    // Display the update in header
+    if (displayStatusMessageUpdate) {
+      qwebrUpdateStatusHeader(formattedMessage);
+    }
+
+    // Display the update in non-active areas
+    qwebrUpdateStatusMessage(formattedMessage);
+
+    // Run package installation
+    if (processType === 'install') {
+      await qwebrInstallRPackage(activePackage);
+    } else {
+      await qwebrLoadRPackage(activePackage);
+    }
+  }
+
+  // Clean slate
+  if (processType === 'load') {
+    await mainWebR.flush();
+  }
+}
+
+// Start a timer
+const initializeWebRTimerStart = performance.now();
+
+// Encase with a dynamic import statement
+globalThis.qwebrInstance = import(qwebrCustomizedWebROptions.baseURL + "webr.mjs").then(
+  async ({ WebR, ChannelType }) => {
+    // Populate WebR options with defaults or new values based on `webr` meta
+    globalThis.mainWebR = new WebR(qwebrCustomizedWebROptions);
+
+    // Initialization WebR
+    await mainWebR.init();
+
+    // Setup a shelter
+    globalThis.mainWebRCodeShelter = await new mainWebR.Shelter();
+
+    // Setup a pager to allow processing help documentation
+    await mainWebR.evalRVoid('webr::pager_install()');
+
+    // Setup a viewer to allow processing htmlwidgets.
+    // This might not be available in old webr version
+    await mainWebR.evalRVoid('try({ webr::viewer_install() })');
+
+    // Override the existing install.packages() to use webr::install()
+    await mainWebR.evalRVoid('webr::shim_install()');
+
+    // Specify the repositories to pull from
+    // Note: webR does not use the `repos` option, but instead uses `webr_pkg_repos`
+    // inside of `install()`. However, other R functions still pull from `repos`.
+    await mainWebR.evalRVoid(`
+      options(
+        webr_pkg_repos = c(${qwebrPackageRepoURLS.map(repoURL => `'${repoURL}'`).join(',')}),
+        repos = c(${qwebrPackageRepoURLS.map(repoURL => `'${repoURL}'`).join(',')})
+      )
+    `);
+
+    // Check to see if any packages need to be installed
+    if (qwebrSetupRPackages) {
+      // Obtain only a unique list of packages
+      const uniqueRPackageList = Array.from(new Set(qwebrInstallRPackagesList));
+
+      // Install R packages one at a time (either silently or with a status update)
+      await qwebrProcessRPackagesWithStatus(uniqueRPackageList, 'install', qwebrShowStartupMessage);
+
+      if (qwebrAutoloadRPackages) {
+        // Load R packages one at a time (either silently or with a status update)
+        await qwebrProcessRPackagesWithStatus(uniqueRPackageList, 'load', qwebrShowStartupMessage);
+      }
+    }
+  }
+);
+
+// Stop timer
+const initializeWebRTimerEnd = performance.now();
+
+</script>
+<script type="module">
+// Function to verify a given JavaScript Object is empty
+globalThis.qwebrIsObjectEmpty = function (arr) {
+    return Object.keys(arr).length === 0;
+}
+
+// Global version of the Escape HTML function that converts HTML
+// characters to their HTML entities.
+globalThis.qwebrEscapeHTMLCharacters = function(unsafe) {
+    return unsafe
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+};
+
+// Passthrough results
+globalThis.qwebrIdentity = function(x) {
+    return x;
+};
+
+// Append a comment
+globalThis.qwebrPrefixComment = function(x, comment) {
+    return `${comment}${x}`;
+};
+
+// Function to store the code in the history
+globalThis.qwebrLogCodeToHistory = function(codeToRun, options) {
+    qwebrRCommandHistory.push(
+        `# Ran code in ${options.label} at ${new Date().toLocaleString()} ----\n${codeToRun}`
+    );
+};
+
+// Function to attach a download button onto the canvas
+// allowing the user to download the image.
+function qwebrImageCanvasDownloadButton(canvas, canvasContainer) {
+
+    // Create the download button
+    const downloadButton = document.createElement('button');
+    downloadButton.className = 'qwebr-canvas-image-download-btn';
+    downloadButton.textContent = 'Download Image';
+    canvasContainer.appendChild(downloadButton);
+
+    // Trigger a download of the image when the button is clicked
+    downloadButton.addEventListener('click', function() {
+        const image = canvas.toDataURL('image/png');
+        const link = document.createElement('a');
+        link.href = image;
+        link.download = 'qwebr-canvas-image.png';
+        link.click();
+    });
+}
+
+
+// Function to parse the pager results
+globalThis.qwebrParseTypePager = async function (msg) {
+
+    // Split out the event data
+    const { path, title, deleteFile } = msg.data;
+
+    // Process the pager data by reading the information from disk
+    const paged_data = await mainWebR.FS.readFile(path).then((data) => {
+        // Obtain the file content
+        let content = new TextDecoder().decode(data);
+
+        // Remove excessive backspace characters until none remain
+        while(content.match(/.[\b]/)){
+            content = content.replace(/.[\b]/g, '');
+        }
+
+        // Returned cleaned data
+        return content;
+    });
+
+    // Unlink file if needed
+    if (deleteFile) {
+        await mainWebR.FS.unlink(path);
+    }
+
+    // Return extracted data with spaces
+    return paged_data;
+};
+
+
+// Function to parse the browse results
+globalThis.qwebrParseTypeBrowse = async function (msg) {
+
+    // msg.type === "browse"
+    const path = msg.data.url;
+
+    // Process the browse data by reading the information from disk
+    const browse_data = await mainWebR.FS.readFile(path).then((data) => {
+        // Obtain the file content
+        let content = new TextDecoder().decode(data);
+
+        return content;
+    });
+
+    // Return extracted data as-is
+    return browse_data;
+};
+
+// Function to run the code using webR and parse the output
+globalThis.qwebrComputeEngine = async function(
+    codeToRun,
+    elements,
+    options) {
+
+    // Call into the R compute engine that persists within the document scope.
+    // To be prepared for all scenarios, the following happens:
+    // 1. We setup a canvas device to write to by making a namespace call into the {webr} package
+    // 2. We use values inside of the options array to set the figure size.
+    // 3. We capture the output stream information (STDOUT and STERR)
+    // 4. We disable the current device's image creation.
+    // 5. Piece-wise parse the results into the different output areas
+
+    // Create a pager variable for help/file contents
+    let pager = [];
+
+    // Handle how output is processed
+    let showMarkup = options.results === "markup" && options.output !== "asis";
+    let processOutput;
+
+    if (showMarkup) {
+        processOutput = qwebrEscapeHTMLCharacters;
+    } else {
+        processOutput = qwebrIdentity;
+    }
+
+    // ----
+    // Convert from Inches to Pixels by using DPI (dots per inch)
+    // for bitmap devices (dpi * inches = pixels)
+    let fig_width = options["fig-width"] * options["dpi"];
+    let fig_height = options["fig-height"] * options["dpi"];
+
+    // Initialize webR
+    await mainWebR.init();
+
+    // Configure capture output
+    let captureOutputOptions = {
+        withAutoprint: true,
+        captureStreams: true,
+        captureConditions: false,
+        // env: webR.objs.emptyEnv, // maintain a global environment for webR v0.2.0
+    };
+
+    // Determine if the browser supports OffScreen
+    if (qwebrOffScreenCanvasSupport()) {
+        // Mirror default options of webr::canvas()
+        // with changes to figure height and width.
+        captureOutputOptions.captureGraphics = {
+            width: fig_width,
+            height: fig_height,
+            bg: "white", // default: transparent
+            pointsize: 12,
+            capture: true
+        };
+    }  else {
+        // Disable generating graphics
+        captureOutputOptions.captureGraphics = false;
+    }
+
+    // Store the code to run in history
+    qwebrLogCodeToHistory(codeToRun, options);
+
+    // Setup a webR canvas by making a namespace call into the {webr} package
+    // Evaluate the R code
+    // Remove the active canvas silently
+    const result = await mainWebRCodeShelter.captureR(
+        `${codeToRun}`,
+        captureOutputOptions
+    );
+
+    // -----
+
+    // Start attempting to parse the result data
+    processResultOutput:try {
+
+        // Avoid running through output processing
+        if (options.results === "hide" || options.output === "false") {
+            break processResultOutput;
+        }
+
+        // Merge output streams of STDOUT and STDErr (messages and errors are combined.)
+        // Require both `warning` and `message` to be true to display `STDErr`.
+        const out = result.output
+        .filter(
+            evt => evt.type === "stdout" ||
+            ( evt.type === "stderr" && (options.warning === "true" && options.message === "true"))
+        )
+        .map((evt, index) => {
+            const className = `qwebr-output-code-${evt.type}`;
+            const outputResult = qwebrPrefixComment(processOutput(evt.data), options.comment);
+            return `<code id="${className}-editor-${elements.id}-result-${index + 1}" class="${className}">${outputResult}</code>`;
+        })
+        .join("\n");
+
+
+        // Clean the state
+        // We're now able to process pager events.
+        // As a result, we cannot maintain a true 1-to-1 output order
+        // without individually feeding each line
+        const msgs = await mainWebR.flush();
+
+        // Use `map` to process the filtered "pager" events asynchronously
+        const pager = [];
+        const browse = [];
+
+        await Promise.all(
+            msgs.map(
+                async (msg) => {
+
+                    const msgType = msg.type || "unknown";
+
+                    switch(msgType) {
+                        case 'pager':
+                            const pager_data = await qwebrParseTypePager(msg);
+                            pager.push(pager_data);
+                            break;
+                        case 'browse':
+                            const browse_data = await qwebrParseTypeBrowse(msg);
+                            browse.push(browse_data);
+                            break;
+                    }
+                    return;
+                }
+            )
+        );
+
+        // Nullify the output area of content
+        elements.outputCodeDiv.innerHTML = "";
+        elements.outputGraphDiv.innerHTML = "";
+
+        // Design an output object for messages
+        const pre = document.createElement("pre");
+        if (/\S/.test(out)) {
+            // Display results as HTML elements to retain output styling
+            const div = document.createElement("div");
+            div.innerHTML = out;
+
+            // Calculate a scaled font-size value
+            const scaledFontSize = qwebrScaledFontSize(
+                elements.outputCodeDiv, options);
+
+            // Override output code cell size
+            pre.style.fontSize = `${scaledFontSize}px`;
+            pre.appendChild(div);
+        } else {
+            // If nothing is present, hide the element.
+            pre.style.visibility = "hidden";
+        }
+
+        elements.outputCodeDiv.appendChild(pre);
+
+        // Determine if we have graphs to display
+        if (result.images.length > 0) {
+
+            // Create figure element
+            const figureElement = document.createElement("figure");
+            figureElement.className = "qwebr-canvas-image";
+
+            // Place each rendered graphic onto a canvas element
+            result.images.forEach((img) => {
+
+                // Construct canvas for object
+                const canvas = document.createElement("canvas");
+
+                // Add an image download button
+                qwebrImageCanvasDownloadButton(canvas, figureElement);
+
+                // Set canvas size to image
+                canvas.width = img.width;
+                canvas.height = img.height;
+
+                // Apply output truncations
+                canvas.style.width = options["out-width"] ? options["out-width"] : `${fig_width}px`;
+                if (options["out-height"]) {
+                    canvas.style.height = options["out-height"];
+                }
+
+                // Apply styling
+                canvas.style.display = "block";
+                canvas.style.margin = "auto";
+
+                // Draw image onto Canvas
+                const ctx = canvas.getContext("2d");
+                ctx.drawImage(img, 0, 0, img.width, img.height);
+
+                // Append canvas to figure output area
+                figureElement.appendChild(canvas);
+
+            });
+
+            if (options['fig-cap']) {
+                // Create figcaption element
+                const figcaptionElement = document.createElement('figcaption');
+                figcaptionElement.innerText = options['fig-cap'];
+                // Append figcaption to figure
+                figureElement.appendChild(figcaptionElement);
+            }
+
+            elements.outputGraphDiv.appendChild(figureElement);
+
+        }
+
+        // Display the pager data
+        if (pager.length > 0) {
+            // Use the `pre` element to preserve whitespace.
+            pager.forEach((paged_data, index) => {
+                const pre_pager = document.createElement("pre");
+                pre_pager.innerText = paged_data;
+                pre_pager.classList.add("qwebr-output-code-pager");
+                pre_pager.setAttribute("id", `qwebr-output-code-pager-editor-${elements.id}-result-${index + 1}`);
+                elements.outputCodeDiv.appendChild(pre_pager);
+            });
+        }
+
+        // Display the browse data
+        if (browse.length > 0) {
+            // Use the `pre` element to preserve whitespace.
+            browse.forEach((browse_data, index) => {
+                const iframe_browse = document.createElement('iframe');
+                iframe_browse.classList.add("qwebr-output-code-browse");
+                iframe_browse.setAttribute("id", `qwebr-output-code-browse-editor-${elements.id}-result-${index + 1}`);
+                iframe_browse.style.width = "100%";
+                iframe_browse.style.minHeight = "500px";
+                elements.outputCodeDiv.appendChild(iframe_browse);
+
+                iframe_browse.contentWindow.document.open();
+                iframe_browse.contentWindow.document.write(browse_data);
+                iframe_browse.contentWindow.document.close();
+            });
+        }
+    } finally {
+        // Clean up the remaining code
+        mainWebRCodeShelter.purge();
+    }
+};
+
+// Function to execute the code (accepts code as an argument)
+globalThis.qwebrExecuteCode = async function (
+    codeToRun,
+    id,
+    options = {}) {
+
+    // If options are not passed, we fall back on the bare minimum to handle the computation
+    if (qwebrIsObjectEmpty(options)) {
+        options = {
+            "context": "interactive",
+            "fig-width": 7, "fig-height": 5,
+            "out-width": "700px", "out-height": "",
+            "dpi": 72,
+            "results": "markup",
+            "warning": "true", "message": "true",
+        };
+    }
+
+    // Next, we access the compute areas values
+    const elements = {
+        runButton: document.getElementById(`qwebr-button-run-${id}`),
+        outputCodeDiv: document.getElementById(`qwebr-output-code-area-${id}`),
+        outputGraphDiv: document.getElementById(`qwebr-output-graph-area-${id}`),
+        id: id,
+    }
+
+    // Disallowing execution of other code cells
+    document.querySelectorAll(".qwebr-button-run").forEach((btn) => {
+        btn.disabled = true;
+    });
+
+    if (options.context == EvalTypes.Interactive) {
+        // Emphasize the active code cell
+        elements.runButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin qwebr-icon-status-spinner"></i> <span>Run Code</span>';
+    }
+
+    // Evaluate the code and parse the output into the document
+    await qwebrComputeEngine(codeToRun, elements, options);
+
+    // Switch to allowing execution of code
+    document.querySelectorAll(".qwebr-button-run").forEach((btn) => {
+        btn.disabled = false;
+    });
+
+    if (options.context == EvalTypes.Interactive) {
+        // Revert to the initial code cell state
+        elements.runButton.innerHTML = '<i class="fa-solid fa-play qwebr-icon-run-code"></i> <span>Run Code</span>';
+    }
+}
+
+</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a class="navbar-brand" href="./index.html">
+    <span class="navbar-title">EOH 635: Environmental Epidemiology Methods</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="./index.html"> 
+<span class="menu-text">Home</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./lesson1.html"> 
+<span class="menu-text">Lesson 1: Intro to R</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./lesson2.html"> 
+<span class="menu-text">Lesson 2: Conceptual Frameworks</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./lesson3.html"> 
+<span class="menu-text">Lesson 3: EDA &amp; Cleaning</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./lesson4.html"> 
+<span class="menu-text">Lesson 4: Exposure Assessment</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./lesson5.html"> 
+<span class="menu-text">Lesson 5: Regression &amp; Linearity</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="./lesson6.html" aria-current="page"> 
+<span class="menu-text">Lesson 6: Confounding &amp; DAGs</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./codebook.html"> 
+<span class="menu-text">Codebook</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul class="collapse">
+  <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a></li>
+  <li><a href="#part-1-choosing-confounders-with-a-dag" id="toc-part-1-choosing-confounders-with-a-dag" class="nav-link" data-scroll-target="#part-1-choosing-confounders-with-a-dag">Part 1: Choosing Confounders with a DAG</a>
+  <ul class="collapse">
+  <li><a href="#step-1-write-down-the-dag" id="toc-step-1-write-down-the-dag" class="nav-link" data-scroll-target="#step-1-write-down-the-dag">Step 1: Write down the DAG</a></li>
+  <li><a href="#step-2-list-the-paths-between-exposure-and-outcome" id="toc-step-2-list-the-paths-between-exposure-and-outcome" class="nav-link" data-scroll-target="#step-2-list-the-paths-between-exposure-and-outcome">Step 2: List the paths between exposure and outcome</a></li>
+  <li><a href="#step-3-find-the-minimally-sufficient-adjustment-set" id="toc-step-3-find-the-minimally-sufficient-adjustment-set" class="nav-link" data-scroll-target="#step-3-find-the-minimally-sufficient-adjustment-set">Step 3: Find the minimally sufficient adjustment set</a></li>
+  </ul></li>
+  <li><a href="#part-2-checking-confounding-in-the-data-change-in-estimate" id="toc-part-2-checking-confounding-in-the-data-change-in-estimate" class="nav-link" data-scroll-target="#part-2-checking-confounding-in-the-data-change-in-estimate">Part 2: Checking Confounding in the Data — Change in Estimate</a>
+  <ul class="collapse">
+  <li><a href="#step-1-the-crude-model-a-reminder" id="toc-step-1-the-crude-model-a-reminder" class="nav-link" data-scroll-target="#step-1-the-crude-model-a-reminder">Step 1: The crude model (a reminder)</a></li>
+  <li><a href="#step-2-is-the-candidate-associated-with-the-exposure-and-the-outcome" id="toc-step-2-is-the-candidate-associated-with-the-exposure-and-the-outcome" class="nav-link" data-scroll-target="#step-2-is-the-candidate-associated-with-the-exposure-and-the-outcome">Step 2: Is the candidate associated with the exposure and the outcome?</a></li>
+  <li><a href="#step-3-add-the-candidate-to-the-model-and-calculate-the-change-in-estimate" id="toc-step-3-add-the-candidate-to-the-model-and-calculate-the-change-in-estimate" class="nav-link" data-scroll-target="#step-3-add-the-candidate-to-the-model-and-calculate-the-change-in-estimate">Step 3: Add the candidate to the model and calculate the change in estimate</a></li>
+  <li><a href="#step-4-when-the-log-binomial-model-wont-converge-modified-poisson-regression" id="toc-step-4-when-the-log-binomial-model-wont-converge-modified-poisson-regression" class="nav-link" data-scroll-target="#step-4-when-the-log-binomial-model-wont-converge-modified-poisson-regression">Step 4: When the log-binomial model won’t converge — modified Poisson regression</a></li>
+  <li><a href="#step-5-compare-crude-and-adjusted-estimates-in-the-same-people" id="toc-step-5-compare-crude-and-adjusted-estimates-in-the-same-people" class="nav-link" data-scroll-target="#step-5-compare-crude-and-adjusted-estimates-in-the-same-people">Step 5: Compare crude and adjusted estimates <strong>in the same people</strong></a></li>
+  <li><a href="#step-6-check-every-candidate-at-once" id="toc-step-6-check-every-candidate-at-once" class="nav-link" data-scroll-target="#step-6-check-every-candidate-at-once">Step 6: Check every candidate at once</a></li>
+  <li><a href="#step-7-fit-the-final-adjusted-model" id="toc-step-7-fit-the-final-adjusted-model" class="nav-link" data-scroll-target="#step-7-fit-the-final-adjusted-model">Step 7: Fit the final adjusted model</a></li>
+  </ul></li>
+  <li><a href="#quick-start-script-for-your-own-project" id="toc-quick-start-script-for-your-own-project" class="nav-link" data-scroll-target="#quick-start-script-for-your-own-project">Quick-Start Script for Your Own Project</a></li>
+  <li><a href="#wrap-up" id="toc-wrap-up" class="nav-link" data-scroll-target="#wrap-up">Wrap Up</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+<script src="https://cdn.jsdelivr.net/npm/monaco-editor@0.47.0/min/vs/loader.js"></script>
+<script type="module" id="qwebr-monaco-editor-init">
+
+  // Configure the Monaco Editor's loader
+  require.config({
+    paths: {
+      'vs': 'https://cdn.jsdelivr.net/npm/monaco-editor@0.47.0/min/vs'
+    }
+  });
+</script>
+<script type="module">
+// Function to update Monaco Editors when body class changes
+function updateMonacoEditorsOnBodyClassChange() {
+    // Select the body element
+    const body = document.querySelector('body');
+
+    // Options for the observer (which mutations to observe)
+    const observerOptions = {
+        attributes: true,  // Observe changes to attributes
+        attributeFilter: ['class'] // Only observe changes to the 'class' attribute
+    };
+
+    // Callback function to execute when mutations are observed
+    const bodyClassChangeCallback = function(mutationsList, observer) {
+        for(let mutation of mutationsList) {
+            if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                // Class attribute has changed
+                // Update all Monaco Editors on the page
+                updateMonacoEditorTheme();
+            }
+        }
+    };
+
+    // Create an observer instance linked to the callback function
+    const observer = new MutationObserver(bodyClassChangeCallback);
+
+    // Start observing the target node for configured mutations
+    observer.observe(body, observerOptions);
+}
+
+// Function to update all instances of Monaco Editors on the page
+function updateMonacoEditorTheme() {
+    // Determine what VS Theme to use
+    const vsThemeToUse = document.body.classList.contains("quarto-dark") ? 'vs-dark' : 'vs' ;
+
+    // Iterate through all initialized Monaco Editors
+    qwebrEditorInstances.forEach( function(editorInstance) { 
+        editorInstance.updateOptions({ theme: vsThemeToUse }); 
+    });
+}
+
+// Call the function to start observing changes to body class
+updateMonacoEditorsOnBodyClassChange();
+</script>
+<script type="module">
+// Global array to store Monaco Editor instances
+globalThis.qwebrEditorInstances = [];
+
+function isValidCodeLineNumbers(stringCodeLineNumbers) {
+  // Regular expression to match valid input strings
+  const regex = /^(\d+(-\d+)?)(,\d+(-\d+)?)*$/;
+  return regex.test(stringCodeLineNumbers);
+}
+
+// Function that builds and registers a Monaco Editor instance    
+globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
+
+  const initialCode = cellData.code;
+  const qwebrCounter = cellData.id;
+  const qwebrOptions = cellData.options;
+
+  // Retrieve the previously created document elements
+  let runButton = document.getElementById(`qwebr-button-run-${qwebrCounter}`);
+  let resetButton = document.getElementById(`qwebr-button-reset-${qwebrCounter}`);
+  let copyButton = document.getElementById(`qwebr-button-copy-${qwebrCounter}`);
+  let editorDiv = document.getElementById(`qwebr-editor-${qwebrCounter}`);
+
+  // Load the Monaco Editor and create an instance
+  let editor;
+  require(['vs/editor/editor.main'], function () {
+    editor = monaco.editor.create(editorDiv, {
+      value: initialCode,
+      language: 'r',
+      theme: 'vs-light',
+      automaticLayout: true,           // Works wonderfully with RevealJS
+      scrollBeyondLastLine: false,
+      minimap: {
+        enabled: false
+      },
+      fontSize: qwebrScaledFontSize(editorDiv, qwebrOptions),         
+      renderLineHighlight: "none",      // Disable current line highlighting
+      hideCursorInOverviewRuler: true,  // Remove cursor indictor in right hand side scroll bar
+      readOnly: qwebrOptions['read-only'] ?? false,
+      quickSuggestions: qwebrOptions['editor-quick-suggestions'] ?? false,
+      wordWrap: (qwebrOptions['editor-word-wrap'] == 'true' ? "on" : "off")
+    });
+
+    // Store the official counter ID to be used in keyboard shortcuts
+    editor.__qwebrCounter = qwebrCounter;
+
+    // Store the official div container ID
+    editor.__qwebrEditorId = `qwebr-editor-${qwebrCounter}`;
+
+    // Store the initial code value and options
+    editor.__qwebrinitialCode = initialCode;
+    editor.__qwebrOptions = qwebrOptions;
+
+    // Set at the model level the preferred end of line (EOL) character to LF.
+    // This prevent `\r\n` from being given to the webR engine if the user is on Windows.
+    // See details in: https://github.com/coatless/quarto-webr/issues/94
+    // Associated error text: 
+    // Error: <text>:1:7 unexpected input
+
+    // Retrieve the underlying model
+    const model = editor.getModel();
+    // Set EOL for the model
+    model.setEOL(monaco.editor.EndOfLineSequence.LF);
+    
+    // Dynamically modify the height of the editor window if new lines are added.
+    let ignoreEvent = false;
+    const updateHeight = () => {
+      // Increment editor height by 2 to prevent vertical scroll bar from appearing
+      const contentHeight = editor.getContentHeight() + 2;
+
+      // Retrieve editor-max-height option
+      const maxEditorHeight = qwebrOptions['editor-max-height'];
+
+      // If editor-max-height is missing, allow infinite growth. Otherwise, threshold.
+      const editorHeight = !maxEditorHeight ?  contentHeight : Math.min(contentHeight, maxEditorHeight);
+
+      // We're avoiding a width change
+      //editorDiv.style.width = `${width}px`;
+      editorDiv.style.height = `${editorHeight}px`;
+      try {
+        ignoreEvent = true;
+
+        // The key to resizing is this call
+        editor.layout();
+      } finally {
+        ignoreEvent = false;
+      }
+    };
+
+    // Function to generate decorations to highlight lines
+    // in the editor based on input string.
+    function decoratorHighlightLines(codeLineNumbers) {
+      // Store the lines to be lighlight
+      let linesToHighlight = [];
+      
+      // Parse the codeLineNumbers string to get the line numbers to highlight
+      // First, split the string by commas
+      codeLineNumbers.split(',').forEach(part => {
+        // Check if we have a range of lines
+        if (part.includes('-')) {
+            // Handle range of lines (e.g., "6-8")
+            const [start, end] = part.split('-').map(Number);
+            for (let i = start; i <= end; i++) {
+                linesToHighlight.push(i);
+            }
+        } else {
+            // Handle single line (e.g., "7")
+            linesToHighlight.push(Number(part));
+        }
+      });
+  
+      // Create monaco decorations for the lines to highlight
+      const decorations = linesToHighlight.map(lineNumber => ({
+          range: new monaco.Range(lineNumber, 1, lineNumber, 1),
+          options: {
+              isWholeLine: true,
+              className: 'qwebr-editor-highlight-line'
+          }
+      }));
+  
+      // Return decorations to be applied to the editor
+      return decorations;
+    }
+
+    // Ensure that the editor-code-line-numbers option is set and valid
+    // then apply styling
+    if (qwebrOptions['editor-code-line-numbers']) {
+      // Remove all whitespace from the string
+      const codeLineNumbers = qwebrOptions['editor-code-line-numbers'].replace(/\s/g,'');
+      // Check if the string is valid for line numbers, e.g., "1,3-5,7"
+      if (isValidCodeLineNumbers(codeLineNumbers)) {
+        // Apply the decorations to the editor
+        editor.createDecorationsCollection(decoratorHighlightLines(codeLineNumbers));
+      } else {
+        // Warn the user that the input is invalid
+        console.warn(`Invalid "editor-code-line-numbers" value in code cell ${qwebrOptions['label']}: ${codeLineNumbers}`);
+      }
+    }
+
+    // Helper function to check if selected text is empty
+    function isEmptyCodeText(selectedCodeText) {
+      return (selectedCodeText === null || selectedCodeText === undefined || selectedCodeText === "");
+    }
+
+    // Registry of keyboard shortcuts that should be re-added to each editor window
+    // when focus changes.
+    const addWebRKeyboardShortCutCommands = () => {
+      // Add a keydown event listener for Shift+Enter to run all code in cell
+      editor.addCommand(monaco.KeyMod.Shift | monaco.KeyCode.Enter, () => {
+
+        // Retrieve all text inside the editor
+        qwebrExecuteCode(editor.getValue(), editor.__qwebrCounter, editor.__qwebrOptions);
+      });
+
+      // Add a keydown event listener for CMD/Ctrl+Enter to run selected code
+      editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () => {
+
+        // Get the selected text from the editor
+        const selectedText = editor.getModel().getValueInRange(editor.getSelection());
+        // Check if no code is selected
+        if (isEmptyCodeText(selectedText)) {
+          // Obtain the current cursor position
+          let currentPosition = editor.getPosition();
+          // Retrieve the current line content
+          let currentLine = editor.getModel().getLineContent(currentPosition.lineNumber);
+
+          // Propose a new position to move the cursor to
+          let newPosition = new monaco.Position(currentPosition.lineNumber + 1, 1);
+
+          // Check if the new position is beyond the last line of the editor
+          if (newPosition.lineNumber > editor.getModel().getLineCount()) {
+            // Add a new line at the end of the editor
+            editor.executeEdits("addNewLine", [{
+            range: new monaco.Range(newPosition.lineNumber, 1, newPosition.lineNumber, 1),
+            text: "\n", 
+            forceMoveMarkers: true,
+            }]);
+          }
+          
+          // Run the entire line of code.
+          qwebrExecuteCode(currentLine, editor.__qwebrCounter, editor.__qwebrOptions);
+
+          // Move cursor to new position
+          editor.setPosition(newPosition);
+        } else {
+          // Code to run when Ctrl+Enter is pressed with selected code
+          qwebrExecuteCode(selectedText, editor.__qwebrCounter, editor.__qwebrOptions);
+        }
+      });
+    }
+
+    // Register an on focus event handler for when a code cell is selected to update
+    // what keyboard shortcut commands should work.
+    // This is a workaround to fix a regression that happened with multiple
+    // editor windows since Monaco 0.32.0 
+    // https://github.com/microsoft/monaco-editor/issues/2947
+    editor.onDidFocusEditorText(addWebRKeyboardShortCutCommands);
+
+    // Register an on change event for when new code is added to the editor window
+    editor.onDidContentSizeChange(updateHeight);
+
+    // Manually re-update height to account for the content we inserted into the call
+    updateHeight();
+
+    // Store the editor instance in the global dictionary
+    qwebrEditorInstances[editor.__qwebrCounter] = editor;
+
+  });
+
+  // Add a click event listener to the run button
+  runButton.onclick = function () {
+    qwebrExecuteCode(editor.getValue(), editor.__qwebrCounter, editor.__qwebrOptions);
+  };
+
+  // Add a click event listener to the reset button
+  copyButton.onclick = function () {
+    // Retrieve current code data
+    const data = editor.getValue();
+    
+    // Write code data onto the clipboard.
+    navigator.clipboard.writeText(data || "");
+  };
+  
+  // Add a click event listener to the copy button
+  resetButton.onclick = function () {
+    editor.setValue(editor.__qwebrinitialCode);
+  };
+  
+}
+</script>
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lesson 6: Confounding &amp; Directed Acyclic Graphs (DAGs)</h1>
+<p class="subtitle lead">EOH 635 — Environmental Epidemiology Methods</p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Leah Schinasi </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 14, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>In <a href="./lesson5.html">Lesson 5</a> you fit a <strong>crude</strong> (unadjusted) model for tree canopy and high blood pressure. This lesson asks whether that crude estimate is distorted by <strong>confounding</strong> — a third variable that is related to both the exposure and the outcome — and what to adjust for. It has two parts:</p>
+<ol type="1">
+<li><strong>Choosing confounders with a DAG</strong> — drawing a directed acyclic graph for tree canopy and high blood pressure in R, listing the paths that connect them, and letting the DAG identify a <strong>minimally sufficient adjustment set</strong>.</li>
+<li><strong>Checking confounding in the data with the change-in-estimate approach</strong> — adding each candidate variable to the model one at a time, calculating how much the estimate changes, and fitting a final adjusted model.</li>
+</ol>
+<p>Both parts end with a <strong>🧠 Your Turn</strong> for the exposure and outcome in your own project. Together they produce the DAG, change-in-estimate table, and final adjustment set that Milestone 3 asks for.</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>How to use this tutorial
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The gray boxes below are <strong>live R editors</strong> — the code actually runs in your browser (no install needed). Click the green <strong>Run Code</strong> arrow in the top-left corner of a box to run it. The output will appear directly underneath.</p>
+<p>You can also edit the code first — click inside the box, change something, then click <strong>Run Code</strong> to run your edited version. Nothing you do here can break anything; if you make a mess, just refresh the page to start that box over.</p>
+<p>Sections marked <strong>🧠 Your Turn</strong> give you a task and a blank or partially blank code editor. Try writing the code yourself before revealing the solution, hidden in a collapsed box underneath. Boxes labeled <strong>💡 Answers</strong> work the same way: think through the questions first, then click to check your reasoning.</p>
+<p><strong>A note on browser vs.&nbsp;RStudio code:</strong> chunks labeled <code>#| autorun: true</code> fetch data from the web in the background so it’s available in your browser. <strong>When you write your own scripts in RStudio, you will not include this fetching code.</strong> Immediately after each one, a green box labeled <strong>“In your RStudio script”</strong> shows the simpler code you’ll actually use.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Doing this in RStudio instead of (or in addition to) the browser?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This tutorial uses <strong><code>class_data_processed.csv</code></strong>, the same merged file from Lessons 1, 3, 4, and 5. It uses two packages you may not have installed yet: <strong><code>dagitty</code></strong> (for DAGs) and <strong><code>sandwich</code></strong> (for robust standard errors). Install them once with <code>install.packages(c("dagitty", "sandwich"))</code>. See the <a href="./codebook.html">Data Codebook</a> for variable definitions.</p>
+</div>
+</div>
+<hr>
+<section id="setup" class="level1">
+<h1>Setup</h1>
+<div id="qwebr-insertion-location-1"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>In RStudio:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>In the browser:</p>
+<div id="qwebr-insertion-location-2"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>💻 In your RStudio script
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+<p>Next, recreate two variables from earlier lessons: the cleaned age variable from Lesson 3 (ages above 105 recoded to missing), and the tree canopy exposure we settled on at the end of Lesson 5 — <strong>top quartile vs.&nbsp;the lower three quartiles</strong>.</p>
+<div id="qwebr-insertion-location-3"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Why use the top-quartile exposure in this lesson?
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Lesson 5 concluded that both a continuous term and “top quartile vs.&nbsp;the rest” were defensible codings for tree canopy. We use the binary version here because it keeps each model to a single exposure estimate, which makes the change-in-estimate calculations easy to follow. If your own exposure is continuous, see the box <strong>“What if my exposure is continuous?”</strong> in Part 2 — there is one extra step.</p>
+</div>
+</div>
+<hr>
+</section>
+<section id="part-1-choosing-confounders-with-a-dag" class="level1">
+<h1>Part 1: Choosing Confounders with a DAG</h1>
+<p>Recall the three conditions for a variable to be a confounder. It must:</p>
+<ol type="1">
+<li>Be <strong>associated with the exposure</strong>;</li>
+<li>Be a <strong>risk factor for the outcome</strong> (associated with the outcome among the unexposed); and</li>
+<li><strong>Not be on the causal pathway</strong> between the exposure and the outcome (that is, not be a mediator).</li>
+</ol>
+<p>The third condition can’t be checked with data alone — it depends on what you believe causes what. That is the job of a <strong>directed acyclic graph (DAG)</strong>: you write down your assumptions about the causal structure <em>before</em> looking at the data, and the rules of the DAG tell you which variables need to be adjusted for.</p>
+<section id="step-1-write-down-the-dag" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-write-down-the-dag">Step 1: Write down the DAG</h2>
+<p>Here is one DAG for tree canopy and high blood pressure, built from the kind of reasoning you did for your conceptual framework in Week 2:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/lesson6_dag.png" class="img-fluid figure-img" style="width:90.0%"></p>
+<figcaption>A DAG for tree canopy cover and high blood pressure</figcaption>
+</figure>
+</div>
+<p>Each arrow is a claim about cause and effect:</p>
+<ul>
+<li><strong>Tree canopy → high blood pressure</strong> — the effect we want to estimate. Tree canopy may also work <em>through</em> <strong>physical activity</strong> and <strong>obesity</strong> (greener places encourage activity, which lowers obesity and blood pressure). Those two are <strong>mediators</strong>: they sit on the causal pathway.</li>
+<li><strong>Education → tree canopy</strong> and <strong>education → high blood pressure</strong> — people with more education (and the income that tends to come with it) are more able to choose to live in greener neighborhoods, and education is independently linked to blood pressure (health care access, diet, job strain).</li>
+<li><strong>Tract poverty → tree canopy</strong> and <strong>tract poverty → high blood pressure</strong> — poorer neighborhoods have historically received less investment in street trees and parks, and neighborhood deprivation affects blood pressure through stress, food access, and other routes. Tract poverty also shapes individual educational opportunity (<strong>tract poverty → education</strong>).</li>
+<li><strong>Race and ethnicity → tract poverty</strong> and <strong>race and ethnicity → high blood pressure</strong> — here, <code>race_ethnicity</code> stands for <strong>exposure to racism</strong>, not biology. Residential segregation and historical policies such as redlining concentrated poverty in some neighborhoods; interpersonal and structural racism also affect blood pressure directly (see the Howe et al.&nbsp;reading).</li>
+<li><strong>Age</strong> and <strong>gender</strong> affect blood pressure. Age also affects education (very young adults may not have finished a degree yet). Neither has an arrow into tree canopy: there is no strong reason to believe age or gender determines how green a person’s census tract is.</li>
+</ul>
+<p>Now let’s write the same DAG in R. The <code>dagitty()</code> function uses the same text format as the <a href="https://www.dagitty.net/dags.html">DAGitty website</a>: one line per variable (with <code>exposure</code> and <code>outcome</code> labels and an optional position on the plot), then one line per arrow.</p>
+<div id="qwebr-insertion-location-4"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>The <code>pos="x,y"</code> values only control where each variable is drawn (negative y values are drawn higher up). They have no effect on the analysis.</p>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Using the DAGitty website instead
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Everything between the single quotes above can be pasted directly into the <strong>Model code</strong> box on <a href="https://www.dagitty.net/dags.html">dagitty.net/dags.html</a> (Model → New model, then paste). The website lets you drag variables around and click to add arrows, which is often easier when you are first sketching a DAG. When you’re done, copy the model code back into your R script so your DAG is saved with your analysis. Either tool is fine for Milestone 3.</p>
+</div>
+</div>
+</section>
+<section id="step-2-list-the-paths-between-exposure-and-outcome" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-list-the-paths-between-exposure-and-outcome">Step 2: List the paths between exposure and outcome</h2>
+<p>A DAG tells us which variables to adjust for by looking at every <strong>path</strong> connecting the exposure to the outcome — any route along the arrows, regardless of which direction they point.</p>
+<div id="qwebr-insertion-location-5"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p><code>paths()</code> returns two things: <code>$paths</code>, each path written out, and <code>$open</code>, whether that path is currently <strong>open</strong> (able to transmit an association) or <strong>closed</strong>.</p>
+<p>There are two kinds of paths:</p>
+<ul>
+<li><strong>Causal paths</strong> start with an arrow <em>out of</em> the exposure: <code>tree_canopy -&gt; high_bp</code>, and <code>tree_canopy -&gt; physical_activity -&gt; obesity -&gt; high_bp</code>. These are part of the effect we want to estimate, so we leave them open.</li>
+<li><strong>Backdoor paths</strong> start with an arrow <em>into</em> the exposure, such as <code>tree_canopy &lt;- education -&gt; high_bp</code>. These are <strong>non-causal</strong>: they create an association between tree canopy and blood pressure that is not due to tree canopy at all. <strong>Confounding is an open backdoor path.</strong> Our goal is to close every one of them.</li>
+</ul>
+<p>Adjusting for a variable on a backdoor path closes it. One exception: a variable that has two arrows pointing <em>into</em> it on a path (like <code>education</code> in <code>tree_canopy &lt;- tract_poverty -&gt; education &lt;- age -&gt; high_bp</code>) is a <strong>collider</strong>. A path through a collider is already closed — and adjusting for the collider would <em>open</em> it.</p>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>How many backdoor paths are there? Which variables appear on them?</li>
+<li>Why is the path <code>tree_canopy &lt;- tract_poverty -&gt; education &lt;- age -&gt; high_bp</code> listed as closed (<code>FALSE</code>)?</li>
+<li>Is there any backdoor path that goes through <code>gender</code>? Through <code>physical_activity</code> or <code>obesity</code>?</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>There are <strong>eight</strong> backdoor paths (every path except the first two). Every one of them passes through <strong>education</strong>, <strong>tract poverty</strong>, or both. Race/ethnicity and age also appear, but only further along paths that already pass through education or tract poverty.</li>
+<li>On that path, <code>education</code> is a <strong>collider</strong>: both <code>tract_poverty -&gt; education</code> and <code>age -&gt; education</code> point into it. A collider blocks the path on its own, so the path is closed without any adjustment.</li>
+<li><strong>No path goes through <code>gender</code>.</strong> Gender has only one arrow, into high blood pressure, so it cannot create a backdoor path. Physical activity and obesity appear only on the <strong>causal</strong> path — they are mediators, not confounders.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="step-3-find-the-minimally-sufficient-adjustment-set" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-find-the-minimally-sufficient-adjustment-set">Step 3: Find the minimally sufficient adjustment set</h2>
+<p>Rather than closing each backdoor path by hand, <code>adjustmentSets()</code> finds the smallest set of variables that closes them all — the <strong>minimally sufficient adjustment set</strong>.</p>
+<div id="qwebr-insertion-location-6"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>According to this DAG, adjusting for <strong>education and tract poverty</strong> is enough to remove confounding of the tree canopy–high blood pressure association. Let’s confirm that every backdoor path is closed once we adjust for them:</p>
+<div id="qwebr-insertion-location-7"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>Now only the two causal paths are open (<code>TRUE</code>).</p>
+<p>A minimally sufficient set is not the only valid set. To see every set that would work:</p>
+<div id="qwebr-insertion-location-8"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>Why isn’t <strong>race/ethnicity</strong> in the minimal set, even though it affects both tract poverty and high blood pressure?</li>
+<li>Why isn’t <strong>age</strong> in the minimal set? Would it be <em>wrong</em> to adjust for age?</li>
+<li>What would happen if we adjusted for <strong>obesity</strong>? Try it: run <code>paths(dag, Z = "obesity")</code> in the box above and look at the causal path.</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>Race/ethnicity reaches tree canopy only <strong>through tract poverty</strong> (<code>race_ethnicity -&gt; tract_poverty -&gt; tree_canopy</code>). Once tract poverty is adjusted for, that path is closed, so race/ethnicity is not needed <em>according to this DAG</em>. If you believed racism also affected tree canopy directly (for example, through discriminatory planting decisions that are not captured by tract poverty), you would add that arrow, and race/ethnicity would join the adjustment set. The DAG is only as good as the assumptions you put into it.</li>
+<li>Age has no arrow into tree canopy, so it can’t confound on its own; its only backdoor path runs through education, which is already adjusted for. But <code>adjustmentSets(type = "all")</code> shows that <strong>{age, education, tract poverty}</strong> is <em>also</em> a valid set. Adjusting for a strong risk factor for the outcome that is not related to the exposure won’t introduce bias and can make the estimate more precise.</li>
+<li>Adjusting for obesity closes <code>tree_canopy -&gt; physical_activity -&gt; obesity -&gt; high_bp</code> — part of the <strong>causal</strong> effect. The adjusted estimate would then describe only the part of tree canopy’s effect that does <em>not</em> operate through obesity. That is <strong>overadjustment</strong>: removing part of the effect you set out to measure.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>DAGs and race
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Following Howe et al.&nbsp;(2022), a DAG for a racial health disparity should represent <strong>racism</strong> — not race itself — as the cause, because race is a social construct and not a biological cause of disease. In our class dataset, <code>race_ethnicity</code> is the only available measure, so in this DAG it stands in for exposure to structural and interpersonal racism. When you describe your own DAG, say what each variable represents.</p>
+</div>
+</div>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn: Draw a DAG for your own project">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>🧠 Your Turn: Draw a DAG for your own project
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Using <strong>your project’s exposure and outcome</strong>:</p>
+<ol type="1">
+<li>Start from your conceptual framework (Milestone 1). List the variables that might cause your exposure, your outcome, or both, and any mediators. Include important variables even if they are <strong>not in the dataset</strong> — mark them with <code>[latent]</code> instead of a position, e.g. <code>neighborhood_disinvestment [latent]</code>.</li>
+<li>Write the DAG with <code>dagitty()</code> (or draw it at <a href="https://www.dagitty.net/dags.html">dagitty.net</a> and paste the model code here).</li>
+<li>Run <code>paths()</code> and <code>adjustmentSets()</code>. Which variables are in your minimally sufficient adjustment set? Does any set work if some variables are latent (unmeasured)?</li>
+</ol>
+</div>
+</div>
+<div id="qwebr-insertion-location-9"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Example: traffic density and asthma — click to reveal">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Example: traffic density and asthma — click to reveal
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div id="qwebr-insertion-location-10"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>In this DAG, tract poverty is the only variable on a backdoor path (<code>traffic_density &lt;- tract_poverty -&gt; asthma</code>, and <code>traffic_density &lt;- tract_poverty -&gt; current_smoker -&gt; asthma</code>), so the minimally sufficient adjustment set is <strong>{tract_poverty}</strong>. Smoking is a strong risk factor for asthma, but in this DAG it does not cause traffic density, so it does not need to be adjusted for to remove confounding. Air pollution is a <strong>mediator</strong> and should not be adjusted for.</p>
+<p>Someone else might reasonably draw this DAG differently — for example, with an arrow from smoking or education to where people live. That is why the DAG is part of what you justify in Milestone 3.</p>
+</div>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="part-2-checking-confounding-in-the-data-change-in-estimate" class="level1">
+<h1>Part 2: Checking Confounding in the Data — Change in Estimate</h1>
+<p>The DAG is built from <strong>theory</strong>, before looking at the data. The change-in-estimate approach is <strong>empirical</strong>: it shows how much the exposure estimate actually moves when a variable is added to the model. Using both together is common practice:</p>
+<ol type="1">
+<li>Use the DAG to identify your <strong>candidate</strong> confounders.</li>
+<li>Add each candidate to the crude model <strong>one at a time</strong> and calculate the percent change in the exposure estimate.</li>
+<li>Use the DAG and the change-in-estimate results together to choose your <strong>final</strong> adjustment set.</li>
+</ol>
+<section id="step-1-the-crude-model-a-reminder" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-the-crude-model-a-reminder">Step 1: The crude model (a reminder)</h2>
+<p>This is the same model as the end of Lesson 5. The <code>extract_ratio()</code> helper has one new option, <code>robust</code>, which we will need in Step 4. Leave it at its default (<code>FALSE</code>) for now.</p>
+<div id="qwebr-insertion-location-11"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>The crude PR is <strong>0.60 (95% CI: 0.49, 0.72)</strong>: the prevalence of high blood pressure among participants in the greenest quarter of census tracts was 0.60 times the prevalence among everyone else — about 40% lower.</p>
+</section>
+<section id="step-2-is-the-candidate-associated-with-the-exposure-and-the-outcome" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-is-the-candidate-associated-with-the-exposure-and-the-outcome">Step 2: Is the candidate associated with the exposure and the outcome?</h2>
+<p>Let’s start with <strong>education</strong>, the first variable in our DAG’s adjustment set. A confounder must be associated with both the exposure and the outcome, so check each one.</p>
+<div id="qwebr-insertion-location-12"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>Is education associated with living in a top-quartile canopy tract? How strongly?</li>
+<li>Is education associated with high blood pressure? In which direction?</li>
+<li>Given the direction of both associations, would you expect the crude PR for tree canopy to be <em>further from</em> or <em>closer to</em> the null than the adjusted PR?</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-11" class="callout-11-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>Yes, strongly. 38% of participants with a bachelor’s degree or higher live in a top-quartile canopy tract, compared with 13% of those without one — a PR of <strong>2.91 (95% CI: 2.44, 3.46)</strong>.</li>
+<li>Yes. Participants with a bachelor’s degree or higher have a lower prevalence of high blood pressure: PR = <strong>0.63 (95% CI: 0.55, 0.72)</strong>.</li>
+<li>Higher education goes with <em>more</em> tree canopy and <em>less</em> high blood pressure. So part of the lower prevalence of high blood pressure in greener tracts is really due to the more-educated people who live there. The crude PR should therefore be <strong>further from the null</strong> (more protective-looking) than the adjusted PR. Step 3 checks this.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="step-3-add-the-candidate-to-the-model-and-calculate-the-change-in-estimate" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-add-the-candidate-to-the-model-and-calculate-the-change-in-estimate">Step 3: Add the candidate to the model and calculate the change in estimate</h2>
+<div id="qwebr-insertion-location-13"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>R now returns two PRs: one for <code>tree_top_quartile</code> (the one we care about) and one for <code>education</code>. The tree canopy PR is now <strong>adjusted for</strong> education — it compares participants in the greenest quarter of tracts with everyone else <strong>with the same level of education</strong>.</p>
+<p>The <strong>percent change in estimate</strong> compares the crude and adjusted PRs:</p>
+<p><span class="math display">\[\% \text{ change} = \frac{\text{PR}_\text{crude} - \text{PR}_\text{adjusted}}{\text{PR}_\text{crude}} \times 100\]</span></p>
+<div id="qwebr-insertion-location-14"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>Look at the <strong>size</strong> of the change. Its sign tells you which way the estimate moved: a negative percent change means the adjusted PR is larger than the crude PR — here, closer to 1.</p>
+<p>A common rule of thumb is that a change of <strong>10% or more</strong> suggests meaningful confounding. Treat it as a guide, not a law: the 10% cutoff is a convention, and a 9% change is not meaningfully different from an 11% change. Decide on your rule before you look at the results, and report it in your methods.</p>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>By how much did the PR change after adjusting for education? Is that above the 10% rule of thumb?</li>
+<li>Did the estimate move in the direction you predicted in Step 2?</li>
+<li>Write a one-sentence interpretation of the adjusted PR.</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-12" class="callout-12-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>The PR moved from <strong>0.60</strong> (crude) to <strong>0.68</strong> (adjusted for education), a change of about <strong>13%</strong> — above the 10% rule of thumb, so education confounds this association in our data.</li>
+<li>Yes. The adjusted PR is closer to 1: some of the crude association was due to the more-educated people who live in greener tracts, not to the trees themselves.</li>
+<li><em>Example interpretation:</em> After adjusting for education, the prevalence of high blood pressure among participants living in the greenest quarter of census tracts was 0.68 times the prevalence among those living in the other three quarters (95% CI: 0.56, 0.82).</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="step-4-when-the-log-binomial-model-wont-converge-modified-poisson-regression" class="level2">
+<h2 class="anchored" data-anchor-id="step-4-when-the-log-binomial-model-wont-converge-modified-poisson-regression">Step 4: When the log-binomial model won’t converge — modified Poisson regression</h2>
+<p>Now try adjusting for <strong>age</strong>:</p>
+<div id="qwebr-insertion-location-15"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>You should get an error: <em>“no valid set of coefficients has been found: please supply starting values.”</em> As Lesson 5 mentioned, this is common with log-binomial models, and it often appears as soon as a continuous covariate like age is added. The model’s predicted prevalences must stay below 1, and with a strong continuous predictor the fitting algorithm can fail to find estimates that satisfy this.</p>
+<p>The standard fix is <strong>modified Poisson regression</strong>: a Poisson model with a log link, which also estimates a prevalence ratio, combined with <strong>robust (“sandwich”) standard errors</strong>. The robust standard errors are needed because a Poisson model assumes the wrong variance for a 0/1 outcome; without them, the confidence intervals would be too wide.</p>
+<div id="qwebr-insertion-location-16"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p><code>robust = TRUE</code> makes <code>extract_ratio()</code> use <code>vcovHC()</code> from the <code>sandwich</code> package in place of the usual standard errors.</p>
+<p>To check that modified Poisson gives the same answer where both models work, compare the two for the crude and education-adjusted models:</p>
+<div id="qwebr-insertion-location-17"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>The crude estimates are identical, and the adjusted estimates agree to two decimal places. Because modified Poisson converges for every model we need, <strong>we use it for all the models in the rest of this lesson</strong>, so that every crude and adjusted estimate comes from the same kind of model.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Running modified Poisson in RStudio with the lmtest package">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-13-contents" aria-controls="callout-13" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Running modified Poisson in RStudio with the lmtest package
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-13" class="callout-13-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Many online examples use the <code>lmtest</code> package together with <code>sandwich</code>. It gives the same estimates and CIs as <code>extract_ratio(..., robust = TRUE)</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sandwich)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lmtest)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>robust_vcov <span class="ot">&lt;-</span> <span class="fu">vcovHC</span>(model_adj_age, <span class="at">type =</span> <span class="st">"HC0"</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">coeftest</span>(model_adj_age, <span class="at">vcov =</span> robust_vcov)        <span class="co"># coefficients with robust SEs and p-values</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">coef</span>(model_adj_age))                           <span class="co"># PRs</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">coefci</span>(model_adj_age, <span class="at">vcov =</span> robust_vcov))     <span class="co"># 95% CIs for the PRs</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+</section>
+<section id="step-5-compare-crude-and-adjusted-estimates-in-the-same-people" class="level2">
+<h2 class="anchored" data-anchor-id="step-5-compare-crude-and-adjusted-estimates-in-the-same-people">Step 5: Compare crude and adjusted estimates <strong>in the same people</strong></h2>
+<p>There is a subtle trap in comparing the age-adjusted PR with the crude PR from Step 1. Three participants are missing <code>r_age</code>, so R dropped them from the age-adjusted model — but not from the crude model. Part of any difference between the two estimates could simply be that they were estimated in <strong>different groups of people</strong>.</p>
+<p>The fix: for each candidate, fit the crude model in the <strong>same participants</strong> as the adjusted model, that is, those with no missing data on the outcome, the exposure, or that covariate.</p>
+<div id="qwebr-insertion-location-18"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>Here the crude PR barely moves (0.598 vs.&nbsp;0.602), because only a few participants are missing age. With a covariate that has a lot of missing data, the difference can be much larger. The loop in Step 6 does this restriction automatically.</p>
+</section>
+<section id="step-6-check-every-candidate-at-once" class="level2">
+<h2 class="anchored" data-anchor-id="step-6-check-every-candidate-at-once">Step 6: Check every candidate at once</h2>
+<p>Repeating Steps 3–5 by hand for every candidate is tedious and easy to get wrong. The loop below does it for each variable in <code>candidates</code>. It includes:</p>
+<ul>
+<li><strong>education</strong> and <strong>tract poverty</strong> (<code>pov_allage</code>) — the DAG’s minimally sufficient set;</li>
+<li><strong>age</strong>, <strong>gender</strong>, and <strong>race/ethnicity</strong> — in a valid adjustment set but not required by the DAG;</li>
+<li><strong>obesity</strong> (<code>obese</code>) — a mediator in our DAG, included only to show what the data say about it.</li>
+</ul>
+<div id="qwebr-insertion-location-19"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p><strong>What the loop does:</strong> <code>for (covariate in candidates)</code> runs the code inside the braces once for each name in <code>candidates</code>, storing the current name in <code>covariate</code>. <code>.data[[covariate]]</code> lets <code>filter()</code> refer to a column whose name is stored in a variable. <code>paste()</code> builds the model formula as text (e.g., <code>"high_blood_pressure ~ tree_top_quartile + education"</code>), and <code>as.formula()</code> turns that text into a formula R can use. Each pass adds one row to <code>cie_table</code> with <code>bind_rows()</code>.</p>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>Which variables change the estimate by 10% or more? Which change it by less than 5%?</li>
+<li>Gender barely changes the estimate. Using what you checked in Lesson 3, explain why.</li>
+<li>Age changes the estimate by about 3–4% even though the DAG says it is not a confounder. Does that mean the DAG is wrong?</li>
+<li>Obesity changes the estimate by only about 1%. Does that mean it would be fine to adjust for it?</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-14-contents" aria-controls="callout-14" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-14" class="callout-14-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Covariate</th>
+<th>PR adjusted (95% CI)</th>
+<th>% change</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Education</td>
+<td>0.68 (0.56, 0.82)</td>
+<td>−13.4</td>
+</tr>
+<tr class="even">
+<td>Tract poverty</td>
+<td>0.64 (0.53, 0.78)</td>
+<td>−7.1</td>
+</tr>
+<tr class="odd">
+<td>Age</td>
+<td>0.62 (0.52, 0.75)</td>
+<td>−3.5</td>
+</tr>
+<tr class="even">
+<td>Race/ethnicity</td>
+<td>0.61 (0.50, 0.73)</td>
+<td>−1.8</td>
+</tr>
+<tr class="odd">
+<td>Obesity</td>
+<td>0.60 (0.50, 0.73)</td>
+<td>−1.0</td>
+</tr>
+<tr class="even">
+<td>Gender</td>
+<td>0.60 (0.50, 0.72)</td>
+<td>0.0</td>
+</tr>
+</tbody>
+</table>
+<p><em>(Crude PR = 0.60 in each comparison sample.)</em></p>
+<ul>
+<li><strong>Education</strong> is the only variable above 10%. <strong>Tract poverty</strong> is below 10% but not trivial (7%). Race/ethnicity, obesity, and gender change the estimate by less than 2%.</li>
+<li>In Lesson 3 you saw that tree canopy is about the same for men and women. Gender is associated with the outcome but <strong>not with the exposure</strong>, so it cannot confound — exactly what the DAG assumed (no arrow from gender to tree canopy).</li>
+<li>Not necessarily. Participants in the top canopy quartile are, by chance, slightly younger on average (43.8 vs.&nbsp;45.2 years), and age is a strong risk factor for high blood pressure, so even a small imbalance shifts the estimate a little. The DAG says {age, education, tract poverty} is also a valid adjustment set, so including age would be defensible. A small change like this does not overturn the DAG.</li>
+<li><strong>No.</strong> The change-in-estimate approach cannot tell a confounder from a mediator — it only shows how much the estimate moves. Whether obesity <em>should</em> be adjusted for depends on where it sits in the causal structure, and our DAG places it on the causal pathway. Adjusting for a mediator is overadjustment, however much or little the estimate changes. This is the main reason to draw the DAG first.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>What the change-in-estimate approach cannot tell you
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>It <strong>cannot distinguish confounders from mediators or colliders.</strong> Adjusting for either can change the estimate a lot. Only your causal assumptions (the DAG) can tell you which is which.</li>
+<li>It <strong>can’t detect confounding by variables you haven’t measured.</strong> If a confounder is not in the dataset, no amount of modeling will reveal it — note it as a limitation.</li>
+<li><strong>The percent change depends on how the exposure is coded.</strong> See the next box.</li>
+</ul>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 What if my exposure is continuous? Click to read before calculating your own % change">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-16-contents" aria-controls="callout-16" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 What if my exposure is continuous? Click to read before calculating your own % change
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-16" class="callout-16-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>With a continuous exposure, the PR is for a <strong>one-unit</strong> change. If that unit is small, the PR is very close to 1, and even real confounding produces a tiny percent change.</p>
+<p>Here is tree canopy as a continuous percentage, crude and adjusted for education:</p>
+<div id="qwebr-insertion-location-20"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>Per 1 percentage point, the PR moves from 0.973 to 0.980 — a change of under 1%. Per 10 percentage points, the <em>same</em> models give 0.76 and 0.82 — a change of about 8%. The amount of confounding is the same; only the size of the contrast differs.</p>
+<p><strong>What to do:</strong> calculate the percent change for a <strong>meaningful contrast</strong> — for example, per 10 units, or per interquartile-range (IQR) increase (<code>IQR(data$YOUR_EXPOSURE, na.rm = TRUE)</code>) — and report which contrast you used. Choose the contrast before you look at the results.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="step-7-fit-the-final-adjusted-model" class="level2">
+<h2 class="anchored" data-anchor-id="step-7-fit-the-final-adjusted-model">Step 7: Fit the final adjusted model</h2>
+<p>Now bring the two approaches together. Our DAG says <strong>education and tract poverty</strong> are sufficient to remove confounding, and the data agree that both move the estimate (13% and 7%). We adjust for both in one model.</p>
+<div id="qwebr-insertion-location-21"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>How much did the PR change from crude to fully adjusted?</li>
+<li>Interpret the adjusted PR in one sentence.</li>
+<li>The model also returns PRs for education and tract poverty. Should you report and interpret those?</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've written your own">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-17-contents" aria-controls="callout-17" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve written your own
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-17" class="callout-17-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>The PR moved from <strong>0.60</strong> (crude) to <strong>0.71</strong> (adjusted), a change of about <strong>18%</strong> — more than either variable produced on its own.</li>
+<li><em>Example interpretation:</em> After adjusting for individual education and census-tract poverty, the prevalence of high blood pressure among participants living in the greenest quarter of census tracts was 0.71 times the prevalence among those living in the other three quarters (95% CI: 0.58, 0.86) — about 29% lower. Adjustment moved the estimate toward the null, but the association remained.</li>
+<li><strong>Generally, no.</strong> The model was built to estimate the effect of <strong>tree canopy</strong>, and the adjustment set was chosen to remove confounding of <em>that</em> association. The education and poverty PRs are not adjusted for <em>their own</em> confounders, and the tree canopy term may even be a mediator for them. Interpreting them as causal effects is a well-known mistake called the <strong>“Table 2 fallacy.”</strong> Report the exposure estimate; list the covariates you adjusted for.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Writing up your adjustment decision (Milestone 3)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A clear justification states the rule you used and applies it. For example:</p>
+<p><em>“We used a DAG to identify a minimally sufficient adjustment set (individual education and census-tract poverty). We then added each candidate covariate to the crude model one at a time and considered a change of 10% or more in the prevalence ratio to indicate meaningful confounding. Education changed the estimate by 13% and tract poverty by 7%. We adjusted for both because they form the DAG’s minimally sufficient set, even though tract poverty fell below the 10% threshold. We did not adjust for obesity or physical activity, which we hypothesized to be mediators.”</em></p>
+<p>There is rarely a single right answer. There are trade-offs to adjusting (lost precision, lost participants if a covariate has missing data, overadjustment) and trade-offs to not adjusting (residual confounding). What matters is that your rule is stated in advance, applied consistently, and justified.</p>
+</div>
+</div>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn: A change-in-estimate table for your own project">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>🧠 Your Turn: A change-in-estimate table for your own project
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Using <strong>your project’s exposure, outcome, and DAG</strong>:</p>
+<ol type="1">
+<li>Fit your crude model (modified Poisson for a binary outcome; <code>lm()</code> for a continuous one).</li>
+<li>Edit the loop in Step 6: change <code>candidates</code> to the variables in your DAG’s adjustment set (plus any others you want to check), and swap in your exposure and outcome names. If your exposure is continuous, calculate the percent change for a meaningful contrast (see the box above).</li>
+<li>Fit your final adjusted model and write two or three sentences justifying your final adjustment set.</li>
+</ol>
+</div>
+</div>
+<div id="qwebr-insertion-location-22"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Example: traffic density and asthma — click to reveal">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-20-contents" aria-controls="callout-20" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Example: traffic density and asthma — click to reveal
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-20" class="callout-20-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div id="qwebr-insertion-location-23"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>None of the candidates moves the traffic–asthma PR by anywhere near 10%, so the crude and adjusted estimates are nearly the same. That is a perfectly good result to report: it means that, <em>among the variables we measured and believe to be confounders</em>, there is little evidence of confounding. Following the DAG, the final model adjusts for tract poverty. Smoking was checked too, because it is a strong asthma risk factor, but it did not change the estimate and the DAG did not require it.</p>
+</div>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="quick-start-script-for-your-own-project" class="level1">
+<h1>Quick-Start Script for Your Own Project</h1>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>💻 In your RStudio script
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Setup ----</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sandwich)   <span class="co"># robust standard errors  -- install.packages("sandwich") once</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dagitty)    <span class="co"># DAGs                    -- install.packages("dagitty") once</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Read in your processed data ----</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>))</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Helper: exponentiate coefficients and 95% CIs (robust = TRUE for modified Poisson) ----</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>extract_ratio <span class="ot">&lt;-</span> <span class="cf">function</span>(model, label, <span class="at">robust =</span> <span class="cn">FALSE</span>) {</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  vc <span class="ot">&lt;-</span> <span class="cf">if</span> (robust) <span class="fu">vcovHC</span>(model, <span class="at">type =</span> <span class="st">"HC0"</span>) <span class="cf">else</span> <span class="fu">vcov</span>(model)</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  b  <span class="ot">&lt;-</span> <span class="fu">coef</span>(model)[<span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(vc))[<span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(<span class="at">Model =</span> label, <span class="at">Term =</span> <span class="fu">names</span>(b), <span class="at">Estimate =</span> <span class="fu">exp</span>(b),</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>             <span class="at">CI_Lower =</span> <span class="fu">exp</span>(b <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> se), <span class="at">CI_Upper =</span> <span class="fu">exp</span>(b <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> se),</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>             <span class="at">row.names =</span> <span class="cn">NULL</span>)</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co"># ============================================================</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co"># REPLACE: swap in your own variable names throughout</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co"># ============================================================</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 1. DAG and minimally sufficient adjustment set ----</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>dag <span class="ot">&lt;-</span> <span class="fu">dagitty</span>(<span class="st">'dag {</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="st">  YOUR_EXPOSURE [exposure]</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="st">  YOUR_OUTCOME  [outcome]</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="st">  YOUR_EXPOSURE -&gt; YOUR_OUTCOME</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="st">  CONFOUNDER_1 -&gt; YOUR_EXPOSURE</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="st">  CONFOUNDER_1 -&gt; YOUR_OUTCOME</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="st">  YOUR_EXPOSURE -&gt; MEDIATOR -&gt; YOUR_OUTCOME</span></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="st">}'</span>)</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="fu">plot</span>(dag)          <span class="co"># without pos= values, run graphLayout(dag) first: plot(graphLayout(dag))</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="fu">paths</span>(dag)</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="fu">adjustmentSets</span>(dag)</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 2. Change in estimate, one candidate at a time ----</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>candidates <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"CONFOUNDER_1"</span>, <span class="st">"CONFOUNDER_2"</span>)</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>cie_table <span class="ot">&lt;-</span> <span class="fu">data.frame</span>()</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (covariate <span class="cf">in</span> candidates) {</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>  data_cc <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(YOUR_OUTCOME), <span class="sc">!</span><span class="fu">is.na</span>(YOUR_EXPOSURE), <span class="sc">!</span><span class="fu">is.na</span>(.data[[covariate]]))</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>  crude <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE, <span class="at">data =</span> data_cc, <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>  adjusted <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">as.formula</span>(<span class="fu">paste</span>(<span class="st">"YOUR_OUTCOME ~ YOUR_EXPOSURE +"</span>, covariate)),</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data =</span> data_cc, <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>  pr_c <span class="ot">&lt;-</span> <span class="fu">extract_ratio</span>(crude, <span class="st">"crude"</span>, <span class="at">robust =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(Term <span class="sc">==</span> <span class="st">"YOUR_EXPOSURE"</span>)</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>  pr_a <span class="ot">&lt;-</span> <span class="fu">extract_ratio</span>(adjusted, covariate, <span class="at">robust =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(Term <span class="sc">==</span> <span class="st">"YOUR_EXPOSURE"</span>)</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>  cie_table <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(cie_table, <span class="fu">data.frame</span>(</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>    <span class="at">Covariate =</span> covariate, <span class="at">N =</span> <span class="fu">nobs</span>(adjusted),</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>    <span class="at">PR_crude =</span> pr_c<span class="sc">$</span>Estimate, <span class="at">PR_adjusted =</span> pr_a<span class="sc">$</span>Estimate,</span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>    <span class="at">CI_Lower =</span> pr_a<span class="sc">$</span>CI_Lower, <span class="at">CI_Upper =</span> pr_a<span class="sc">$</span>CI_Upper,</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>    <span class="at">Pct_change =</span> (pr_c<span class="sc">$</span>Estimate <span class="sc">-</span> pr_a<span class="sc">$</span>Estimate) <span class="sc">/</span> pr_c<span class="sc">$</span>Estimate <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>cie_table <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="fu">across</span>(PR_crude<span class="sc">:</span>Pct_change, <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">2</span>)))</span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a><span class="co"># Continuous exposure? Compare exp(k * coef) for a meaningful contrast k (e.g., 10 units or the IQR)</span></span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 3. Final adjusted model ----</span></span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a>model_final <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE <span class="sc">+</span> CONFOUNDER_1 <span class="sc">+</span> CONFOUNDER_2,</span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>                   <span class="at">data =</span> data, <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a><span class="fu">extract_ratio</span>(model_final, <span class="st">"Fully adjusted"</span>, <span class="at">robust =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+<hr>
+</section>
+<section id="wrap-up" class="level1">
+<h1>Wrap Up</h1>
+<p>This tutorial covered:</p>
+<ul>
+<li>The three conditions for confounding, and why the third (not on the causal pathway) requires causal assumptions rather than data</li>
+<li>Writing a DAG in R with <code>dagitty</code>, listing causal and backdoor paths, and recognizing colliders</li>
+<li>Identifying a minimally sufficient adjustment set, and why mediators should not be adjusted for</li>
+<li>Using modified Poisson regression with robust standard errors when a log-binomial model won’t converge</li>
+<li>The change-in-estimate approach: adding candidates one at a time, comparing estimates in the same participants, and why the percent change depends on how the exposure is coded</li>
+<li>Combining the DAG and the change-in-estimate results to choose and justify a final adjustment set</li>
+</ul>
+<p>The DAG, change-in-estimate table, and final adjustment set you produced for your own project are the core of <strong>Milestone 3</strong>.</p>
+<p><strong>Next week:</strong> Effect modification — so far we have estimated a single PR for everyone. Next week you’ll ask whether the association between your exposure and outcome <em>differs</em> across groups (for example, by education or gender), and how to test that formally.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+<script type="module">
+// Handle cell initialization initialization
+qwebrCellDetails.map(
+  (entry) => {
+    // Handle the creation of the element
+    qwebrCreateHTMLElement(entry);
+    // In the event of interactive, initialize the monaco editor
+    if (entry.options.context == EvalTypes.Interactive) {
+      qwebrCreateMonacoEditorInstance(entry);
+    }
+  }
+);
+
+// Identify non-interactive cells (in order)
+const filteredEntries = qwebrCellDetails.filter(entry => {
+  const contextOption = entry.options && entry.options.context;
+  return ['output', 'setup'].includes(contextOption) || (contextOption == "interactive" && entry.options && entry.options.autorun === 'true');
+});
+
+// Condition non-interactive cells to only be run after webR finishes its initialization.
+qwebrInstance.then(
+  async () => {
+    const nHiddenCells = filteredEntries.length;
+    var currentHiddenCell = 0;
+
+
+    // Modify button state
+    qwebrSetInteractiveButtonState(`🟡 Running hidden code cells ...`, false);
+
+    // Begin processing non-interactive sections
+    // Due to the iteration policy, we must use a for() loop.
+    // Otherwise, we would need to switch to using reduce with an empty
+    // starting promise
+    for (const entry of filteredEntries) {
+
+      // Determine cell being examined
+      currentHiddenCell = currentHiddenCell + 1;
+      const formattedMessage = `Evaluating hidden cell ${currentHiddenCell} out of ${nHiddenCells}`;
+
+      // Update the document status header
+      if (qwebrShowStartupMessage) {
+        qwebrUpdateStatusHeader(formattedMessage);
+      }
+
+      // Display the update in non-active areas
+      qwebrUpdateStatusMessage(formattedMessage);
+
+      // Extract details on the active cell
+      const evalType = entry.options.context;
+      const cellCode = entry.code;
+      const qwebrCounter = entry.id;
+
+      if (['output', 'setup'].includes(evalType)) {
+        // Disable further global status updates
+        const activeContainer = document.getElementById(`qwebr-non-interactive-loading-container-${qwebrCounter}`);
+        activeContainer.classList.remove('qwebr-cell-needs-evaluation');
+        activeContainer.classList.add('qwebr-cell-evaluated');
+
+        // Update status on the code cell
+        const activeStatus = document.getElementById(`qwebr-status-text-${qwebrCounter}`);
+        activeStatus.innerText = " Evaluating hidden code cell...";
+        activeStatus.classList.remove('qwebr-cell-needs-evaluation');
+        activeStatus.classList.add('qwebr-cell-evaluated');
+      }
+
+      switch (evalType) {
+        case 'interactive':
+          // TODO: Make this more standardized.
+          // At the moment, we're overriding the interactive status update by pretending its
+          // output-like. 
+          const tempOptions = entry.options;
+          tempOptions["context"] = "output"
+          // Run the code in a non-interactive state that is geared to displaying output
+          await qwebrExecuteCode(`${cellCode}`, qwebrCounter, tempOptions);
+          break;
+        case 'output':
+          // Run the code in a non-interactive state that is geared to displaying output
+          await qwebrExecuteCode(`${cellCode}`, qwebrCounter, entry.options);
+          break;
+        case 'setup':
+          const activeDiv = document.getElementById(`qwebr-noninteractive-setup-area-${qwebrCounter}`);
+
+          // Store code in history
+          qwebrLogCodeToHistory(cellCode, entry.options);
+
+          // Run the code in a non-interactive state with all output thrown away
+          await mainWebR.evalRVoid(`${cellCode}`);
+          break;
+        default: 
+          break; 
+      }
+
+      if (['output', 'setup'].includes(evalType)) {
+        // Disable further global status updates
+        const activeContainer = document.getElementById(`qwebr-non-interactive-loading-container-${qwebrCounter}`);
+        // Disable visibility
+        activeContainer.style.visibility = 'hidden';
+        activeContainer.style.display = 'none';
+      }
+    }
+  }
+).then(
+  () => {
+    // Release document status as ready
+
+    if (qwebrShowStartupMessage) {
+      qwebrStartupMessage.innerText = "🟢 Ready!"
+    }
+  
+    qwebrSetInteractiveButtonState(
+      `<i class="fa-solid fa-play qwebr-icon-run-code"></i> <span>Run Code</span>`, 
+      true
+    );  
+  }
+);
+</script>
+
+
+
+
+</body></html>
