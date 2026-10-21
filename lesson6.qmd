@@ -275,7 +275,11 @@ Using **your project's exposure and outcome**:
 :::
 
 ::: {.callout-note collapse="true" title="💡 Example: traffic density and asthma — click to reveal"}
-One DAG for traffic density and asthma has these arrows:
+Here is one DAG for traffic density and asthma:
+
+![A DAG for traffic density and asthma](images/lesson6_dag_asthma.png){width=90%}
+
+Its arrows are:
 
 - `traffic_density -> air_pollution -> asthma`
 - `tract_poverty -> traffic_density`, `tract_poverty -> asthma`, and
