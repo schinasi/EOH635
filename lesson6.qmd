@@ -104,7 +104,7 @@ data <- read.csv(file.path("data_processed", "class_data_processed.csv"))
 :::
 
 Next, recreate two variables from earlier lessons: the cleaned age variable from Lesson 3 (ages
-above 105 recoded to missing), and the tree canopy exposure we settled on at the end of Lesson 5 —
+above 105 recoded to missing), and the tree canopy coding we settled on at the end of Lesson 5 —
 **top quartile vs. the lower three quartiles**.
 
 ```{webr-r}
@@ -215,7 +215,8 @@ Everything between the single quotes above can be pasted directly into the **Mod
 [dagitty.net/dags.html](https://www.dagitty.net/dags.html) (Model → New model, then paste). The
 website lets you drag variables around and click to add arrows, which is often easier when you are
 first sketching a DAG. When you're done, copy the model code back into your R script so your DAG is
-saved with your analysis. Either tool is fine for Milestone 3.
+saved with your analysis. Either tool is fine for Milestone 3. You are welcome to use the web interface alone.
+I just want to give you options and tools! 
 :::
 
 ## Step 2: List the paths between exposure and outcome
@@ -318,7 +319,7 @@ adjustmentSets(dag, type = "all")
 ::: {.callout-note}
 ## DAGs and race
 
-Following Howe et al. (2022), a DAG for a racial health disparity should represent **racism** — not
+Following Howe et al. (2022), a DAG for a racialized health disparity should represent **racism** — not
 race itself — as the cause, because race is a social construct and not a biological cause of
 disease. In our class dataset, `race_ethnicity` is the only available measure, so in this DAG it
 stands in for exposure to structural and interpersonal racism. When you describe your own DAG, say
