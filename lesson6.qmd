@@ -12,7 +12,7 @@ format:
 engine: knitr
 webr:
   show-startup-message: true
-  packages: ['tidyverse', 'sandwich', 'dagitty']
+  packages: ['tidyverse', 'sandwich']
   autoload-packages: true
 filters:
   - webr
@@ -23,9 +23,10 @@ pressure. This lesson asks whether that crude estimate is distorted by **confoun
 variable that is related to both the exposure and the outcome — and what to adjust for. It has
 two parts:
 
-1. **Choosing confounders with a DAG** — drawing a directed acyclic graph for tree canopy and high
-   blood pressure in R, listing the paths that connect them, and letting the DAG identify a
-   **minimally sufficient adjustment set**.
+1. **Choosing confounders with a DAG** — reading a directed acyclic graph for tree canopy and high
+   blood pressure, sorting the paths that connect them into causal and backdoor paths, and finding a
+   **minimally sufficient adjustment set**. A separate video tutorial shows how to draw and analyze
+   a DAG with DAGitty.
 2. **Checking confounding in the data with the change-in-estimate approach** — adding each
    candidate variable to the model one at a time, calculating how much the estimate changes,
    and fitting a final adjusted model.
@@ -59,9 +60,8 @@ labeled **"In your RStudio script"** shows the simpler code you'll actually use.
 ## Doing this in RStudio instead of (or in addition to) the browser?
 
 This tutorial uses **`class_data_processed.csv`**, the same merged file from Lessons 1, 3, 4, and
-5. It uses two packages you may not have installed yet: **`dagitty`** (for DAGs) and
-**`sandwich`** (for robust standard errors). Install them once with
-`install.packages(c("dagitty", "sandwich"))`. See the [Data Codebook](codebook.qmd) for variable
+5. It uses one package you may not have installed yet: **`sandwich`** (for robust standard
+errors). Install it once with `install.packages("sandwich")`. See the [Data Codebook](codebook.qmd) for variable
 definitions.
 :::
 
@@ -72,7 +72,6 @@ definitions.
 ```{webr-r}
 library(tidyverse)
 library(sandwich)
-library(dagitty)
 ```
 
 In RStudio:
@@ -172,64 +171,17 @@ Each arrow is a claim about cause and effect:
   not have finished a degree yet). Neither has an arrow into tree canopy: there is no strong reason
   to believe age or gender determines how green a person's census tract is.
 
-Now let's write the same DAG in R. The `dagitty()` function uses the same text format as the
-[DAGitty website](https://www.dagitty.net/dags.html): one line per variable (with `exposure` and
-`outcome` labels and an optional position on the plot), then one line per arrow.
-
-```{webr-r}
-dag <- dagitty('dag {
-  tree_canopy       [exposure, pos="0,0"]
-  high_bp           [outcome,  pos="4,0"]
-  race_ethnicity    [pos="0.2,-2.2"]
-  tract_poverty     [pos="1.3,-1.2"]
-  education         [pos="2.7,-1.2"]
-  age               [pos="3.8,-2.2"]
-  gender            [pos="4.6,-1.1"]
-  physical_activity [pos="1.3,1.2"]
-  obesity           [pos="2.7,1.2"]
-
-  tree_canopy -> high_bp
-  tree_canopy -> physical_activity -> obesity -> high_bp
-  education -> tree_canopy
-  education -> high_bp
-  tract_poverty -> tree_canopy
-  tract_poverty -> high_bp
-  tract_poverty -> education
-  race_ethnicity -> tract_poverty
-  race_ethnicity -> high_bp
-  age -> education
-  age -> high_bp
-  gender -> high_bp
-}')
-
-plot(dag)
-```
-
-The `pos="x,y"` values only control where each variable is drawn (negative y values are drawn
-higher up). They have no effect on the analysis.
-
 ::: {.callout-note}
-## Using the DAGitty website instead
+## Drawing your own DAG
 
-Everything between the single quotes above can be pasted directly into the **Model code** box on
-[dagitty.net/dags.html](https://www.dagitty.net/dags.html) (Model → New model, then paste). The
-website lets you drag variables around and click to add arrows, which is often easier when you are
-first sketching a DAG. When you're done, copy the model code back into your R script so your DAG is
-saved with your analysis. Either tool is fine for Milestone 3. You are welcome to use the web interface alone.
-I just want to give you options and tools! 
+A separate video tutorial shows how to draw a DAG like this one with DAGitty and have it list the
+paths and adjustment sets for you. The steps below walk through the same reasoning by hand.
 :::
 
-## Step 2: List the paths between exposure and outcome
+## Step 2: Sort the paths between exposure and outcome
 
 A DAG tells us which variables to adjust for by looking at every **path** connecting the exposure to
 the outcome — any route along the arrows, regardless of which direction they point.
-
-```{webr-r}
-paths(dag)
-```
-
-`paths()` returns two things: `$paths`, each path written out, and `$open`, whether that path is
-currently **open** (able to transmit an association) or **closed**.
 
 There are two kinds of paths:
 
@@ -248,15 +200,14 @@ collider is already closed — and adjusting for the collider would *open* it.
 
 **Questions to consider:**
 
-- How many backdoor paths are there? Which variables appear on them?
-- Why is the path `tree_canopy <- tract_poverty -> education <- age -> high_bp` listed as closed
-  (`FALSE`)?
+- Which variables do the backdoor paths in the DAG above pass through?
+- Why is the path `tree_canopy <- tract_poverty -> education <- age -> high_bp` already closed?
 - Is there any backdoor path that goes through `gender`? Through `physical_activity` or `obesity`?
 
 ::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
-- There are **eight** backdoor paths (every path except the first two). Every one of them passes
-  through **education**, **tract poverty**, or both. Race/ethnicity and age also appear, but only
-  further along paths that already pass through education or tract poverty.
+- Every backdoor path passes through **education**, **tract poverty**, or both, because those are
+  the only two variables with an arrow into tree canopy. Race/ethnicity and age also appear, but
+  only further along paths that already pass through education or tract poverty.
 - On that path, `education` is a **collider**: both `tract_poverty -> education` and
   `age -> education` point into it. A collider blocks the path on its own, so the path is closed
   without any adjustment.
@@ -267,36 +218,21 @@ collider is already closed — and adjusting for the collider would *open* it.
 
 ## Step 3: Find the minimally sufficient adjustment set
 
-Rather than closing each backdoor path by hand, `adjustmentSets()` finds the smallest set of
-variables that closes them all — the **minimally sufficient adjustment set**.
+The **minimally sufficient adjustment set** is the smallest set of variables that closes every
+backdoor path while leaving the causal paths open. Because every backdoor path into tree canopy
+starts with either education or tract poverty, adjusting for **education and tract poverty** is
+enough to remove confounding of the tree canopy–high blood pressure association, according to this
+DAG.
 
-```{webr-r}
-adjustmentSets(dag)
-```
-
-According to this DAG, adjusting for **education and tract poverty** is enough to remove
-confounding of the tree canopy–high blood pressure association. Let's confirm that every backdoor
-path is closed once we adjust for them:
-
-```{webr-r}
-paths(dag, Z = c("education", "tract_poverty"))
-```
-
-Now only the two causal paths are open (`TRUE`).
-
-A minimally sufficient set is not the only valid set. To see every set that would work:
-
-```{webr-r}
-adjustmentSets(dag, type = "all")
-```
+A minimally sufficient set is not the only valid set. For example, **{age, education, tract
+poverty}** also closes every backdoor path.
 
 **Questions to consider:**
 
 - Why isn't **race/ethnicity** in the minimal set, even though it affects both tract poverty and
   high blood pressure?
 - Why isn't **age** in the minimal set? Would it be *wrong* to adjust for age?
-- What would happen if we adjusted for **obesity**? Try it: run `paths(dag, Z = "obesity")` in the
-  box above and look at the causal path.
+- What would happen if we adjusted for **obesity**?
 
 ::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
 - Race/ethnicity reaches tree canopy only **through tract poverty** (`race_ethnicity ->
@@ -306,10 +242,9 @@ adjustmentSets(dag, type = "all")
   tract poverty), you would add that arrow, and race/ethnicity would join the adjustment set. The
   DAG is only as good as the assumptions you put into it.
 - Age has no arrow into tree canopy, so it can't confound on its own; its only backdoor path runs
-  through education, which is already adjusted for. But `adjustmentSets(type = "all")` shows that
-  **{age, education, tract poverty}** is *also* a valid set. Adjusting for a strong risk factor for
-  the outcome that is not related to the exposure won't introduce bias and can make the estimate
-  more precise.
+  through education, which is already adjusted for. But **{age, education, tract poverty}** is
+  *also* a valid set. Adjusting for a strong risk factor for the outcome that is not related to the
+  exposure won't introduce bias and can make the estimate more precise.
 - Adjusting for obesity closes `tree_canopy -> physical_activity -> obesity -> high_bp` — part of
   the **causal** effect. The adjusted estimate would then describe only the part of tree canopy's
   effect that does *not* operate through obesity. That is **overadjustment**: removing part of the
@@ -333,40 +268,20 @@ Using **your project's exposure and outcome**:
 
 1. Start from your conceptual framework (Milestone 1). List the variables that might cause your
    exposure, your outcome, or both, and any mediators. Include important variables even if they
-   are **not in the dataset** — mark them with `[latent]` instead of a position, e.g.
-   `neighborhood_disinvestment [latent]`.
-2. Write the DAG with `dagitty()` (or draw it at [dagitty.net](https://www.dagitty.net/dags.html)
-   and paste the model code here).
-3. Run `paths()` and `adjustmentSets()`. Which variables are in your minimally sufficient
-   adjustment set? Does any set work if some variables are latent (unmeasured)?
+   are **not in the dataset**, and mark them as unmeasured.
+2. Draw the DAG, following the DAGitty video tutorial.
+3. Sort the paths into causal and backdoor paths. Which variables are in your minimally sufficient
+   adjustment set? Does any set work if some variables are unmeasured?
 :::
 
-```{webr-r}
-# Your code here — a DAG for your own exposure and outcome
-
-```
-
 ::: {.callout-note collapse="true" title="💡 Example: traffic density and asthma — click to reveal"}
-```{webr-r}
-dag_asthma <- dagitty('dag {
-  traffic_density  [exposure, pos="0,0"]
-  asthma           [outcome,  pos="3,0"]
-  tract_poverty    [pos="1.5,-1.3"]
-  current_smoker   [pos="2.4,-1.3"]
-  education        [pos="3.2,-2.2"]
-  air_pollution    [pos="1.5,1"]
+One DAG for traffic density and asthma has these arrows:
 
-  traffic_density -> air_pollution -> asthma
-  tract_poverty -> traffic_density
-  tract_poverty -> asthma
-  tract_poverty -> current_smoker
-  education -> current_smoker
-  current_smoker -> asthma
-}')
-
-plot(dag_asthma)
-adjustmentSets(dag_asthma)
-```
+- `traffic_density -> air_pollution -> asthma`
+- `tract_poverty -> traffic_density`, `tract_poverty -> asthma`, and
+  `tract_poverty -> current_smoker`
+- `education -> current_smoker`
+- `current_smoker -> asthma`
 
 In this DAG, tract poverty is the only variable on a backdoor path (`traffic_density <-
 tract_poverty -> asthma`, and `traffic_density <- tract_poverty -> current_smoker -> asthma`), so
@@ -620,8 +535,8 @@ Repeating Steps 3–5 by hand for every candidate is tedious and easy to get wro
 does it for each variable in `candidates`. It includes:
 
 - **education** and **tract poverty** (`pov_allage`) — the DAG's minimally sufficient set;
-- **age**, **gender**, and **race/ethnicity** — in a valid adjustment set but not required by the
-  DAG;
+- **age**, **gender**, and **race/ethnicity** — not required by the DAG (age is part of another
+  valid adjustment set);
 - **obesity** (`obese`) — a mediator in our DAG, included only to show what the data say about it.
 
 ```{webr-r}
@@ -697,8 +612,8 @@ that text into a formula R can use. Each pass adds one row to `cie_table` with `
   assumed (no arrow from gender to tree canopy).
 - Not necessarily. Participants in the top canopy quartile are, by chance, slightly younger on
   average (43.8 vs. 45.2 years), and age is a strong risk factor for high blood pressure, so even a
-  small imbalance shifts the estimate a little. The DAG says {age, education, tract poverty} is also
-  a valid adjustment set, so including age would be defensible. A small change like this does not
+  small imbalance shifts the estimate a little. {age, education, tract poverty} is also a valid
+  adjustment set for this DAG, so including age would be defensible. A small change like this does not
   overturn the DAG.
 - **No.** The change-in-estimate approach cannot tell a confounder from a mediator — it only shows
   how much the estimate moves. Whether obesity *should* be adjusted for depends on where it sits in
@@ -882,7 +797,6 @@ a strong asthma risk factor, but it did not change the estimate and the DAG did 
 # ---- Setup ----
 library(tidyverse)
 library(sandwich)   # robust standard errors  -- install.packages("sandwich") once
-library(dagitty)    # DAGs                    -- install.packages("dagitty") once
 
 # ---- Read in your processed data ----
 data <- read.csv(file.path("data_processed", "class_data_processed.csv"))
@@ -901,20 +815,8 @@ extract_ratio <- function(model, label, robust = FALSE) {
 # REPLACE: swap in your own variable names throughout
 # ============================================================
 
-# ---- 1. DAG and minimally sufficient adjustment set ----
-dag <- dagitty('dag {
-  YOUR_EXPOSURE [exposure]
-  YOUR_OUTCOME  [outcome]
-  YOUR_EXPOSURE -> YOUR_OUTCOME
-  CONFOUNDER_1 -> YOUR_EXPOSURE
-  CONFOUNDER_1 -> YOUR_OUTCOME
-  YOUR_EXPOSURE -> MEDIATOR -> YOUR_OUTCOME
-}')
-plot(dag)          # without pos= values, run graphLayout(dag) first: plot(graphLayout(dag))
-paths(dag)
-adjustmentSets(dag)
-
-# ---- 2. Change in estimate, one candidate at a time ----
+# ---- 1. Change in estimate, one candidate at a time ----
+# candidates = the adjustment set from your DAG, plus any others you want to check
 candidates <- c("CONFOUNDER_1", "CONFOUNDER_2")
 cie_table <- data.frame()
 
@@ -940,7 +842,7 @@ for (covariate in candidates) {
 cie_table %>% mutate(across(PR_crude:Pct_change, ~ round(.x, 2)))
 # Continuous exposure? Compare exp(k * coef) for a meaningful contrast k (e.g., 10 units or the IQR)
 
-# ---- 3. Final adjusted model ----
+# ---- 2. Final adjusted model ----
 model_final <- glm(YOUR_OUTCOME ~ YOUR_EXPOSURE + CONFOUNDER_1 + CONFOUNDER_2,
                    data = data, family = poisson(link = "log"))
 extract_ratio(model_final, "Fully adjusted", robust = TRUE)
@@ -955,7 +857,7 @@ This tutorial covered:
 
 - The three conditions for confounding, and why the third (not on the causal pathway) requires
   causal assumptions rather than data
-- Writing a DAG in R with `dagitty`, listing causal and backdoor paths, and recognizing colliders
+- Reading a DAG: sorting causal and backdoor paths, and recognizing colliders
 - Identifying a minimally sufficient adjustment set, and why mediators should not be adjusted for
 - Using modified Poisson regression with robust standard errors when a log-binomial model won't
   converge
