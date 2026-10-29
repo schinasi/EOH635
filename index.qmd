@@ -30,6 +30,9 @@ Welcome! These tutorials walk through the R and analysis skills used in this cou
   — drawing a DAG in R to find a minimally sufficient adjustment set, then checking confounding
   in the data with the change-in-estimate approach (including modified Poisson regression when a
   log-binomial model won't converge)
+- [Lesson 7: Effect Modification & Heterogeneity of Effects](lesson7.qmd)
+  — asking whether the tree canopy–high blood pressure association differs by gender: stratified
+  models, Cochran's Q, interaction models, and Wald and likelihood ratio tests for interaction
 
 ## Reference
 

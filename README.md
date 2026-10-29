@@ -34,6 +34,11 @@ no R or RStudio installation required. Built with [Quarto](https://quarto.org) a
   sufficient adjustment set, then the change-in-estimate approach (one covariate at a time, same
   participants), modified Poisson regression with robust standard errors, and a final adjusted
   model.
+- **[Lesson 7: Effect Modification & Heterogeneity of Effects](https://schinasi.github.io/EOH635/lesson7.html)**
+  — whether the tree canopy–high blood pressure association differs by gender: an a priori
+  hypothesis, stratified models and a log-scale plot, Cochran's Q, an interaction model with
+  stratum-specific estimates, a robust Wald test, a likelihood ratio test on log-binomial models,
+  and the hierarchy principle.
 - **[Data Codebook](https://schinasi.github.io/EOH635/codebook.html)** — full variable
   reference for the class dataset: what each column means, how it's coded, known missingness,
   and known data quirks to watch for.
@@ -72,7 +77,7 @@ relationship by education, while gender is deliberately left unrelated to tree c
 quarto_tutorials/
 ├── _quarto.yml                 # Project + site config (output-dir: docs, for GitHub Pages)
 ├── index.qmd                   # Landing page listing lessons
-├── lesson1.qmd ... lesson6.qmd   # The lessons
+├── lesson1.qmd ... lesson7.qmd   # The lessons
 ├── codebook.qmd                # Data codebook
 ├── data/                       # Class data files, fetched by students' browsers at runtime
 │   ├── class_data_raw.csv
