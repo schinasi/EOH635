@@ -1,5 +1,5 @@
 ---
-title: "Lesson 7: Effect Modification & Heterogeneity of Effects"
+title: "Lesson 7: Confounding & Directed Acyclic Graphs (DAGs)"
 subtitle: "EOH 635 — Environmental Epidemiology Methods"
 author: "Leah Schinasi"
 date: today
@@ -18,21 +18,21 @@ filters:
   - webr
 ---
 
-In [Lesson 6](lesson6.qmd) you estimated a single adjusted prevalence ratio (PR) for tree canopy and
-high blood pressure: **0.71**, adjusted for education and tract poverty. That one number assumes the
-association is the same for everyone in the study. This lesson asks whether it **differs across
-groups** — that is, whether a third variable is an **effect modifier**. We use **gender** as the
-example. The lesson has two parts:
+In [Lesson 6](lesson6.qmd) you fit a **crude** (unadjusted) model for tree canopy and high blood
+pressure. This lesson asks whether that crude estimate is distorted by **confounding** — a third
+variable that is related to both the exposure and the outcome — and what to adjust for. It has
+two parts:
 
-1. **Stratified analysis** — fitting the adjusted model separately for men and for women, comparing
-   the two estimates by eye, and testing the difference with **Cochran's Q**.
-2. **Interaction models** — fitting a single model with an **exposure × modifier** interaction term,
-   getting stratum-specific estimates from it, and testing the interaction with a **Wald test** and a
-   **likelihood ratio test (LRT)**.
+1. **Choosing confounders with a DAG** — reading a directed acyclic graph for tree canopy and high
+   blood pressure, sorting the paths that connect them into causal and backdoor paths, and finding a
+   **minimally sufficient adjustment set**. A separate video tutorial shows how to draw and analyze
+   a DAG with DAGitty.
+2. **Checking confounding in the data with the change-in-estimate approach** — adding each
+   candidate variable to the model one at a time, calculating how much the estimate changes,
+   and fitting a final adjusted model.
 
-The lesson ends with a **🧠 Your Turn** for the exposure and outcome in your own project. It
-produces a first draft of the stratified results table and interaction tests that Milestone 4 asks
-for (and that become **Table 3** of your final report).
+Both parts end with a **🧠 Your Turn** for the exposure and outcome in your own project. Together
+they produce the DAG, change-in-estimate table, and final adjustment set that Milestone 3 asks for.
 
 ::: {.callout-important}
 ## How to use this tutorial
@@ -59,9 +59,10 @@ labeled **"In your RStudio script"** shows the simpler code you'll actually use.
 ::: {.callout-note}
 ## Doing this in RStudio instead of (or in addition to) the browser?
 
-This tutorial uses **`class_data_processed.csv`**, the same merged file from earlier lessons, and
-the same packages as Lesson 6: **`tidyverse`** and **`sandwich`**. No new packages are needed. See
-the [Data Codebook](codebook.qmd) for variable definitions.
+This tutorial uses **`class_data_processed.csv`**, the same merged file from Lessons 2, 4, 5, and
+6. It uses one package you may not have installed yet: **`sandwich`** (for robust standard
+errors). Install it once with `install.packages("sandwich")`. See the [Data Codebook](codebook.qmd) for variable
+definitions.
 :::
 
 ---
@@ -101,696 +102,692 @@ data <- read.csv(file.path("data_processed", "class_data_processed.csv"))
 ```
 :::
 
-Recreate the variables from earlier lessons — the cleaned age variable (Lesson 3) and the
-top-quartile tree canopy exposure (Lesson 5) — and the `extract_ratio()` helper from Lesson 6.
+Next, recreate two variables from earlier lessons: the cleaned age variable from Lesson 4 (ages
+above 105 recoded to missing), and the tree canopy coding we settled on at the end of Lesson 6 —
+**top quartile vs. the lower three quartiles**.
 
 ```{webr-r}
 data <- data %>%
   mutate(
-    r_age = ifelse(age > 105, NA, age),                       # Lesson 3: implausible ages -> missing
-    tree_quartile = factor(ntile(hrlctree, 4)),               # Lesson 5: canopy quartiles
-    tree_top_quartile = ifelse(tree_quartile == "4", 1, 0)    # Lesson 5: Q4 (1) vs. Q1-Q3 (0)
+    r_age = ifelse(age > 105, NA, age),                       # Lesson 4: implausible ages -> missing
+    tree_quartile = factor(ntile(hrlctree, 4)),               # Lesson 6: canopy quartiles
+    tree_top_quartile = ifelse(tree_quartile == "4", 1, 0)    # Lesson 6: Q4 (1) vs. Q1-Q3 (0)
   )
 
-# Lesson 6 helper: exponentiated coefficients and 95% CIs (robust = TRUE for modified Poisson)
-extract_ratio <- function(model, label, robust = FALSE) {
-  vc <- if (robust) vcovHC(model, type = "HC0") else vcov(model)
-  b  <- coef(model)[-1]
-  se <- sqrt(diag(vc))[-1]
-  data.frame(Model = label, Term = names(b), Estimate = exp(b),
-             CI_Lower = exp(b - 1.96 * se), CI_Upper = exp(b + 1.96 * se),
-             row.names = NULL)
-}
+table(data$tree_quartile, data$tree_top_quartile)   # always check a recode
 ```
 
-And here is where Lesson 6 ended — the final adjusted model, fit with modified Poisson regression:
+::: {.callout-note}
+## Why use the top-quartile exposure in this lesson?
+
+Lesson 6 concluded that both a continuous term and "top quartile vs. the rest" were defensible
+codings for tree canopy. We use the binary version here because it keeps each model to a single
+exposure estimate, which makes the change-in-estimate calculations easy to follow. If your own
+exposure is continuous, see the box **"What if my exposure is continuous?"** in Part 2 — there is
+one extra step.
+:::
+
+---
+
+# Part 1: Choosing Confounders with a DAG
+
+Recall the three conditions for a variable to be a confounder. It must:
+
+1. Be **associated with the exposure**;
+2. Be a **risk factor for the outcome** (associated with the outcome among the unexposed); and
+3. **Not be on the causal pathway** between the exposure and the outcome (that is, not be a
+   mediator).
+
+The third condition can't be checked with data alone — it depends on what you believe causes what.
+That is the job of a **directed acyclic graph (DAG)**: you write down your assumptions about the
+causal structure *before* looking at the data, and the rules of the DAG tell you which variables
+need to be adjusted for.
+
+## Step 1: Write down the DAG
+
+Here is one DAG for tree canopy and high blood pressure, built from the kind of reasoning you did
+for your conceptual framework in Week 3:
+
+![A DAG for tree canopy cover and high blood pressure](images/lesson6_dag.png){width=90%}
+
+Each arrow is a claim about cause and effect:
+
+- **Tree canopy → high blood pressure** — the effect we want to estimate. Tree canopy may also
+  work *through* **physical activity** and **obesity** (greener places encourage activity, which
+  lowers obesity and blood pressure). Those two are **mediators**: they sit on the causal pathway.
+- **Education → tree canopy** and **education → high blood pressure** — people with more education
+  (and the income that tends to come with it) are more able to choose to live in greener
+  neighborhoods, and education is independently linked to blood pressure (health care access,
+  diet, job strain).
+- **Tract poverty → tree canopy** and **tract poverty → high blood pressure** — poorer
+  neighborhoods have historically received less investment in street trees and parks, and
+  neighborhood deprivation affects blood pressure through stress, food access, and other routes.
+  Tract poverty also shapes individual educational opportunity (**tract poverty → education**).
+- **Race and ethnicity → tract poverty** and **race and ethnicity → high blood pressure** — here,
+  `race_ethnicity` stands for **exposure to racism**, not biology. Residential segregation and
+  historical policies such as redlining concentrated poverty in some neighborhoods; interpersonal
+  and structural racism also affect blood pressure directly (see the Howe et al. reading).
+- **Age** and **gender** affect blood pressure. Age also affects education (very young adults may
+  not have finished a degree yet). Neither has an arrow into tree canopy: there is no strong reason
+  to believe age or gender determines how green a person's census tract is.
+
+::: {.callout-note}
+## Drawing your own DAG
+
+A separate video tutorial shows how to draw a DAG like this one with DAGitty and have it list the
+paths and adjustment sets for you. The steps below walk through the same reasoning by hand.
+:::
+
+## Step 2: Sort the paths between exposure and outcome
+
+A DAG tells us which variables to adjust for by looking at every **path** connecting the exposure to
+the outcome — any route along the arrows, regardless of which direction they point.
+
+There are two kinds of paths:
+
+- **Causal paths** start with an arrow *out of* the exposure: `tree_canopy -> high_bp`, and
+  `tree_canopy -> physical_activity -> obesity -> high_bp`. These are part of the effect we want to
+  estimate, so we leave them open.
+- **Backdoor paths** start with an arrow *into* the exposure, such as
+  `tree_canopy <- education -> high_bp`. These are **non-causal**: they create an association
+  between tree canopy and blood pressure that is not due to tree canopy at all. **Confounding is an
+  open backdoor path.** Our goal is to close every one of them.
+
+Adjusting for a variable on a backdoor path closes it. One exception: a variable that has two
+arrows pointing *into* it on a path (like `education` in
+`tree_canopy <- tract_poverty -> education <- age -> high_bp`) is a **collider**. A path through a
+collider is already closed — and adjusting for the collider would *open* it.
+
+**Questions to consider:**
+
+- Which variables do the backdoor paths in the DAG above pass through?
+- Why is the path `tree_canopy <- tract_poverty -> education <- age -> high_bp` already closed?
+- Is there any backdoor path that goes through `gender`? Through `physical_activity` or `obesity`?
+
+::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
+- Every backdoor path passes through **education**, **tract poverty**, or both, because those are
+  the only two variables with an arrow into tree canopy. Race/ethnicity and age also appear, but
+  only further along paths that already pass through education or tract poverty.
+- On that path, `education` is a **collider**: both `tract_poverty -> education` and
+  `age -> education` point into it. A collider blocks the path on its own, so the path is closed
+  without any adjustment.
+- **No path goes through `gender`.** Gender has only one arrow, into high blood pressure, so it
+  cannot create a backdoor path. Physical activity and obesity appear only on the **causal** path —
+  they are mediators, not confounders.
+:::
+
+## Step 3: Find the minimally sufficient adjustment set
+
+The **minimally sufficient adjustment set** is the smallest set of variables that closes every
+backdoor path while leaving the causal paths open. Because every backdoor path into tree canopy
+starts with either education or tract poverty, adjusting for **education and tract poverty** is
+enough to remove confounding of the tree canopy–high blood pressure association, according to this
+DAG.
+
+A minimally sufficient set is not the only valid set. For example, **{age, education, tract
+poverty}** also closes every backdoor path.
+
+**Questions to consider:**
+
+- Why isn't **race/ethnicity** in the minimal set, even though it affects both tract poverty and
+  high blood pressure?
+- Why isn't **age** in the minimal set? Would it be *wrong* to adjust for age?
+- What would happen if we adjusted for **obesity**?
+
+::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
+- Race/ethnicity reaches tree canopy only **through tract poverty** (`race_ethnicity ->
+  tract_poverty -> tree_canopy`). Once tract poverty is adjusted for, that path is closed, so
+  race/ethnicity is not needed *according to this DAG*. If you believed racism also affected tree
+  canopy directly (for example, through discriminatory planting decisions that are not captured by
+  tract poverty), you would add that arrow, and race/ethnicity would join the adjustment set. The
+  DAG is only as good as the assumptions you put into it.
+- Age has no arrow into tree canopy, so it can't confound on its own; its only backdoor path runs
+  through education, which is already adjusted for. But **{age, education, tract poverty}** is
+  *also* a valid set. Adjusting for a strong risk factor for the outcome that is not related to the
+  exposure won't introduce bias and can make the estimate more precise.
+- Adjusting for obesity closes `tree_canopy -> physical_activity -> obesity -> high_bp` — part of
+  the **causal** effect. The adjusted estimate would then describe only the part of tree canopy's
+  effect that does *not* operate through obesity. That is **overadjustment**: removing part of the
+  effect you set out to measure.
+:::
+
+::: {.callout-note}
+## DAGs and race
+
+Following Howe et al. (2022), a DAG for a racialized health disparity should represent **racism** — not
+race itself — as the cause, because race is a social construct and not a biological cause of
+disease. In our class dataset, `race_ethnicity` is the only available measure, so in this DAG it
+stands in for exposure to structural and interpersonal racism. When you describe your own DAG, say
+what each variable represents.
+:::
+
+---
+
+::: {.callout-tip title="🧠 Your Turn: Draw a DAG for your own project"}
+Using **your project's exposure and outcome**:
+
+1. Start from your conceptual framework (Milestone 1). List the variables that might cause your
+   exposure, your outcome, or both, and any mediators. Include important variables even if they
+   are **not in the dataset**, and mark them as unmeasured.
+2. Draw the DAG, following the DAGitty video tutorial.
+3. Sort the paths into causal and backdoor paths. Which variables are in your minimally sufficient
+   adjustment set? Does any set work if some variables are unmeasured?
+:::
+
+::: {.callout-note collapse="true" title="💡 Example: traffic density and asthma — click to reveal"}
+Here is one DAG for traffic density and asthma:
+
+![A DAG for traffic density and asthma](images/lesson6_dag_asthma.png){width=90%}
+
+Its arrows are:
+
+- `traffic_density -> air_pollution -> asthma`
+- `tract_poverty -> traffic_density`, `tract_poverty -> asthma`, and
+  `tract_poverty -> current_smoker`
+- `education -> current_smoker`
+- `current_smoker -> asthma`
+
+In this DAG, tract poverty is the only variable on a backdoor path (`traffic_density <-
+tract_poverty -> asthma`, and `traffic_density <- tract_poverty -> current_smoker -> asthma`), so
+the minimally sufficient adjustment set is **{tract_poverty}**. Smoking is a strong risk factor for
+asthma, but in this DAG it does not cause traffic density, so it does not need to be adjusted for
+to remove confounding. Air pollution is a **mediator** and should not be adjusted for.
+
+Someone else might reasonably draw this DAG differently — for example, with an arrow from smoking
+or education to where people live. That is why the DAG is part of what you justify in
+Milestone 3.
+:::
+
+---
+
+# Part 2: Checking Confounding in the Data — Change in Estimate
+
+The DAG is built from **theory**, before looking at the data. The change-in-estimate approach is
+**empirical**: it shows how much the exposure estimate actually moves when a variable is added to
+the model. Using both together is common practice:
+
+1. Use the DAG to identify your **candidate** confounders.
+2. Add each candidate to the crude model **one at a time** and calculate the percent change in the
+   exposure estimate.
+3. Use the DAG and the change-in-estimate results together to choose your **final** adjustment
+   set.
+
+## Step 1: The crude model (a reminder)
+
+This is the same model as the end of Lesson 6. The `extract_ratio()` helper has one new option,
+`robust`, which we will need in Step 4. Leave it at its default (`FALSE`) for now.
+
+```{webr-r}
+extract_ratio <- function(model, label, robust = FALSE) {
+  # Robust ("sandwich") variance if requested; otherwise the usual model-based variance
+  vc <- if (robust) vcovHC(model, type = "HC0") else vcov(model)
+  b  <- coef(model)[-1]                  # coefficients (log scale), dropping the intercept
+  se <- sqrt(diag(vc))[-1]               # their standard errors
+  data.frame(
+    Model    = label,
+    Term     = names(b),
+    Estimate = exp(b),                   # exponentiate -> PR (or OR)
+    CI_Lower = exp(b - 1.96 * se),
+    CI_Upper = exp(b + 1.96 * se),
+    row.names = NULL
+  )
+}
+
+model_crude <- glm(high_blood_pressure ~ tree_top_quartile, data = data,
+                   family = binomial(link = "log"))
+
+extract_ratio(model_crude, "Crude, log-binomial")
+```
+
+The crude PR is **0.60 (95% CI: 0.49, 0.72)**: the prevalence of high blood pressure among
+participants in the greenest quarter of census tracts was 0.60 times the prevalence among everyone
+else — about 40% lower.
+
+## Step 2: Is the candidate associated with the exposure and the outcome?
+
+Let's start with **education**, the first variable in our DAG's adjustment set. A confounder must
+be associated with both the exposure and the outcome, so check each one.
+
+```{webr-r}
+# Make a 0/1 version of education to use as a predictor and as an outcome
+data <- data %>%
+  mutate(educ_ba = ifelse(education == "Bachelor's degree or higher", 1, 0))
+
+table(data$education, data$educ_ba)   # check the recode
+
+# (a) Education and the EXPOSURE: who lives in the greenest quarter of tracts?
+data %>%
+  group_by(education) %>%
+  summarise(n = n(), prop_top_quartile = mean(tree_top_quartile))
+
+model_educ_exp <- glm(tree_top_quartile ~ educ_ba, data = data,
+                      family = binomial(link = "log"))
+extract_ratio(model_educ_exp, "Exposure ~ education")
+
+# (b) Education and the OUTCOME
+model_educ_out <- glm(high_blood_pressure ~ educ_ba, data = data,
+                      family = binomial(link = "log"))
+extract_ratio(model_educ_out, "Outcome ~ education")
+```
+
+**Questions to consider:**
+
+- Is education associated with living in a top-quartile canopy tract? How strongly?
+- Is education associated with high blood pressure? In which direction?
+- Given the direction of both associations, would you expect the crude PR for tree canopy to be
+  *further from* or *closer to* the null than the adjusted PR?
+
+::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
+- Yes, strongly. 38% of participants with a bachelor's degree or higher live in a top-quartile
+  canopy tract, compared with 13% of those without one — a PR of **2.91 (95% CI: 2.44, 3.46)**.
+- Yes. Participants with a bachelor's degree or higher have a lower prevalence of high blood
+  pressure: PR = **0.63 (95% CI: 0.55, 0.72)**.
+- Higher education goes with *more* tree canopy and *less* high blood pressure. So part of the
+  lower prevalence of high blood pressure in greener tracts is really due to the more-educated
+  people who live there. The crude PR should therefore be **further from the null** (more
+  protective-looking) than the adjusted PR. Step 3 checks this.
+:::
+
+## Step 3: Add the candidate to the model and calculate the change in estimate
+
+```{webr-r}
+model_adj_educ <- glm(high_blood_pressure ~ tree_top_quartile + education, data = data,
+                      family = binomial(link = "log"))
+
+extract_ratio(model_adj_educ, "Adjusted for education, log-binomial")
+```
+
+R now returns two PRs: one for `tree_top_quartile` (the one we care about) and one for
+`education`. The tree canopy PR is now **adjusted for** education — it compares participants in
+the greenest quarter of tracts with everyone else **with the same level of education**.
+
+The **percent change in estimate** compares the crude and adjusted PRs:
+
+$$\% \text{ change} = \frac{\text{PR}_\text{crude} - \text{PR}_\text{adjusted}}{\text{PR}_\text{crude}} \times 100$$
+
+```{webr-r}
+pr_crude <- unname(exp(coef(model_crude)["tree_top_quartile"]))      # unname() just tidies
+pr_adj   <- unname(exp(coef(model_adj_educ)["tree_top_quartile"]))   # the printed labels
+
+c(PR_crude = pr_crude, PR_adjusted = pr_adj,
+  pct_change = (pr_crude - pr_adj) / pr_crude * 100)
+```
+
+Look at the **size** of the change. Its sign tells you which way the estimate moved: a negative
+percent change means the adjusted PR is larger than the crude PR — here, closer to 1.
+
+A common rule of thumb is that a change of **10% or more** suggests meaningful confounding. Treat
+it as a guide, not a law: the 10% cutoff is a convention, and a 9% change is not meaningfully
+different from an 11% change. Decide on your rule before you look at the results, and report it in
+your methods.
+
+**Questions to consider:**
+
+- By how much did the PR change after adjusting for education? Is that above the 10% rule of thumb?
+- Did the estimate move in the direction you predicted in Step 2?
+- Write a one-sentence interpretation of the adjusted PR.
+
+::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
+- The PR moved from **0.60** (crude) to **0.68** (adjusted for education), a change of about
+  **13%** — above the 10% rule of thumb, so education confounds this association in our data.
+- Yes. The adjusted PR is closer to 1: some of the crude association was due to the more-educated
+  people who live in greener tracts, not to the trees themselves.
+- *Example interpretation:* After adjusting for education, the prevalence of high blood pressure
+  among participants living in the greenest quarter of census tracts was 0.68 times the prevalence
+  among those living in the other three quarters (95% CI: 0.56, 0.82).
+:::
+
+## Step 4: When the log-binomial model won't converge — modified Poisson regression
+
+Now try adjusting for **age**:
+
+```{webr-r}
+model_adj_age_lb <- glm(high_blood_pressure ~ tree_top_quartile + r_age, data = data,
+                        family = binomial(link = "log"))
+```
+
+You should get an error: *"no valid set of coefficients has been found: please supply starting
+values."* As Lesson 6 mentioned, this is common with log-binomial models, and it often appears as
+soon as a continuous covariate like age is added. The model's predicted prevalences must stay
+below 1, and with a strong continuous predictor the fitting algorithm can fail to find estimates
+that satisfy this.
+
+The standard fix is **modified Poisson regression**: a Poisson model with a log link, which also
+estimates a prevalence ratio, combined with **robust ("sandwich") standard errors**. The robust
+standard errors are needed because a Poisson model assumes the wrong variance for a 0/1 outcome;
+without them, the confidence intervals would be too wide.
+
+```{webr-r}
+model_adj_age <- glm(high_blood_pressure ~ tree_top_quartile + r_age, data = data,
+                     family = poisson(link = "log"))
+
+extract_ratio(model_adj_age, "Adjusted for age, modified Poisson", robust = TRUE)
+```
+
+`robust = TRUE` makes `extract_ratio()` use `vcovHC()` from the `sandwich` package in place of the
+usual standard errors.
+
+To check that modified Poisson gives the same answer where both models work, compare the two for
+the crude and education-adjusted models:
+
+```{webr-r}
+model_crude_mp <- glm(high_blood_pressure ~ tree_top_quartile, data = data,
+                      family = poisson(link = "log"))
+model_adj_educ_mp <- glm(high_blood_pressure ~ tree_top_quartile + education, data = data,
+                         family = poisson(link = "log"))
+
+bind_rows(
+  extract_ratio(model_crude, "Crude, log-binomial"),
+  extract_ratio(model_crude_mp, "Crude, modified Poisson", robust = TRUE),
+  extract_ratio(model_adj_educ, "+ education, log-binomial"),
+  extract_ratio(model_adj_educ_mp, "+ education, modified Poisson", robust = TRUE)
+) %>%
+  filter(Term == "tree_top_quartile")
+```
+
+The crude estimates are identical, and the adjusted estimates agree to two decimal places. Because
+modified Poisson converges for every model we need, **we use it for all the models in the rest of
+this lesson**, so that every crude and adjusted estimate comes from the same kind of model.
+
+::: {.callout-note collapse="true" title="💡 Running modified Poisson in RStudio with the lmtest package"}
+Many online examples use the `lmtest` package together with `sandwich`. It gives the same
+estimates and CIs as `extract_ratio(..., robust = TRUE)`:
+
+```r
+library(sandwich)
+library(lmtest)
+
+robust_vcov <- vcovHC(model_adj_age, type = "HC0")
+coeftest(model_adj_age, vcov = robust_vcov)        # coefficients with robust SEs and p-values
+exp(coef(model_adj_age))                           # PRs
+exp(coefci(model_adj_age, vcov = robust_vcov))     # 95% CIs for the PRs
+```
+:::
+
+## Step 5: Compare crude and adjusted estimates **in the same people**
+
+There is a subtle trap in comparing the age-adjusted PR with the crude PR from Step 1. Three
+participants are missing `r_age`, so R dropped them from the age-adjusted model — but not from the
+crude model. Part of any difference between the two estimates could simply be that they were
+estimated in **different groups of people**.
+
+The fix: for each candidate, fit the crude model in the **same participants** as the adjusted
+model, that is, those with no missing data on the outcome, the exposure, or that covariate.
+
+```{webr-r}
+data_age <- data %>%
+  filter(!is.na(high_blood_pressure), !is.na(tree_top_quartile), !is.na(r_age))
+
+nrow(data_age)
+
+model_crude_age_sample <- glm(high_blood_pressure ~ tree_top_quartile, data = data_age,
+                              family = poisson(link = "log"))
+
+bind_rows(
+  extract_ratio(model_crude_mp, "Crude, everyone with outcome data", robust = TRUE),
+  extract_ratio(model_crude_age_sample, "Crude, participants with age data", robust = TRUE)
+)
+```
+
+Here the crude PR barely moves (0.598 vs. 0.602), because only a few participants are missing age.
+With a covariate that has a lot of missing data, the difference can be much larger. The loop in
+Step 6 does this restriction automatically.
+
+## Step 6: Check every candidate at once
+
+Repeating Steps 3–5 by hand for every candidate is tedious and easy to get wrong. The loop below
+does it for each variable in `candidates`. It includes:
+
+- **education** and **tract poverty** (`pov_allage`) — the DAG's minimally sufficient set;
+- **age**, **gender**, and **race/ethnicity** — not required by the DAG (age is part of another
+  valid adjustment set);
+- **obesity** (`obese`) — a mediator in our DAG, included only to show what the data say about it.
+
+```{webr-r}
+candidates <- c("education", "pov_allage", "r_age", "gender", "race_ethnicity", "obese")
+
+cie_table <- data.frame()
+
+for (covariate in candidates) {
+
+  # 1. Keep participants with no missing data on the outcome, exposure, or this covariate
+  data_cc <- data %>%
+    filter(!is.na(high_blood_pressure), !is.na(tree_top_quartile), !is.na(.data[[covariate]]))
+
+  # 2. Crude model in those participants
+  crude <- glm(high_blood_pressure ~ tree_top_quartile, data = data_cc,
+               family = poisson(link = "log"))
+
+  # 3. Model adjusted for this covariate only
+  adj_formula <- as.formula(paste("high_blood_pressure ~ tree_top_quartile +", covariate))
+  adjusted <- glm(adj_formula, data = data_cc, family = poisson(link = "log"))
+
+  # 4. Pull out the tree canopy PRs (robust CIs) and calculate the percent change
+  pr_c <- extract_ratio(crude, "crude", robust = TRUE) %>% filter(Term == "tree_top_quartile")
+  pr_a <- extract_ratio(adjusted, covariate, robust = TRUE) %>% filter(Term == "tree_top_quartile")
+
+  cie_table <- bind_rows(cie_table, data.frame(
+    Covariate   = covariate,
+    N           = nobs(adjusted),
+    PR_crude    = pr_c$Estimate,
+    PR_adjusted = pr_a$Estimate,
+    CI_Lower    = pr_a$CI_Lower,
+    CI_Upper    = pr_a$CI_Upper,
+    Pct_change  = (pr_c$Estimate - pr_a$Estimate) / pr_c$Estimate * 100
+  ))
+}
+
+cie_table %>%
+  mutate(across(PR_crude:CI_Upper, ~ round(.x, 2)),
+         Pct_change = round(Pct_change, 1)) %>%
+  arrange(desc(abs(Pct_change)))
+```
+
+**What the loop does:** `for (covariate in candidates)` runs the code inside the braces once for
+each name in `candidates`, storing the current name in `covariate`. `.data[[covariate]]` lets
+`filter()` refer to a column whose name is stored in a variable. `paste()` builds the model formula
+as text (e.g., `"high_blood_pressure ~ tree_top_quartile + education"`), and `as.formula()` turns
+that text into a formula R can use. Each pass adds one row to `cie_table` with `bind_rows()`.
+
+**Questions to consider:**
+
+- Which variables change the estimate by 10% or more? Which change it by less than 5%?
+- Gender barely changes the estimate. Using what you checked in Lesson 4, explain why.
+- Age changes the estimate by about 3–4% even though the DAG says it is not a confounder. Does that
+  mean the DAG is wrong?
+- Obesity changes the estimate by only about 1%. Does that mean it would be fine to adjust for it?
+
+::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
+| Covariate | PR adjusted (95% CI) | % change |
+|---|---|---|
+| Education | 0.68 (0.56, 0.82) | −13.4 |
+| Tract poverty | 0.64 (0.53, 0.78) | −7.1 |
+| Age | 0.62 (0.52, 0.75) | −3.5 |
+| Race/ethnicity | 0.61 (0.50, 0.73) | −1.8 |
+| Obesity | 0.60 (0.50, 0.73) | −1.0 |
+| Gender | 0.60 (0.50, 0.72) | 0.0 |
+
+*(Crude PR = 0.60 in each comparison sample.)*
+
+- **Education** is the only variable above 10%. **Tract poverty** is below 10% but not trivial
+  (7%). Race/ethnicity, obesity, and gender change the estimate by less than 2%.
+- In Lesson 4 you saw that tree canopy is about the same for men and women. Gender is associated
+  with the outcome but **not with the exposure**, so it cannot confound — exactly what the DAG
+  assumed (no arrow from gender to tree canopy).
+- Not necessarily. Participants in the top canopy quartile are, by chance, slightly younger on
+  average (43.8 vs. 45.2 years), and age is a strong risk factor for high blood pressure, so even a
+  small imbalance shifts the estimate a little. {age, education, tract poverty} is also a valid
+  adjustment set for this DAG, so including age would be defensible. A small change like this does not
+  overturn the DAG.
+- **No.** The change-in-estimate approach cannot tell a confounder from a mediator — it only shows
+  how much the estimate moves. Whether obesity *should* be adjusted for depends on where it sits in
+  the causal structure, and our DAG places it on the causal pathway. Adjusting for a mediator is
+  overadjustment, however much or little the estimate changes. This is the main reason to draw the
+  DAG first.
+:::
+
+::: {.callout-warning}
+## What the change-in-estimate approach cannot tell you
+
+- It **cannot distinguish confounders from mediators or colliders.** Adjusting for either can change
+  the estimate a lot. Only your causal assumptions (the DAG) can tell you which is which.
+- It **can't detect confounding by variables you haven't measured.** If a confounder is not in the
+  dataset, no amount of modeling will reveal it — note it as a limitation.
+- **The percent change depends on how the exposure is coded.** See the next box.
+:::
+
+::: {.callout-note collapse="true" title="💡 What if my exposure is continuous? Click to read before calculating your own % change"}
+With a continuous exposure, the PR is for a **one-unit** change. If that unit is small, the PR is
+very close to 1, and even real confounding produces a tiny percent change.
+
+Here is tree canopy as a continuous percentage, crude and adjusted for education:
+
+```{webr-r}
+data <- data %>% mutate(hrlctree_pct = hrlctree * 100)   # as in Lesson 6: 1 unit = 1 percentage point
+
+m_c <- glm(high_blood_pressure ~ hrlctree_pct, data = data, family = poisson(link = "log"))
+m_a <- glm(high_blood_pressure ~ hrlctree_pct + education, data = data, family = poisson(link = "log"))
+
+b_c <- coef(m_c)["hrlctree_pct"]
+b_a <- coef(m_a)["hrlctree_pct"]
+
+data.frame(
+  Contrast    = c("Per 1 percentage point", "Per 10 percentage points"),
+  PR_crude    = exp(c(1, 10) * b_c),
+  PR_adjusted = exp(c(1, 10) * b_a)
+) %>%
+  mutate(Pct_change = (PR_crude - PR_adjusted) / PR_crude * 100)
+```
+
+Per 1 percentage point, the PR moves from 0.973 to 0.980 — a change of under 1%. Per 10 percentage
+points, the *same* models give 0.76 and 0.82 — a change of about 8%. The amount of confounding is
+the same; only the size of the contrast differs.
+
+**What to do:** calculate the percent change for a **meaningful contrast** — for example, per 10
+units, or per interquartile-range (IQR) increase (`IQR(data$YOUR_EXPOSURE, na.rm = TRUE)`) — and
+report which contrast you used. Choose the contrast before you look at the results.
+:::
+
+## Step 7: Fit the final adjusted model
+
+Now bring the two approaches together. Our DAG says **education and tract poverty** are sufficient
+to remove confounding, and the data agree that both move the estimate (13% and 7%). We adjust for
+both in one model.
 
 ```{webr-r}
 model_final <- glm(high_blood_pressure ~ tree_top_quartile + education + pov_allage,
                    data = data, family = poisson(link = "log"))
 
-extract_ratio(model_final, "Adjusted for education and tract poverty", robust = TRUE) %>%
-  filter(Term == "tree_top_quartile")
-```
+final_pr <- extract_ratio(model_final, "Adjusted for education and tract poverty", robust = TRUE)
+final_pr
 
-**PR = 0.71 (95% CI: 0.58, 0.86).** This lesson asks: is that 0.71 a good summary for *everyone*, or
-is the association different for men and for women?
-
----
-
-# Effect Modification vs. Confounding
-
-Before any code, keep the distinction from Lessons 6 and 7 clear:
-
-| | Confounding | Effect modification |
-|---|---|---|
-| What it is | A **bias**: a third variable distorts the exposure–outcome association | A **finding**: the association really is different in different groups |
-| What we do about it | **Remove** it (adjust, using the DAG) | **Describe and report** it (stratify, test) |
-| Question it answers | "Is the overall estimate distorted?" | "Is one overall estimate the right summary?" |
-
-The same variable can be a confounder, an effect modifier, both, or neither. Education was a
-confounder in Lesson 6; whether it is also a modifier is a separate question.
-
-Effect modification also depends on the **scale**. An association can differ across groups on the
-**multiplicative** (ratio) scale but not the **additive** (difference) scale, or vice versa. Our
-models estimate PRs, so the formal tests in this lesson are tests of **multiplicative**
-interaction. Step 3 shows both scales for the crude data.
-
----
-
-# Part 1: Stratified Analysis
-
-## Step 1: State your hypothesis first
-
-Effect modification analyses are easy to over-interpret, because with enough subgroups *something*
-will look different by chance. The protection is the same as for confounding in Lesson 6: **decide
-in advance** which modifier you will examine, what you expect, and what threshold you will use.
-
-For this lesson, we write down the following before looking at the data:
-
-> *A priori hypothesis:* The association between tree canopy and high blood pressure will differ by
-> gender. Men and women can differ in how much time they spend in their neighborhood, how they use
-> green space (e.g., for physical activity), and in their risk of high blood pressure, so the benefit
-> of tree canopy may not be the same for both. We will consider a p-value below **0.10** from a test
-> of interaction to be statistical evidence of effect modification.
-
-::: {.callout-note}
-## Why 0.10 and not 0.05?
-
-Tests of interaction compare *two* estimates, each with its own uncertainty, so they have much less
-statistical power than a test of the main association. A higher threshold (commonly 0.10, sometimes
-0.15 or 0.20) reduces the chance of missing real effect modification (a type II error). Like the 10%
-rule in Lesson 6, this is a convention: choose it before you look, report it, and don't move it after
-you see the results.
-:::
-
-## Step 2: Code the modifier and check the cell sizes
-
-```{webr-r}
-table(data$gender, useNA = "ifany")
-```
-
-There are three gender categories, and two participants are missing gender. Before deciding how to
-code the modifier, check how many participants fall in each combination of **modifier ×
-exposure × outcome** — these are the people who carry the information in each stratum.
-
-```{webr-r}
-data %>%
-  filter(!is.na(gender)) %>%
-  count(gender, tree_top_quartile, high_blood_pressure) %>%
-  pivot_wider(names_from = high_blood_pressure, values_from = n,
-              names_prefix = "high_bp_")
-```
-
-**Questions to consider:**
-
-- How many non-binary participants live in a top-quartile canopy tract **and** have high blood
-  pressure?
-- What would happen if you tried to estimate a PR for tree canopy among non-binary participants?
-
-::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
-- **One.** Of the 26 non-binary participants, 6 live in a top-quartile tract, and 1 of those 6 has
-  high blood pressure.
-- A PR based on one or two cases would have an extremely wide confidence interval (or the model
-  might not converge at all), so it would tell us almost nothing.
-
-We have two options: exclude non-binary participants from the effect modification analysis, or
-combine them with another group. Combining only makes sense if we have reason to believe their
-association is similar to that group's — and we have no basis for that. So, as in the original
-version of this course, **we exclude the 26 non-binary participants from the effect modification
-analysis** (they remain in the overall analyses), and we note this as a limitation: the study cannot
-say anything about the association among non-binary people.
-:::
-
-Code gender as a **0/1 numeric variable**. A 0/1 coding makes the interaction model in Part 2 much
-easier to read.
-
-```{webr-r}
-data <- data %>%
-  mutate(woman = case_when(gender == "Woman" ~ 1,
-                           gender == "Man"   ~ 0,
-                           TRUE              ~ NA_real_))   # non-binary and missing -> NA
-
-table(data$gender, data$woman, useNA = "ifany")   # always check a recode
-```
-
-Last, create the **analytic sample**: participants with no missing data on the outcome, exposure,
-modifier, or adjustment variables. Every model in this lesson uses `data_em`, so every comparison is
-made in the same people — the same rule as the change-in-estimate approach in Lesson 6.
-
-```{webr-r}
-data_em <- data %>%
-  filter(!is.na(high_blood_pressure), !is.na(tree_top_quartile), !is.na(woman),
-         !is.na(education), !is.na(pov_allage))
-
-nrow(data_em)
-table(data_em$woman, data_em$tree_top_quartile)
-```
-
-## Step 3: Look at the four groups
-
-Before fitting any models, look at the prevalence of high blood pressure in each of the four
-combinations of gender and exposure.
-
-```{webr-r}
-four_groups <- data_em %>%
-  group_by(woman, tree_top_quartile) %>%
-  summarise(n = n(), prevalence = mean(high_blood_pressure), .groups = "drop")
-
-four_groups
-
-# Within each gender: the crude PR (ratio scale) and prevalence difference (additive scale)
-four_groups %>%
-  group_by(woman) %>%
-  summarise(
-    PR = prevalence[tree_top_quartile == 1] / prevalence[tree_top_quartile == 0],
-    PD_percentage_points = 100 * (prevalence[tree_top_quartile == 1] - prevalence[tree_top_quartile == 0])
-  )
-```
-
-**Questions to consider:**
-
-- Among men, how does the prevalence of high blood pressure compare in top-quartile vs. other tracts?
-  Among women?
-- On the ratio scale, is the crude association stronger in men or in women? On the additive scale?
-
-::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
-- **Men:** 18.1% in top-quartile tracts vs. 36.1% elsewhere. **Women:** 22.1% vs. 32.3%.
-- On the **ratio** scale, the crude PR is **0.50** for men and **0.69** for women — a stronger
-  (further from 1) association among men. On the **additive** scale, the prevalence difference is
-  **−17.9 percentage points** for men and **−10.2** for women — also stronger among men. Here the two
-  scales agree on the direction of the difference; they don't always. These are **crude** numbers;
-  the next step adjusts for the confounders from Lesson 6.
-:::
-
-## Step 4: Fit the adjusted model within each stratum
-
-A **stratified analysis** fits the same adjusted model separately in each level of the modifier.
-Within each stratum, gender is constant, so it drops out of the model; the adjustment set from
-Lesson 6 (education and tract poverty) stays in.
-
-```{webr-r}
-model_men <- glm(high_blood_pressure ~ tree_top_quartile + education + pov_allage,
-                 data = filter(data_em, woman == 0), family = poisson(link = "log"))
-
-model_women <- glm(high_blood_pressure ~ tree_top_quartile + education + pov_allage,
-                   data = filter(data_em, woman == 1), family = poisson(link = "log"))
-
-stratified <- bind_rows(
-  extract_ratio(model_men, "Men", robust = TRUE),
-  extract_ratio(model_women, "Women", robust = TRUE)
-) %>%
-  filter(Term == "tree_top_quartile") %>%                # keep the exposure only
-  mutate(N = c(nobs(model_men), nobs(model_women)))
-
-stratified %>% mutate(across(Estimate:CI_Upper, ~ round(.x, 2)))
-```
-
-We keep only the `tree_top_quartile` rows: the PRs for education and tract poverty are there to
-adjust the exposure estimate, not to be interpreted (the "Table 2 fallacy" from Lesson 6).
-
-A plot makes the comparison easier to see. Note the **log scale** on the y-axis: ratios should be
-plotted on a log scale, so that, for example, 0.5 and 2.0 are the same distance from 1.
-
-```{webr-r}
-ggplot(stratified, aes(x = Model, y = Estimate, ymin = CI_Lower, ymax = CI_Upper)) +
-  geom_pointrange(size = 0.8) +
-  geom_hline(yintercept = 1, linetype = "dashed") +
-  scale_y_log10() +
-  labs(x = NULL, y = "Adjusted PR (95% CI), log scale",
-       title = "Tree canopy (top quartile vs. rest) and high blood pressure, by gender") +
-  theme_minimal()
-```
-
-## Step 5: Qualitative assessment — compare the estimates by eye
-
-Two questions guide a qualitative assessment:
-
-1. **Are the point estimates meaningfully different?** Is the difference large enough to matter for
-   public health, regardless of p-values?
-2. **How much do the confidence intervals overlap?** Substantial overlap — especially if one
-   stratum's point estimate falls inside the other's CI — suggests weak evidence of a difference.
-   Little or no overlap suggests a difference that is unlikely to be due to chance alone.
-
-**Questions to consider:**
-
-- Interpret the PR for men and the PR for women, each in one sentence.
-- Do the confidence intervals overlap? Does either point estimate fall inside the other CI?
-- The CI for men excludes 1 and the CI for women includes 1. Does that mean the association is
-  "significant in men but not in women," and therefore that gender modifies the association?
-
-::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
-| Gender | N | Adjusted PR (95% CI) |
-|---|---|---|
-| Men | 933 | 0.62 (0.45, 0.84) |
-| Women | 1,027 | 0.81 (0.62, 1.05) |
-
-- *Men:* After adjusting for education and tract poverty, the prevalence of high blood pressure among
-  men living in the greenest quarter of census tracts was 0.62 times the prevalence among men living
-  in the other three quarters (95% CI: 0.45, 0.84) — about 38% lower. *Women:* the corresponding PR
-  was 0.81 (95% CI: 0.62, 1.05) — about 19% lower.
-- Yes, substantially. The women's point estimate (0.81) falls inside the men's CI (0.45–0.84), and
-  the men's point estimate (0.62) sits right at the lower edge of the women's CI (0.62–1.05). The
-  difference in point estimates is suggestive, but this much overlap means it could easily be due to
-  chance.
-- **No.** This is one of the most common mistakes in effect modification analysis (see this week's
-  Kaufman & MacLehose reading). "Significant in one group, not in the other" is not a test of whether
-  the two estimates *differ from each other*. The women's CI includes 1 partly because the estimate is
-  smaller, but both CIs point in the same, protective direction. To test whether the two estimates
-  differ, we need a formal test of heterogeneity — Steps 6 through 9.
-:::
-
-## Step 6: Cochran's Q — a test of heterogeneity across strata
-
-**Cochran's Q** tests whether stratum-specific estimates differ more than we would expect by chance.
-It needs only the estimate and its standard error from each stratum, so it can be used with any
-stratified estimates — including ones from published papers. Because ratio estimates are
-approximately normal on the **log** scale, Q is calculated with the log PRs:
-
-$$Q = \sum_i w_i \left(\ln \text{PR}_i - \ln \text{PR}_{\text{pooled}}\right)^2, \qquad w_i = \frac{1}{SE_i^2}, \qquad \ln \text{PR}_{\text{pooled}} = \frac{\sum_i w_i \ln \text{PR}_i}{\sum_i w_i}$$
-
-- $\ln \text{PR}_i$ is the log PR in stratum $i$, and $SE_i$ is its standard error;
-- the pooled estimate is a weighted average, giving more weight to more precise strata;
-- under the null hypothesis of no heterogeneity, Q follows a chi-square distribution with
-  (number of strata − 1) degrees of freedom.
-
-```{webr-r}
-# Log PRs and robust SEs for tree canopy, from each stratum
-log_pr <- c(coef(model_men)["tree_top_quartile"],
-            coef(model_women)["tree_top_quartile"])
-se     <- c(sqrt(vcovHC(model_men,   type = "HC0")["tree_top_quartile", "tree_top_quartile"]),
-            sqrt(vcovHC(model_women, type = "HC0")["tree_top_quartile", "tree_top_quartile"]))
-
-w <- 1 / se^2                                    # inverse-variance weights
-log_pr_pooled <- sum(w * log_pr) / sum(w)        # weighted average
-Q  <- sum(w * (log_pr - log_pr_pooled)^2)
-df <- length(log_pr) - 1
-p_Q <- pchisq(Q, df = df, lower.tail = FALSE)
-
-c(pooled_PR = exp(log_pr_pooled), Q = Q, df = df, p_value = p_Q)
-```
-
-::: {.callout-note collapse="true" title="💡 Only have the PR and its 95% CI? Click to see how to get the SE"}
-A 95% CI on the log scale is $\ln \text{PR} \pm 1.96 \times SE$, so its total width is
-$2 \times 1.96 \times SE = 3.92 \times SE$. To recover the SE from a published PR and CI:
-
-$$SE = \frac{\ln(\text{upper limit}) - \ln(\text{lower limit})}{3.92}$$
-
-```{webr-r}
-(log(stratified$CI_Upper) - log(stratified$CI_Lower)) / 3.92   # same as `se` above
-```
-
-Always work on the **log** scale. Calculating Q or the SE from the PRs themselves (without taking
-logs) gives the wrong answer.
-:::
-
-**Questions to consider:**
-
-- What is the p-value for Cochran's Q? Using our pre-specified threshold of 0.10, is there
-  statistical evidence of heterogeneity?
-- Why might Q fail to detect a real difference here?
-
-::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
-- **Q = 1.70, 1 df, p = 0.19.** That is above 0.10, so there is no statistical evidence of
-  heterogeneity by this test.
-- Q has **low power** when there are few strata and each estimate is imprecise — exactly our
-  situation (two strata, wide CIs). A p-value of 0.19 does **not** show that the association is the
-  same in men and women; it shows the data can't rule out a difference of this size arising by chance.
-:::
-
----
-
-# Part 2: Interaction Models
-
-## Step 7: Fit a model with an interaction term
-
-Instead of fitting separate models, we can fit **one** model that includes the exposure, the
-modifier, and their product — an **interaction term**:
-
-$$\ln(\text{prevalence}) = \beta_0 + \beta_1\,\text{TreeTop} + \beta_2\,\text{Woman} + \beta_3\,(\text{TreeTop} \times \text{Woman}) + \beta_4\,\text{Education} + \beta_5\,\text{TractPoverty}$$
-
-In R, `tree_top_quartile * woman` is shorthand for `tree_top_quartile + woman +
-tree_top_quartile:woman` — both **main effects** plus their interaction.
-
-```{webr-r}
-model_int <- glm(high_blood_pressure ~ tree_top_quartile * woman + education + pov_allage,
-                 data = data_em, family = poisson(link = "log"))
-
-V_int <- vcovHC(model_int, type = "HC0")    # robust variance-covariance matrix
-
-data.frame(
-  estimate  = coef(model_int),
-  robust_se = sqrt(diag(V_int))
-) %>% round(3)
-```
-
-What each coefficient means (everything holds education and tract poverty constant):
-
-| Coefficient | Term | Meaning |
-|---|---|---|
-| $\beta_1$ | `tree_top_quartile` | Log PR for tree canopy **among men** (woman = 0) |
-| $\beta_2$ | `woman` | Log PR for women vs. men **in tracts outside the top quartile** |
-| $\beta_3$ | `tree_top_quartile:woman` | How much the log PR for tree canopy **differs** in women compared with men |
-| $\beta_1 + \beta_3$ | | Log PR for tree canopy **among women** (woman = 1) |
-
-Where does $\beta_1 + \beta_3$ come from? Write out the model for women (Woman = 1) in top-quartile
-and other tracts, and subtract:
-
-- Top quartile: $\beta_0 + \beta_1 + \beta_2 + \beta_3 + \ldots$
-- Other tracts: $\beta_0 + \beta_2 + \ldots$
-- Difference: $\beta_1 + \beta_3$ (everything else cancels)
-
-For men (Woman = 0), the $\beta_2$ and $\beta_3$ terms are multiplied by 0, so the difference is just
-$\beta_1$.
-
-## Step 8: Stratum-specific estimates from the interaction model
-
-The PR for men is $e^{\beta_1}$, and the PR for women is $e^{\beta_1 + \beta_3}$. The CI for women
-needs the variance of a **sum** of two coefficients, which includes their covariance:
-
-$$\text{Var}(\hat\beta_1 + \hat\beta_3) = \text{Var}(\hat\beta_1) + \text{Var}(\hat\beta_3) + 2\,\text{Cov}(\hat\beta_1, \hat\beta_3)$$
-
-```{webr-r}
-b1 <- coef(model_int)["tree_top_quartile"]
-b3 <- coef(model_int)["tree_top_quartile:woman"]
-
-se_men   <- sqrt(V_int["tree_top_quartile", "tree_top_quartile"])
-se_women <- sqrt(V_int["tree_top_quartile", "tree_top_quartile"] +
-                 V_int["tree_top_quartile:woman", "tree_top_quartile:woman"] +
-                 2 * V_int["tree_top_quartile", "tree_top_quartile:woman"])
-
-data.frame(
-  Stratum  = c("Men", "Women"),
-  PR       = exp(c(b1, b1 + b3)),
-  CI_Lower = exp(c(b1 - 1.96 * se_men, b1 + b3 - 1.96 * se_women)),
-  CI_Upper = exp(c(b1 + 1.96 * se_men, b1 + b3 + 1.96 * se_women)),
-  row.names = NULL
-) %>% mutate(across(PR:CI_Upper, ~ round(.x, 2)))
-```
-
-**Questions to consider:**
-
-- How do these PRs compare with the stratified PRs from Step 4? Why aren't they identical?
-- What is $e^{\beta_3}$, and how would you put it into words?
-
-::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
-- From the interaction model: men **0.61 (0.45, 0.82)**, women **0.82 (0.63, 1.06)**. From the
-  stratified models: men 0.62 (0.45, 0.84), women 0.81 (0.62, 1.05). They are very close but not
-  identical, because the interaction model lets only the **tree canopy** association differ by gender —
-  it assumes the associations of education and tract poverty with high blood pressure are the same
-  for men and women. The stratified models let *every* coefficient differ. Either approach is
-  acceptable; say which one you used.
-- $e^{\beta_3} = e^{0.300} = $ **1.35** — the **ratio of the two PRs** (0.82 / 0.61 ≈ 1.35). The PR
-  for tree canopy among women is 1.35 times the PR among men; that is, the association is weaker
-  (closer to 1) among women. If there were no multiplicative interaction, $\beta_3$ would be 0 and
-  $e^{\beta_3}$ would be 1.
-:::
-
-## Step 9: Testing the interaction — the Wald test
-
-The **Wald test** asks whether the interaction coefficient is different from zero:
-
-$$z = \frac{\hat\beta_3}{SE(\hat\beta_3)}$$
-
-Compare $z$ with a standard normal distribution. For a modified Poisson model, use the **robust**
-standard error.
-
-```{webr-r}
-se_b3 <- sqrt(V_int["tree_top_quartile:woman", "tree_top_quartile:woman"])
-z_wald <- b3 / se_b3
-p_wald <- 2 * pnorm(-abs(z_wald))
-
-c(beta3 = unname(b3), robust_se = se_b3, z = unname(z_wald), p_value = unname(p_wald))
-```
-
-::: {.callout-warning}
-## Don't read the Wald p-value from `summary()` for a modified Poisson model
-
-`summary(model_int)` also prints a z value and p-value for every coefficient, but those use the
-**model-based** Poisson standard errors, which are wrong for a 0/1 outcome (Lesson 6, Step 4). Here
-`summary()` gives p = 0.18; the correct, robust Wald test gives p = 0.12. Always use the robust SE
-for modified Poisson models.
-:::
-
-## Step 10: Testing the interaction — the likelihood ratio test
-
-The **likelihood ratio test (LRT)** compares how well two **nested** models fit the data:
-
-- a **reduced** model, *without* the interaction term: `exposure + modifier + covariates`
-- a **full** model, *with* it: `exposure * modifier + covariates`
-
-$$\text{LRT statistic} = -2 \times \left(\ln L_{\text{reduced}} - \ln L_{\text{full}}\right) \sim \chi^2_{df}$$
-
-where $\ln L$ is each model's log-likelihood, and $df$ is the number of parameters added in the full
-model (1 for a single interaction term).
-
-::: {.callout-important}
-## Use a model with a real likelihood for the LRT
-
-An LRT compares **likelihoods**, so the likelihood has to be the right one for the data. A modified
-Poisson model uses the Poisson likelihood, which is the *wrong* likelihood for a 0/1 outcome — that is
-exactly why it needs robust standard errors. So for a binary outcome, run the LRT on **log-binomial**
-models (if they converge), which estimate the same PR with the correct likelihood. If your
-log-binomial models won't converge, rely on the robust Wald test (Step 9), plus Cochran's Q.
-:::
-
-Our log-binomial models converge here, so we use them:
-
-```{webr-r}
-model_reduced_lb <- glm(high_blood_pressure ~ tree_top_quartile + woman + education + pov_allage,
-                        data = data_em, family = binomial(link = "log"))
-model_full_lb    <- glm(high_blood_pressure ~ tree_top_quartile * woman + education + pov_allage,
-                        data = data_em, family = binomial(link = "log"))
-
-# The LRT by hand
-ll_reduced <- logLik(model_reduced_lb)
-ll_full    <- logLik(model_full_lb)
-
-lrt_stat <- -2 * (as.numeric(ll_reduced) - as.numeric(ll_full))
-lrt_df   <- attr(ll_full, "df") - attr(ll_reduced, "df")      # number of added parameters
-p_lrt    <- pchisq(lrt_stat, df = lrt_df, lower.tail = FALSE)
-
-c(logLik_reduced = as.numeric(ll_reduced), logLik_full = as.numeric(ll_full),
-  LRT = lrt_stat, df = lrt_df, p_value = p_lrt)
-
-# The same test in one line
-anova(model_reduced_lb, model_full_lb, test = "Chisq")
-```
-
-In the `anova()` output, `Deviance` in the second row is the LRT statistic, `Df` is its degrees of
-freedom, and `Pr(>Chi)` is the p-value.
-
-Two rules keep an LRT valid:
-
-1. **The models must be nested.** The reduced model contains *everything* in the full model except
-   the interaction term — including the modifier's main effect. Comparing `outcome ~ exposure` with
-   `outcome ~ exposure * modifier` tests two parameters at once (the modifier's main effect and the
-   interaction), which is not a test of effect modification.
-2. **Both models must be fit in the same participants.** If the modifier has missing values and the
-   reduced model doesn't include it, R will fit the two models in different people, and the
-   comparison is meaningless. Fitting both models in `data_em` prevents this.
-
-```{webr-r}
-# The trap in rule 2: a reduced model without `woman`, fit in the full dataset
-model_wrong_reduced <- glm(high_blood_pressure ~ tree_top_quartile + education + pov_allage,
-                           data = data, family = binomial(link = "log"))
-
-c(N_wrong_reduced = nobs(model_wrong_reduced), N_full = nobs(model_full_lb))
-```
-
-The two models use different numbers of participants (the 26 non-binary participants and those
-missing gender are in one but not the other). `anova()` will refuse to compare them, or, in some
-situations, compare them silently with a meaningless result.
-
-**Questions to consider:**
-
-- What are the Wald and LRT p-values? Using our pre-specified threshold of 0.10, what do you conclude?
-- Would your conclusion change with a threshold of 0.15? What does that tell you about choosing the
-  threshold in advance?
-
-::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
-- **Robust Wald test: z = 1.54, p = 0.12.** **LRT (log-binomial): statistic = 2.20, 1 df,
-  p = 0.14.** Both are above 0.10, so by our pre-specified rule there is **no statistical evidence**
-  of multiplicative effect modification by gender. Cochran's Q (p = 0.19) agrees.
-- With a 0.15 threshold, both the Wald test and the LRT would count as evidence of modification. The
-  data are the same; only the rule changed. That is why the threshold must be chosen **before** you
-  see the results. Choosing it afterward to get the answer you want is a form of p-hacking. Whatever
-  the threshold, report the actual p-values so readers can judge for themselves.
-:::
-
-## Step 11: Keep the model hierarchical
-
-When a model contains an interaction term, it must also contain **both main effects** that make up
-the interaction. This is the **hierarchy principle**. Here is what happens if the main effect of
-gender is left out:
-
-```{webr-r}
-model_nonhier <- glm(high_blood_pressure ~ tree_top_quartile + tree_top_quartile:woman +
-                       education + pov_allage,
-                     data = data_em, family = poisson(link = "log"))
-
+# Crude vs. adjusted, side by side -- the start of Table 2 in your final report
 bind_rows(
-  extract_ratio(model_int, "Hierarchical (correct)", robust = TRUE),
-  extract_ratio(model_nonhier, "Missing main effect of woman", robust = TRUE)
+  extract_ratio(model_crude_mp, "Crude", robust = TRUE),
+  final_pr
 ) %>%
-  filter(Term %in% c("tree_top_quartile", "woman", "tree_top_quartile:woman")) %>%
+  filter(Term == "tree_top_quartile") %>%
   mutate(across(Estimate:CI_Upper, ~ round(.x, 2)))
 ```
 
-Without the `woman` main effect, the model assumes that women and men in tracts outside the top
-quartile have *exactly the same* prevalence of high blood pressure. The interaction term then soaks
-up part of the difference between women and men, so it no longer measures only how the tree canopy
-association differs by gender (here it shrinks from 1.35 to 1.22). Writing `exposure * modifier`
-always includes both main effects for you.
+**Questions to consider:**
 
-## Step 12: Put it together — a results table and interpretation
+- How much did the PR change from crude to fully adjusted?
+- Interpret the adjusted PR in one sentence.
+- The model also returns PRs for education and tract poverty. Should you report and interpret
+  those?
 
-Effect modification results are usually presented as a table of stratum-specific estimates with the
-test(s) of interaction — **Table 3** of your final report:
-
-```{webr-r}
-overall <- extract_ratio(
-  glm(high_blood_pressure ~ tree_top_quartile + education + pov_allage,
-      data = data_em, family = poisson(link = "log")),
-  "Overall", robust = TRUE) %>%
-  filter(Term == "tree_top_quartile") %>%
-  mutate(N = nrow(data_em))
-
-bind_rows(overall, stratified) %>%
-  transmute(Group = Model, N,
-            `Adjusted PR (95% CI)` = sprintf("%.2f (%.2f, %.2f)", Estimate, CI_Lower, CI_Upper))
-
-c(Cochran_Q_p = p_Q, Wald_p = unname(p_wald), LRT_p = p_lrt) %>% round(2)
-```
-
-::: {.callout-note}
-## Writing up effect modification (Milestone 4)
-
-*"We hypothesized a priori that the association between tree canopy and high blood pressure would
-differ by gender, and we considered p < 0.10 from a test of interaction to indicate statistical
-evidence of effect modification. Twenty-six non-binary participants were excluded from this analysis
-because of small numbers. After adjustment for education and tract poverty, living in a top-quartile
-canopy tract was associated with a lower prevalence of high blood pressure among men (PR = 0.62, 95%
-CI: 0.45, 0.84) and, to a lesser extent, among women (PR = 0.81, 95% CI: 0.62, 1.05). The
-confidence intervals overlapped substantially, and tests of multiplicative interaction did not meet
-our threshold (robust Wald p = 0.12; likelihood ratio test p = 0.14; Cochran's Q p = 0.19). We
-therefore found limited statistical evidence that gender modifies this association, although the
-difference in point estimates suggests a possibly stronger association among men that could be
-examined in a larger study."*
-
-Notice what the paragraph does: it states the hypothesis and threshold, reports **both** stratum
-estimates with CIs, reports the actual p-values, and does not claim the association is "absent" in
-women or "the same" in men and women.
+::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've written your own"}
+- The PR moved from **0.60** (crude) to **0.71** (adjusted), a change of about **18%** — more than
+  either variable produced on its own.
+- *Example interpretation:* After adjusting for individual education and census-tract poverty, the
+  prevalence of high blood pressure among participants living in the greenest quarter of census
+  tracts was 0.71 times the prevalence among those living in the other three quarters (95% CI:
+  0.58, 0.86) — about 29% lower. Adjustment moved the estimate toward the null, but the association
+  remained.
+- **Generally, no.** The model was built to estimate the effect of **tree canopy**, and the
+  adjustment set was chosen to remove confounding of *that* association. The education and poverty
+  PRs are not adjusted for *their own* confounders, and the tree canopy term may even be a mediator
+  for them. Interpreting them as causal effects is a well-known mistake called the
+  **"Table 2 fallacy."** Report the exposure estimate; list the covariates you adjusted for.
 :::
 
-::: {.callout-note collapse="true" title="💡 What if my modifier has more than two levels? Click to read"}
-With a modifier that has $k$ levels (e.g., three education categories), the interaction model has
-$k - 1$ interaction terms, and a test of effect modification needs to test them **all at once**.
+::: {.callout-note}
+## Writing up your adjustment decision (Milestone 3)
 
-- **Stratified models and Cochran's Q:** fit one model per level; Q has $k - 1$ degrees of freedom.
-  The code in Step 6 works unchanged with more strata.
-- **LRT:** compare the reduced and full models as in Step 10. `anova()` calculates the degrees of
-  freedom ($k - 1$) automatically. This is the main reason the LRT is often preferred: it handles
-  several interaction terms in one test.
-- **Robust Wald test for several terms:** with modified Poisson, test all the interaction terms
-  together using their robust variance-covariance matrix:
+A clear justification states the rule you used and applies it. For example:
 
-```r
-int_terms <- grep(":", names(coef(model_int)), value = TRUE)   # all interaction terms
-b <- coef(model_int)[int_terms]
-V <- vcovHC(model_int, type = "HC0")[int_terms, int_terms]
-wald_chisq <- as.numeric(t(b) %*% solve(V) %*% b)
-pchisq(wald_chisq, df = length(b), lower.tail = FALSE)
-```
+*"We used a DAG to identify a minimally sufficient adjustment set (individual education and
+census-tract poverty). We then added each candidate covariate to the crude model one at a time and
+considered a change of 10% or more in the prevalence ratio to indicate meaningful confounding.
+Education changed the estimate by 13% and tract poverty by 7%. We adjusted for both because they
+form the DAG's minimally sufficient set, even though tract poverty fell below the 10% threshold.
+We did not adjust for obesity or physical activity, which we hypothesized to be mediators."*
 
-Each level also needs enough exposed and unexposed participants **with and without the outcome**
-(Step 2). If a level is too small, combine it with a similar level — and say why.
-
-**Continuous modifiers** (e.g., age in years) can also go into an interaction term, but the
-stratum-specific estimates then change with every unit of the modifier, which makes them harder to
-present. For this course, use a categorical version of your modifier, with cut points chosen in
-advance (e.g., ages < 50 vs. ≥ 50).
+There is rarely a single right answer. There are trade-offs to adjusting (lost precision, lost
+participants if a covariate has missing data, overadjustment) and trade-offs to not adjusting
+(residual confounding). What matters is that your rule is stated in advance, applied consistently,
+and justified.
 :::
 
 ---
 
-::: {.callout-tip title="🧠 Your Turn: Effect modification in your own project"}
-Using **your project's exposure, outcome, and final adjustment set** from Milestone 3:
+::: {.callout-tip title="🧠 Your Turn: A change-in-estimate table for your own project"}
+Using **your project's exposure, outcome, and DAG**:
 
-1. Choose **one** potential effect modifier and write down your a priori hypothesis (which group do
-   you expect to show the stronger association, and why?) and your p-value threshold — **before**
-   running anything.
-2. Code the modifier (0/1 if possible), check the modifier × exposure × outcome cell sizes, and
-   create an analytic sample with no missing data on any model variable.
-3. Fit your adjusted model within each stratum of the modifier, and make a table and plot of the
-   stratum-specific estimates.
-4. Fit the interaction model, and calculate Cochran's Q, the robust Wald test, and (if your
-   log-binomial models converge) the LRT.
-5. Write two or three sentences interpreting your results.
+1. Fit your crude model (modified Poisson for a binary outcome; `lm()` for a continuous one).
+2. Edit the loop in Step 6: change `candidates` to the variables in your DAG's adjustment set (plus
+   any others you want to check), and swap in your exposure and outcome names. If your exposure is
+   continuous, calculate the percent change for a meaningful contrast (see the box above).
+3. Fit your final adjusted model and write two or three sentences justifying your final adjustment
+   set.
 :::
 
 ```{webr-r}
-# Your code here — stratified estimates and tests of interaction for your own project
+# Your code here — change-in-estimate table and final model for your own project
 
 ```
 
-::: {.callout-note collapse="true" title="💡 Example: traffic density and asthma, by gender — click to reveal"}
-Continuing the Lesson 6 example: the final model for high traffic density (above the median) and
-asthma adjusted for tract poverty. *A priori hypothesis:* the association will differ by gender,
-because asthma prevalence and its triggers differ between adult men and women. Threshold: p < 0.10.
-
+::: {.callout-note collapse="true" title="💡 Example: traffic density and asthma — click to reveal"}
 ```{webr-r}
 data <- data %>%
   mutate(traffic_high = ifelse(ctb1traff > median(ctb1traff, na.rm = TRUE), 1, 0))
 
-data_asthma <- data %>%
-  filter(!is.na(asthma), !is.na(traffic_high), !is.na(woman), !is.na(pov_allage))
+candidates <- c("pov_allage", "current_smoker", "education")
+cie_asthma <- data.frame()
 
-# Cell sizes: gender x exposure x outcome
-data_asthma %>% count(woman, traffic_high, asthma)
+for (covariate in candidates) {
+  data_cc <- data %>%
+    filter(!is.na(asthma), !is.na(traffic_high), !is.na(.data[[covariate]]))
 
-# Stratified models
-m_men   <- glm(asthma ~ traffic_high + pov_allage, data = filter(data_asthma, woman == 0),
-               family = poisson(link = "log"))
-m_women <- glm(asthma ~ traffic_high + pov_allage, data = filter(data_asthma, woman == 1),
-               family = poisson(link = "log"))
+  crude <- glm(asthma ~ traffic_high, data = data_cc, family = poisson(link = "log"))
+  adjusted <- glm(as.formula(paste("asthma ~ traffic_high +", covariate)),
+                  data = data_cc, family = poisson(link = "log"))
 
-strat_asthma <- bind_rows(extract_ratio(m_men, "Men", robust = TRUE),
-                          extract_ratio(m_women, "Women", robust = TRUE)) %>%
-  filter(Term == "traffic_high")
-strat_asthma %>% mutate(across(Estimate:CI_Upper, ~ round(.x, 2)))
+  pr_c <- extract_ratio(crude, "crude", robust = TRUE) %>% filter(Term == "traffic_high")
+  pr_a <- extract_ratio(adjusted, covariate, robust = TRUE) %>% filter(Term == "traffic_high")
 
-# Cochran's Q
-lp <- log(strat_asthma$Estimate)
-s  <- (log(strat_asthma$CI_Upper) - log(strat_asthma$CI_Lower)) / 3.92
-w  <- 1 / s^2
-Q  <- sum(w * (lp - sum(w * lp) / sum(w))^2)
+  cie_asthma <- bind_rows(cie_asthma, data.frame(
+    Covariate = covariate, N = nobs(adjusted),
+    PR_crude = pr_c$Estimate, PR_adjusted = pr_a$Estimate,
+    CI_Lower = pr_a$CI_Lower, CI_Upper = pr_a$CI_Upper,
+    Pct_change = (pr_c$Estimate - pr_a$Estimate) / pr_c$Estimate * 100
+  ))
+}
 
-# Robust Wald test
-m_int <- glm(asthma ~ traffic_high * woman + pov_allage, data = data_asthma,
-             family = poisson(link = "log"))
-V  <- vcovHC(m_int, type = "HC0")
-z  <- coef(m_int)["traffic_high:woman"] / sqrt(V["traffic_high:woman", "traffic_high:woman"])
+cie_asthma %>% mutate(across(PR_crude:Pct_change, ~ round(.x, 2)))
 
-# LRT with log-binomial models
-lb_reduced <- glm(asthma ~ traffic_high + woman + pov_allage, data = data_asthma,
-                  family = binomial(link = "log"))
-lb_full    <- glm(asthma ~ traffic_high * woman + pov_allage, data = data_asthma,
-                  family = binomial(link = "log"))
-lrt <- anova(lb_reduced, lb_full, test = "Chisq")
-
-c(Q_p    = pchisq(Q, df = 1, lower.tail = FALSE),
-  Wald_p = unname(2 * pnorm(-abs(z))),
-  LRT_p  = lrt$`Pr(>Chi)`[2]) %>% round(3)
+# Final model: the DAG's minimally sufficient set was {tract_poverty}
+model_asthma_final <- glm(asthma ~ traffic_high + pov_allage, data = data,
+                          family = poisson(link = "log"))
+extract_ratio(model_asthma_final, "Adjusted for tract poverty", robust = TRUE)
 ```
 
-After adjusting for tract poverty, living in a high-traffic tract was associated with a higher
-prevalence of asthma among both men (PR = 1.40, 95% CI: 0.94, 2.08) and women (PR = 2.40, 95% CI:
-1.60, 3.58). All three tests of interaction gave p-values between 0.06 and 0.07, below our
-pre-specified threshold of 0.10, so there is statistical evidence that the traffic–asthma
-association is stronger among women than among men on the multiplicative scale. Compare this with
-the tree canopy example, where the difference between strata was smaller and the tests did not meet
-the threshold.
+None of the candidates moves the traffic–asthma PR by anywhere near 10%, so the crude and adjusted
+estimates are nearly the same. That is a perfectly good result to report: it means that, *among the
+variables we measured and believe to be confounders*, there is little evidence of confounding.
+Following the DAG, the final model adjusts for tract poverty. Smoking was checked too, because it is
+a strong asthma risk factor, but it did not change the estimate and the DAG did not require it.
 :::
 
 ---
@@ -803,7 +800,7 @@ the threshold.
 ```r
 # ---- Setup ----
 library(tidyverse)
-library(sandwich)   # robust standard errors
+library(sandwich)   # robust standard errors  -- install.packages("sandwich") once
 
 # ---- Read in your processed data ----
 data <- read.csv(file.path("data_processed", "class_data_processed.csv"))
@@ -820,56 +817,39 @@ extract_ratio <- function(model, label, robust = FALSE) {
 
 # ============================================================
 # REPLACE: swap in your own variable names throughout
-# A priori hypothesis: ...
-# Threshold for evidence of effect modification: p < 0.10
 # ============================================================
 
-# ---- 1. Code the modifier (0/1) and check cell sizes ----
-data <- data %>% mutate(MODIFIER = ...)          # e.g., case_when(...)
-data %>% count(MODIFIER, YOUR_EXPOSURE, YOUR_OUTCOME)
+# ---- 1. Change in estimate, one candidate at a time ----
+# candidates = the adjustment set from your DAG, plus any others you want to check
+candidates <- c("CONFOUNDER_1", "CONFOUNDER_2")
+cie_table <- data.frame()
 
-# ---- 2. Analytic sample: no missing data on any model variable ----
-data_em <- data %>%
-  filter(!is.na(YOUR_OUTCOME), !is.na(YOUR_EXPOSURE), !is.na(MODIFIER),
-         !is.na(CONFOUNDER_1), !is.na(CONFOUNDER_2))
+for (covariate in candidates) {
+  data_cc <- data %>%
+    filter(!is.na(YOUR_OUTCOME), !is.na(YOUR_EXPOSURE), !is.na(.data[[covariate]]))
 
-# ---- 3. Stratified models ----
-m0 <- glm(YOUR_OUTCOME ~ YOUR_EXPOSURE + CONFOUNDER_1 + CONFOUNDER_2,
-          data = filter(data_em, MODIFIER == 0), family = poisson(link = "log"))
-m1 <- glm(YOUR_OUTCOME ~ YOUR_EXPOSURE + CONFOUNDER_1 + CONFOUNDER_2,
-          data = filter(data_em, MODIFIER == 1), family = poisson(link = "log"))
+  crude <- glm(YOUR_OUTCOME ~ YOUR_EXPOSURE, data = data_cc, family = poisson(link = "log"))
+  adjusted <- glm(as.formula(paste("YOUR_OUTCOME ~ YOUR_EXPOSURE +", covariate)),
+                  data = data_cc, family = poisson(link = "log"))
 
-stratified <- bind_rows(extract_ratio(m0, "Modifier = 0", robust = TRUE),
-                        extract_ratio(m1, "Modifier = 1", robust = TRUE)) %>%
-  filter(Term == "YOUR_EXPOSURE") %>%
-  mutate(N = c(nobs(m0), nobs(m1)))
-stratified
+  pr_c <- extract_ratio(crude, "crude", robust = TRUE) %>% filter(Term == "YOUR_EXPOSURE")
+  pr_a <- extract_ratio(adjusted, covariate, robust = TRUE) %>% filter(Term == "YOUR_EXPOSURE")
 
-ggplot(stratified, aes(x = Model, y = Estimate, ymin = CI_Lower, ymax = CI_Upper)) +
-  geom_pointrange() + geom_hline(yintercept = 1, linetype = "dashed") +
-  scale_y_log10() + labs(x = NULL, y = "Adjusted PR (95% CI), log scale") + theme_minimal()
+  cie_table <- bind_rows(cie_table, data.frame(
+    Covariate = covariate, N = nobs(adjusted),
+    PR_crude = pr_c$Estimate, PR_adjusted = pr_a$Estimate,
+    CI_Lower = pr_a$CI_Lower, CI_Upper = pr_a$CI_Upper,
+    Pct_change = (pr_c$Estimate - pr_a$Estimate) / pr_c$Estimate * 100
+  ))
+}
 
-# ---- 4. Cochran's Q ----
-lp <- log(stratified$Estimate)
-se <- (log(stratified$CI_Upper) - log(stratified$CI_Lower)) / 3.92
-w  <- 1 / se^2
-Q  <- sum(w * (lp - sum(w * lp) / sum(w))^2)
-pchisq(Q, df = length(lp) - 1, lower.tail = FALSE)
+cie_table %>% mutate(across(PR_crude:Pct_change, ~ round(.x, 2)))
+# Continuous exposure? Compare exp(k * coef) for a meaningful contrast k (e.g., 10 units or the IQR)
 
-# ---- 5. Interaction model and robust Wald test ----
-m_int <- glm(YOUR_OUTCOME ~ YOUR_EXPOSURE * MODIFIER + CONFOUNDER_1 + CONFOUNDER_2,
-             data = data_em, family = poisson(link = "log"))
-V <- vcovHC(m_int, type = "HC0")
-b3 <- coef(m_int)["YOUR_EXPOSURE:MODIFIER"]
-2 * pnorm(-abs(b3 / sqrt(V["YOUR_EXPOSURE:MODIFIER", "YOUR_EXPOSURE:MODIFIER"])))
-
-# ---- 6. LRT with log-binomial models (same participants; nested) ----
-lb_reduced <- glm(YOUR_OUTCOME ~ YOUR_EXPOSURE + MODIFIER + CONFOUNDER_1 + CONFOUNDER_2,
-                  data = data_em, family = binomial(link = "log"))
-lb_full    <- glm(YOUR_OUTCOME ~ YOUR_EXPOSURE * MODIFIER + CONFOUNDER_1 + CONFOUNDER_2,
-                  data = data_em, family = binomial(link = "log"))
-anova(lb_reduced, lb_full, test = "Chisq")
-# If the log-binomial models don't converge, report the robust Wald test and Cochran's Q.
+# ---- 2. Final adjusted model ----
+model_final <- glm(YOUR_OUTCOME ~ YOUR_EXPOSURE + CONFOUNDER_1 + CONFOUNDER_2,
+                   data = data, family = poisson(link = "log"))
+extract_ratio(model_final, "Fully adjusted", robust = TRUE)
 ```
 :::
 
@@ -879,22 +859,19 @@ anova(lb_reduced, lb_full, test = "Chisq")
 
 This tutorial covered:
 
-- The difference between confounding (a bias to remove) and effect modification (a finding to
-  report), and why effect modification depends on the scale
-- Stating an a priori hypothesis and a p-value threshold before looking at the data
-- Coding a modifier and checking modifier × exposure × outcome cell sizes
-- Stratified analysis: fitting the adjusted model within each stratum, plotting the estimates on a
-  log scale, and comparing them qualitatively — and why "significant in one group but not the other"
-  is not evidence of effect modification
-- Cochran's Q, calculated on the log scale from stratum-specific estimates
-- Interaction models: interpreting $\beta_1$, $\beta_3$, and $\beta_1 + \beta_3$; getting
-  stratum-specific estimates and CIs; and keeping models hierarchical
-- The robust Wald test and the likelihood ratio test for interaction, including why the LRT should
-  use log-binomial rather than modified Poisson models, and why the models must be nested and fit
-  in the same participants
+- The three conditions for confounding, and why the third (not on the causal pathway) requires
+  causal assumptions rather than data
+- Reading a DAG: sorting causal and backdoor paths, and recognizing colliders
+- Identifying a minimally sufficient adjustment set, and why mediators should not be adjusted for
+- Using modified Poisson regression with robust standard errors when a log-binomial model won't
+  converge
+- The change-in-estimate approach: adding candidates one at a time, comparing estimates in the same
+  participants, and why the percent change depends on how the exposure is coded
+- Combining the DAG and the change-in-estimate results to choose and justify a final adjustment set
 
-The stratified table and tests you produced for your own project are a first draft of
-**Milestone 4** and of **Table 3** in your final report.
+The DAG, change-in-estimate table, and final adjustment set you produced for your own project are
+the core of **Milestone 3**.
 
-**Next week:** Reproducible epidemiologic analysis and using AI to support analyses — you'll organize
-your project code so that someone else (or future you) can rerun everything from start to finish.
+**Next week:** Effect modification — so far we have estimated a single PR for everyone. Next week
+you'll ask whether the association between your exposure and outcome *differs* across groups (for
+example, by education or gender), and how to test that formally.

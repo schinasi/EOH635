@@ -1,5 +1,5 @@
 ---
-title: "Lesson 6: Confounding & Directed Acyclic Graphs (DAGs)"
+title: "Lesson 6: Regression, Linearity & Dose-Response"
 subtitle: "EOH 635 — Environmental Epidemiology Methods"
 author: "Leah Schinasi"
 date: today
@@ -12,27 +12,27 @@ format:
 engine: knitr
 webr:
   show-startup-message: true
-  packages: ['tidyverse', 'sandwich']
+  packages: ['tidyverse']
   autoload-packages: true
 filters:
   - webr
 ---
 
-In [Lesson 5](lesson5.qmd) you fit a **crude** (unadjusted) model for tree canopy and high blood
-pressure. This lesson asks whether that crude estimate is distorted by **confounding** — a third
-variable that is related to both the exposure and the outcome — and what to adjust for. It has
-two parts:
+In [Lesson 5](lesson5.qmd) you decided how to code your exposure. This lesson puts that exposure
+into a regression model: choosing a model based on your outcome, interpreting the estimate it
+produces, and checking whether the assumption that the exposure is related to the outcome "in a
+straight line" actually holds. It has two parts:
 
-1. **Choosing confounders with a DAG** — reading a directed acyclic graph for tree canopy and high
-   blood pressure, sorting the paths that connect them into causal and backdoor paths, and finding a
-   **minimally sufficient adjustment set**. A separate video tutorial shows how to draw and analyze
-   a DAG with DAGitty.
-2. **Checking confounding in the data with the change-in-estimate approach** — adding each
-   candidate variable to the model one at a time, calculating how much the estimate changes,
-   and fitting a final adjusted model.
+1. **Choosing, fitting, and interpreting a crude model** — starting from a two-by-two table you
+   can calculate by hand, then making the same comparison with a logistic and a log-binomial
+   regression model, then entering the exposure as a continuous term. Worked example: tree
+   canopy cover and high blood pressure, the course's primary exposure–outcome relationship.
+2. **Checking the linearity assumption** — categorizing the exposure, fitting a model with one
+   indicator term per category, and plotting the estimates to see whether the relationship
+   really is a straight line.
 
 Both parts end with a **🧠 Your Turn** for the exposure and outcome in your own project. Together
-they produce the DAG, change-in-estimate table, and final adjustment set that Milestone 3 asks for.
+they produce the crude model and the evaluation of functional form that Milestone 2 asks for.
 
 ::: {.callout-important}
 ## How to use this tutorial
@@ -59,19 +59,18 @@ labeled **"In your RStudio script"** shows the simpler code you'll actually use.
 ::: {.callout-note}
 ## Doing this in RStudio instead of (or in addition to) the browser?
 
-This tutorial uses **`class_data_processed.csv`**, the same merged file from Lessons 1, 3, 4, and
-5. It uses one package you may not have installed yet: **`sandwich`** (for robust standard
-errors). Install it once with `install.packages("sandwich")`. See the [Data Codebook](codebook.qmd) for variable
-definitions.
+This tutorial uses **`class_data_processed.csv`**, the same merged file from Lessons 2, 4, and 5.
+If you saved your Lesson 5 exposure coding in your project script, run that code first so your
+categorical and binary exposure variables exist. See the [Data Codebook](codebook.qmd) for
+variable definitions.
 :::
 
 ---
 
-# Setup
+# Part 1: Choosing, Fitting, and Interpreting a Crude Model
 
 ```{webr-r}
 library(tidyverse)
-library(sandwich)
 ```
 
 In RStudio:
@@ -102,692 +101,653 @@ data <- read.csv(file.path("data_processed", "class_data_processed.csv"))
 ```
 :::
 
-Next, recreate two variables from earlier lessons: the cleaned age variable from Lesson 3 (ages
-above 105 recoded to missing), and the tree canopy coding we settled on at the end of Lesson 5 —
-**top quartile vs. the lower three quartiles**.
+## A reminder: how is tree canopy coded?
+
+Before modeling an exposure, remind yourself what its values mean and what its distribution looks
+like — you characterized this in Lesson 4, and it matters again here.
 
 ```{webr-r}
-data <- data %>%
-  mutate(
-    r_age = ifelse(age > 105, NA, age),                       # Lesson 3: implausible ages -> missing
-    tree_quartile = factor(ntile(hrlctree, 4)),               # Lesson 5: canopy quartiles
-    tree_top_quartile = ifelse(tree_quartile == "4", 1, 0)    # Lesson 5: Q4 (1) vs. Q1-Q3 (0)
-  )
+summary(data$hrlctree)
 
-table(data$tree_quartile, data$tree_top_quartile)   # always check a recode
+ggplot(data, aes(x = hrlctree)) +
+  geom_histogram(bins = 30, fill = "seagreen", color = "white") +
+  labs(x = "Tree canopy cover (proportion of census tract)", y = "Number of participants",
+       title = "Distribution of tree canopy cover among participants") +
+  theme_minimal()
 ```
 
-::: {.callout-note}
-## Why use the top-quartile exposure in this lesson?
+A few things to keep in mind about `hrlctree`:
 
-Lesson 5 concluded that both a continuous term and "top quartile vs. the rest" were defensible
-codings for tree canopy. We use the binary version here because it keeps each model to a single
-exposure estimate, which makes the change-in-estimate calculations easy to follow. If your own
-exposure is continuous, see the box **"What if my exposure is continuous?"** in Part 2 — there is
-one extra step.
-:::
+- It is a **proportion**, from 0 to 1: a value of 0.12 means 12% of the participant's census
+  tract is covered by tree canopy. In our data it ranges from about 0.02 (2%) to 0.63 (63%), with
+  a median of about 0.12 (12%).
+- It is measured at the **census-tract level**, not for each person: every participant who lives
+  in the same tract has the same value. The 2,000 participants live in 363 tracts.
+- It is **right-skewed**: most participants live in tracts with 5–20% canopy, and a small number
+  live in much greener tracts. Keep this in mind in Part 2 — it affects how wide each quartile is.
 
----
+## Step 1: What kind of outcome do you have — and is it rare or common?
 
-# Part 1: Choosing Confounders with a DAG
-
-Recall the three conditions for a variable to be a confounder. It must:
-
-1. Be **associated with the exposure**;
-2. Be a **risk factor for the outcome** (associated with the outcome among the unexposed); and
-3. **Not be on the causal pathway** between the exposure and the outcome (that is, not be a
-   mediator).
-
-The third condition can't be checked with data alone — it depends on what you believe causes what.
-That is the job of a **directed acyclic graph (DAG)**: you write down your assumptions about the
-causal structure *before* looking at the data, and the rules of the DAG tell you which variables
-need to be adjusted for.
-
-## Step 1: Write down the DAG
-
-Here is one DAG for tree canopy and high blood pressure, built from the kind of reasoning you did
-for your conceptual framework in Week 2:
-
-![A DAG for tree canopy cover and high blood pressure](images/lesson6_dag.png){width=90%}
-
-Each arrow is a claim about cause and effect:
-
-- **Tree canopy → high blood pressure** — the effect we want to estimate. Tree canopy may also
-  work *through* **physical activity** and **obesity** (greener places encourage activity, which
-  lowers obesity and blood pressure). Those two are **mediators**: they sit on the causal pathway.
-- **Education → tree canopy** and **education → high blood pressure** — people with more education
-  (and the income that tends to come with it) are more able to choose to live in greener
-  neighborhoods, and education is independently linked to blood pressure (health care access,
-  diet, job strain).
-- **Tract poverty → tree canopy** and **tract poverty → high blood pressure** — poorer
-  neighborhoods have historically received less investment in street trees and parks, and
-  neighborhood deprivation affects blood pressure through stress, food access, and other routes.
-  Tract poverty also shapes individual educational opportunity (**tract poverty → education**).
-- **Race and ethnicity → tract poverty** and **race and ethnicity → high blood pressure** — here,
-  `race_ethnicity` stands for **exposure to racism**, not biology. Residential segregation and
-  historical policies such as redlining concentrated poverty in some neighborhoods; interpersonal
-  and structural racism also affect blood pressure directly (see the Howe et al. reading).
-- **Age** and **gender** affect blood pressure. Age also affects education (very young adults may
-  not have finished a degree yet). Neither has an arrow into tree canopy: there is no strong reason
-  to believe age or gender determines how green a person's census tract is.
-
-::: {.callout-note}
-## Drawing your own DAG
-
-A separate video tutorial shows how to draw a DAG like this one with DAGitty and have it list the
-paths and adjustment sets for you. The steps below walk through the same reasoning by hand.
-:::
-
-## Step 2: Sort the paths between exposure and outcome
-
-A DAG tells us which variables to adjust for by looking at every **path** connecting the exposure to
-the outcome — any route along the arrows, regardless of which direction they point.
-
-There are two kinds of paths:
-
-- **Causal paths** start with an arrow *out of* the exposure: `tree_canopy -> high_bp`, and
-  `tree_canopy -> physical_activity -> obesity -> high_bp`. These are part of the effect we want to
-  estimate, so we leave them open.
-- **Backdoor paths** start with an arrow *into* the exposure, such as
-  `tree_canopy <- education -> high_bp`. These are **non-causal**: they create an association
-  between tree canopy and blood pressure that is not due to tree canopy at all. **Confounding is an
-  open backdoor path.** Our goal is to close every one of them.
-
-Adjusting for a variable on a backdoor path closes it. One exception: a variable that has two
-arrows pointing *into* it on a path (like `education` in
-`tree_canopy <- tract_poverty -> education <- age -> high_bp`) is a **collider**. A path through a
-collider is already closed — and adjusting for the collider would *open* it.
-
-**Questions to consider:**
-
-- Which variables do the backdoor paths in the DAG above pass through?
-- Why is the path `tree_canopy <- tract_poverty -> education <- age -> high_bp` already closed?
-- Is there any backdoor path that goes through `gender`? Through `physical_activity` or `obesity`?
-
-::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
-- Every backdoor path passes through **education**, **tract poverty**, or both, because those are
-  the only two variables with an arrow into tree canopy. Race/ethnicity and age also appear, but
-  only further along paths that already pass through education or tract poverty.
-- On that path, `education` is a **collider**: both `tract_poverty -> education` and
-  `age -> education` point into it. A collider blocks the path on its own, so the path is closed
-  without any adjustment.
-- **No path goes through `gender`.** Gender has only one arrow, into high blood pressure, so it
-  cannot create a backdoor path. Physical activity and obesity appear only on the **causal** path —
-  they are mediators, not confounders.
-:::
-
-## Step 3: Find the minimally sufficient adjustment set
-
-The **minimally sufficient adjustment set** is the smallest set of variables that closes every
-backdoor path while leaving the causal paths open. Because every backdoor path into tree canopy
-starts with either education or tract poverty, adjusting for **education and tract poverty** is
-enough to remove confounding of the tree canopy–high blood pressure association, according to this
-DAG.
-
-A minimally sufficient set is not the only valid set. For example, **{age, education, tract
-poverty}** also closes every backdoor path.
-
-**Questions to consider:**
-
-- Why isn't **race/ethnicity** in the minimal set, even though it affects both tract poverty and
-  high blood pressure?
-- Why isn't **age** in the minimal set? Would it be *wrong* to adjust for age?
-- What would happen if we adjusted for **obesity**?
-
-::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
-- Race/ethnicity reaches tree canopy only **through tract poverty** (`race_ethnicity ->
-  tract_poverty -> tree_canopy`). Once tract poverty is adjusted for, that path is closed, so
-  race/ethnicity is not needed *according to this DAG*. If you believed racism also affected tree
-  canopy directly (for example, through discriminatory planting decisions that are not captured by
-  tract poverty), you would add that arrow, and race/ethnicity would join the adjustment set. The
-  DAG is only as good as the assumptions you put into it.
-- Age has no arrow into tree canopy, so it can't confound on its own; its only backdoor path runs
-  through education, which is already adjusted for. But **{age, education, tract poverty}** is
-  *also* a valid set. Adjusting for a strong risk factor for the outcome that is not related to the
-  exposure won't introduce bias and can make the estimate more precise.
-- Adjusting for obesity closes `tree_canopy -> physical_activity -> obesity -> high_bp` — part of
-  the **causal** effect. The adjusted estimate would then describe only the part of tree canopy's
-  effect that does *not* operate through obesity. That is **overadjustment**: removing part of the
-  effect you set out to measure.
-:::
-
-::: {.callout-note}
-## DAGs and race
-
-Following Howe et al. (2022), a DAG for a racialized health disparity should represent **racism** — not
-race itself — as the cause, because race is a social construct and not a biological cause of
-disease. In our class dataset, `race_ethnicity` is the only available measure, so in this DAG it
-stands in for exposure to structural and interpersonal racism. When you describe your own DAG, say
-what each variable represents.
-:::
-
----
-
-::: {.callout-tip title="🧠 Your Turn: Draw a DAG for your own project"}
-Using **your project's exposure and outcome**:
-
-1. Start from your conceptual framework (Milestone 1). List the variables that might cause your
-   exposure, your outcome, or both, and any mediators. Include important variables even if they
-   are **not in the dataset**, and mark them as unmeasured.
-2. Draw the DAG, following the DAGitty video tutorial.
-3. Sort the paths into causal and backdoor paths. Which variables are in your minimally sufficient
-   adjustment set? Does any set work if some variables are unmeasured?
-:::
-
-::: {.callout-note collapse="true" title="💡 Example: traffic density and asthma — click to reveal"}
-Here is one DAG for traffic density and asthma:
-
-![A DAG for traffic density and asthma](images/lesson6_dag_asthma.png){width=90%}
-
-Its arrows are:
-
-- `traffic_density -> air_pollution -> asthma`
-- `tract_poverty -> traffic_density`, `tract_poverty -> asthma`, and
-  `tract_poverty -> current_smoker`
-- `education -> current_smoker`
-- `current_smoker -> asthma`
-
-In this DAG, tract poverty is the only variable on a backdoor path (`traffic_density <-
-tract_poverty -> asthma`, and `traffic_density <- tract_poverty -> current_smoker -> asthma`), so
-the minimally sufficient adjustment set is **{tract_poverty}**. Smoking is a strong risk factor for
-asthma, but in this DAG it does not cause traffic density, so it does not need to be adjusted for
-to remove confounding. Air pollution is a **mediator** and should not be adjusted for.
-
-Someone else might reasonably draw this DAG differently — for example, with an arrow from smoking
-or education to where people live. That is why the DAG is part of what you justify in
-Milestone 3.
-:::
-
----
-
-# Part 2: Checking Confounding in the Data — Change in Estimate
-
-The DAG is built from **theory**, before looking at the data. The change-in-estimate approach is
-**empirical**: it shows how much the exposure estimate actually moves when a variable is added to
-the model. Using both together is common practice:
-
-1. Use the DAG to identify your **candidate** confounders.
-2. Add each candidate to the crude model **one at a time** and calculate the percent change in the
-   exposure estimate.
-3. Use the DAG and the change-in-estimate results together to choose your **final** adjustment
-   set.
-
-## Step 1: The crude model (a reminder)
-
-This is the same model as the end of Lesson 5. The `extract_ratio()` helper has one new option,
-`robust`, which we will need in Step 4. Leave it at its default (`FALSE`) for now.
+The type of outcome determines the model. `high_blood_pressure` is **binary** (1 = diagnosed,
+0 = not), so a linear regression model is not appropriate — we need logistic or log-binomial
+regression. Which of those two to prefer depends on whether the outcome is rare or common.
 
 ```{webr-r}
-extract_ratio <- function(model, label, robust = FALSE) {
-  # Robust ("sandwich") variance if requested; otherwise the usual model-based variance
-  vc <- if (robust) vcovHC(model, type = "HC0") else vcov(model)
+table(data$high_blood_pressure, useNA = "ifany")   # counts, including missing (NA)
+prop.table(table(data$high_blood_pressure))        # proportions among those with data
+```
+
+**Questions to consider:**
+
+- What proportion of participants have high blood pressure? Would you call that rare or common?
+- How many participants are missing this outcome?
+
+::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
+- About **30%** of participants with data (606 of 1,988) have high blood pressure. That is a
+  **common** outcome — a rough rule of thumb is that an outcome is "rare" if it affects fewer than
+  about 10% of people.
+- **12** participants are missing `high_blood_pressure`. R will drop them automatically from every
+  model below, so all models are fit on the 1,988 participants with data.
+:::
+
+## Step 2: A two-by-two table you can calculate by hand
+
+Before fitting any model, let's calculate the association the old-fashioned way, so you can see
+exactly what the regression model will reproduce. We'll use tree canopy **dichotomized at the
+median** — the same kind of binary exposure you created in Lesson 5.
+
+```{webr-r}
+# 1. Create a binary exposure: 1 = tract canopy above the median ("high canopy"), 0 = at or below it
+data <- data %>%
+  mutate(tree_high = ifelse(hrlctree > median(hrlctree, na.rm = TRUE), 1, 0))
+
+# 2. Cross-tabulate exposure (rows) by outcome (columns) and print the table
+two_by_two <- table(Tree_high = data$tree_high, HBP = data$high_blood_pressure)
+two_by_two
+
+# 3. Pull out the four cell counts (see the table below the code for what each one is)
+A <- two_by_two[2, 2]  # high canopy, high blood pressure
+B <- two_by_two[2, 1]  # high canopy, no high blood pressure
+C <- two_by_two[1, 2]  # low canopy,  high blood pressure
+D <- two_by_two[1, 1]  # low canopy,  no high blood pressure
+
+# 4. Prevalence of high blood pressure in each exposure group = cases / everyone in that group
+prev_exposed   <- A / (A + B)   # among people in high-canopy tracts
+prev_unexposed <- C / (C + D)   # among people in low-canopy tracts
+
+# 5. The prevalence ratio divides the two prevalences; the odds ratio uses the cross-product
+c(prevalence_exposed = prev_exposed,
+  prevalence_unexposed = prev_unexposed,
+  prevalence_ratio = prev_exposed / prev_unexposed,
+  odds_ratio = (A * D) / (B * C))
+```
+
+**What each step of the code does:**
+
+1. **Create a binary exposure.** `median(hrlctree, na.rm = TRUE)` finds the median tree canopy
+   value (about 0.12, or 12%); `na.rm = TRUE` tells R to ignore any missing values when doing so.
+   `ifelse()` then checks each participant: if their tract's canopy is *above* the median, the new
+   variable `tree_high` is set to 1 ("high canopy"); otherwise it is set to 0 ("low canopy").
+   `mutate()` adds `tree_high` to the data as a new column, leaving `hrlctree` unchanged.
+2. **Build the two-by-two table.** `table()` counts how many participants fall into each
+   combination of `tree_high` (the rows) and `high_blood_pressure` (the columns). The names before
+   the `=` signs (`Tree_high`, `HBP`) are just labels for the printed table. Typing `two_by_two` on
+   its own line prints it. Participants missing `high_blood_pressure` are left out of the table.
+3. **Save the four counts.** Each line stores one cell of the table under a letter — A, B, C, or D —
+   so that we can use it in the formulas that follow. The numbers in square brackets tell R which
+   cell to take: the first is the row and the second is the column. The table below the code shows
+   which group of people each letter represents.
+4. **Calculate the prevalence in each group.** Prevalence is the number of people with the outcome
+   divided by everyone in that group. Among high-canopy participants that is A / (A + B); among
+   low-canopy participants it is C / (C + D).
+5. **Calculate the measures of association.** The prevalence ratio divides the prevalence in the
+   high-canopy group by the prevalence in the low-canopy group. The odds ratio is the
+   cross-product (A × D) / (B × C). `c()` combines the four results into one labeled list, so they
+   print together.
+
+Each of the four cells in the table counts a different group of people:
+
+| | High blood pressure (HBP = 1) | No high blood pressure (HBP = 0) |
+|---|---|---|
+| **High canopy** (`tree_high = 1`) | **A** = people in high-canopy tracts *with* high blood pressure | **B** = people in high-canopy tracts *without* high blood pressure |
+| **Low canopy** (`tree_high = 0`) | **C** = people in low-canopy tracts *with* high blood pressure | **D** = people in low-canopy tracts *without* high blood pressure |
+
+Note that R prints the table with the `0` (low canopy, no high blood pressure) row and column
+first, so the printed table is arranged D, C / B, A — which is why the code picks each count out
+by position.
+
+::: {.callout-note}
+## Prevalence, not risk
+
+Because the class dataset is a **cross-sectional** survey — everyone was surveyed at one point in
+time — we are comparing the *prevalence* of high blood pressure (who has it now), not the *risk*
+of developing it over follow-up. That is why we call this a **prevalence ratio** rather than a
+risk ratio.
+:::
+
+**Questions to consider:**
+
+- What is the prevalence of high blood pressure in each canopy group?
+- Is the prevalence ratio (PR) or the odds ratio (OR) further from the null value of 1? Why does
+  that happen with an outcome this common?
+
+::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
+- The prevalence is **25.5%** in high-canopy tracts (252 of 987) and **35.4%** in low-canopy
+  tracts (354 of 1,001).
+- PR = 0.255 / 0.354 = **0.72**; OR = **0.63**. The **OR is further from the null**. Odds are
+  prevalence divided by one minus prevalence, p / (1 − p). When p is small, 1 − p is close to 1,
+  so odds and prevalence are nearly the same. When p is large (here, around 0.3), dividing by
+  1 − p stretches the odds away from the prevalence, and the OR ends up further from 1 than the
+  PR. Describing the OR of 0.63 as if it were a PR would overstate how much lower high blood
+  pressure is in greener tracts.
+:::
+
+## Step 3: The same comparison as a regression model
+
+Now, we will make the same comparison, running both a logistic and a log-binomial regression
+model. We will use the results from these models to calculate the odds ratio and its 95%
+confidence interval (CI), and the prevalence ratio and its 95% CI.
+
+The two models differ only in their **link function** — what the model treats as a straight-line
+function of the exposure:
+
+- **Logistic regression**, `binomial(link = "logit")`, models the **log odds** of the outcome.
+- **Log-binomial regression**, `binomial(link = "log")`, models the **log prevalence**.
+
+::: {.callout-note}
+## Why do we exponentiate the coefficient and the CI?
+
+Because both models work on the **log scale**, the coefficient R reports for `tree_high` is not a
+ratio — it is a *difference in logs*. For the log-binomial model:
+
+- log(prevalence in high-canopy tracts) = β₀ + β₁
+- log(prevalence in low-canopy tracts) = β₀
+- the difference, **β₁**, is log(prevalence high) − log(prevalence low) = **log(PR)**
+
+To get back from log(PR) to the PR itself, we undo the log by exponentiating: **PR = exp(β₁)**.
+(The same logic applied to log odds gives OR = exp(β₁) for the logistic model.)
+
+The 95% CI is built on the same log scale, as β₁ ± 1.96 × SE, so we exponentiate its two
+endpoints the same way: **exp(β₁ − 1.96 × SE)** and **exp(β₁ + 1.96 × SE)**. That is also why ratio
+CIs are not symmetric around the estimate — they are symmetric on the log scale, not on the
+ratio scale.
+:::
+
+The `extract_ratio()` helper below does these steps for us: it pulls out each coefficient and its
+standard error, then exponentiates the coefficient and both CI endpoints. It is the same idea as
+the `extract_or()` function from Lesson 5, just renamed because it now produces prevalence ratios
+as well as odds ratios.
+
+```{webr-r}
+extract_ratio <- function(model, label) {
   b  <- coef(model)[-1]                  # coefficients (log scale), dropping the intercept
-  se <- sqrt(diag(vc))[-1]               # their standard errors
+  se <- sqrt(diag(vcov(model)))[-1]      # their standard errors
   data.frame(
     Model    = label,
     Term     = names(b),
-    Estimate = exp(b),                   # exponentiate -> PR (or OR)
-    CI_Lower = exp(b - 1.96 * se),
-    CI_Upper = exp(b + 1.96 * se),
+    Estimate = exp(b),                   # exponentiate -> OR or PR
+    CI_Lower = exp(b - 1.96 * se),       # exponentiate the lower CI endpoint
+    CI_Upper = exp(b + 1.96 * se),       # exponentiate the upper CI endpoint
     row.names = NULL
   )
 }
 
-model_crude <- glm(high_blood_pressure ~ tree_top_quartile, data = data,
-                   family = binomial(link = "log"))
+# Logistic regression: logit link -> odds ratio
+model_logit <- glm(high_blood_pressure ~ tree_high, data = data,
+                   family = binomial(link = "logit"))
 
-extract_ratio(model_crude, "Crude, log-binomial")
-```
-
-The crude PR is **0.60 (95% CI: 0.49, 0.72)**: the prevalence of high blood pressure among
-participants in the greenest quarter of census tracts was 0.60 times the prevalence among everyone
-else — about 40% lower.
-
-## Step 2: Is the candidate associated with the exposure and the outcome?
-
-Let's start with **education**, the first variable in our DAG's adjustment set. A confounder must
-be associated with both the exposure and the outcome, so check each one.
-
-```{webr-r}
-# Make a 0/1 version of education to use as a predictor and as an outcome
-data <- data %>%
-  mutate(educ_ba = ifelse(education == "Bachelor's degree or higher", 1, 0))
-
-table(data$education, data$educ_ba)   # check the recode
-
-# (a) Education and the EXPOSURE: who lives in the greenest quarter of tracts?
-data %>%
-  group_by(education) %>%
-  summarise(n = n(), prop_top_quartile = mean(tree_top_quartile))
-
-model_educ_exp <- glm(tree_top_quartile ~ educ_ba, data = data,
-                      family = binomial(link = "log"))
-extract_ratio(model_educ_exp, "Exposure ~ education")
-
-# (b) Education and the OUTCOME
-model_educ_out <- glm(high_blood_pressure ~ educ_ba, data = data,
-                      family = binomial(link = "log"))
-extract_ratio(model_educ_out, "Outcome ~ education")
-```
-
-**Questions to consider:**
-
-- Is education associated with living in a top-quartile canopy tract? How strongly?
-- Is education associated with high blood pressure? In which direction?
-- Given the direction of both associations, would you expect the crude PR for tree canopy to be
-  *further from* or *closer to* the null than the adjusted PR?
-
-::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
-- Yes, strongly. 38% of participants with a bachelor's degree or higher live in a top-quartile
-  canopy tract, compared with 13% of those without one — a PR of **2.91 (95% CI: 2.44, 3.46)**.
-- Yes. Participants with a bachelor's degree or higher have a lower prevalence of high blood
-  pressure: PR = **0.63 (95% CI: 0.55, 0.72)**.
-- Higher education goes with *more* tree canopy and *less* high blood pressure. So part of the
-  lower prevalence of high blood pressure in greener tracts is really due to the more-educated
-  people who live there. The crude PR should therefore be **further from the null** (more
-  protective-looking) than the adjusted PR. Step 3 checks this.
-:::
-
-## Step 3: Add the candidate to the model and calculate the change in estimate
-
-```{webr-r}
-model_adj_educ <- glm(high_blood_pressure ~ tree_top_quartile + education, data = data,
-                      family = binomial(link = "log"))
-
-extract_ratio(model_adj_educ, "Adjusted for education, log-binomial")
-```
-
-R now returns two PRs: one for `tree_top_quartile` (the one we care about) and one for
-`education`. The tree canopy PR is now **adjusted for** education — it compares participants in
-the greenest quarter of tracts with everyone else **with the same level of education**.
-
-The **percent change in estimate** compares the crude and adjusted PRs:
-
-$$\% \text{ change} = \frac{\text{PR}_\text{crude} - \text{PR}_\text{adjusted}}{\text{PR}_\text{crude}} \times 100$$
-
-```{webr-r}
-pr_crude <- unname(exp(coef(model_crude)["tree_top_quartile"]))      # unname() just tidies
-pr_adj   <- unname(exp(coef(model_adj_educ)["tree_top_quartile"]))   # the printed labels
-
-c(PR_crude = pr_crude, PR_adjusted = pr_adj,
-  pct_change = (pr_crude - pr_adj) / pr_crude * 100)
-```
-
-Look at the **size** of the change. Its sign tells you which way the estimate moved: a negative
-percent change means the adjusted PR is larger than the crude PR — here, closer to 1.
-
-A common rule of thumb is that a change of **10% or more** suggests meaningful confounding. Treat
-it as a guide, not a law: the 10% cutoff is a convention, and a 9% change is not meaningfully
-different from an 11% change. Decide on your rule before you look at the results, and report it in
-your methods.
-
-**Questions to consider:**
-
-- By how much did the PR change after adjusting for education? Is that above the 10% rule of thumb?
-- Did the estimate move in the direction you predicted in Step 2?
-- Write a one-sentence interpretation of the adjusted PR.
-
-::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
-- The PR moved from **0.60** (crude) to **0.68** (adjusted for education), a change of about
-  **13%** — above the 10% rule of thumb, so education confounds this association in our data.
-- Yes. The adjusted PR is closer to 1: some of the crude association was due to the more-educated
-  people who live in greener tracts, not to the trees themselves.
-- *Example interpretation:* After adjusting for education, the prevalence of high blood pressure
-  among participants living in the greenest quarter of census tracts was 0.68 times the prevalence
-  among those living in the other three quarters (95% CI: 0.56, 0.82).
-:::
-
-## Step 4: When the log-binomial model won't converge — modified Poisson regression
-
-Now try adjusting for **age**:
-
-```{webr-r}
-model_adj_age_lb <- glm(high_blood_pressure ~ tree_top_quartile + r_age, data = data,
-                        family = binomial(link = "log"))
-```
-
-You should get an error: *"no valid set of coefficients has been found: please supply starting
-values."* As Lesson 5 mentioned, this is common with log-binomial models, and it often appears as
-soon as a continuous covariate like age is added. The model's predicted prevalences must stay
-below 1, and with a strong continuous predictor the fitting algorithm can fail to find estimates
-that satisfy this.
-
-The standard fix is **modified Poisson regression**: a Poisson model with a log link, which also
-estimates a prevalence ratio, combined with **robust ("sandwich") standard errors**. The robust
-standard errors are needed because a Poisson model assumes the wrong variance for a 0/1 outcome;
-without them, the confidence intervals would be too wide.
-
-```{webr-r}
-model_adj_age <- glm(high_blood_pressure ~ tree_top_quartile + r_age, data = data,
-                     family = poisson(link = "log"))
-
-extract_ratio(model_adj_age, "Adjusted for age, modified Poisson", robust = TRUE)
-```
-
-`robust = TRUE` makes `extract_ratio()` use `vcovHC()` from the `sandwich` package in place of the
-usual standard errors.
-
-To check that modified Poisson gives the same answer where both models work, compare the two for
-the crude and education-adjusted models:
-
-```{webr-r}
-model_crude_mp <- glm(high_blood_pressure ~ tree_top_quartile, data = data,
-                      family = poisson(link = "log"))
-model_adj_educ_mp <- glm(high_blood_pressure ~ tree_top_quartile + education, data = data,
-                         family = poisson(link = "log"))
+# Log-binomial regression: log link -> prevalence ratio
+model_logbin <- glm(high_blood_pressure ~ tree_high, data = data,
+                    family = binomial(link = "log"))
 
 bind_rows(
-  extract_ratio(model_crude, "Crude, log-binomial"),
-  extract_ratio(model_crude_mp, "Crude, modified Poisson", robust = TRUE),
-  extract_ratio(model_adj_educ, "+ education, log-binomial"),
-  extract_ratio(model_adj_educ_mp, "+ education, modified Poisson", robust = TRUE)
-) %>%
-  filter(Term == "tree_top_quartile")
-```
-
-The crude estimates are identical, and the adjusted estimates agree to two decimal places. Because
-modified Poisson converges for every model we need, **we use it for all the models in the rest of
-this lesson**, so that every crude and adjusted estimate comes from the same kind of model.
-
-::: {.callout-note collapse="true" title="💡 Running modified Poisson in RStudio with the lmtest package"}
-Many online examples use the `lmtest` package together with `sandwich`. It gives the same
-estimates and CIs as `extract_ratio(..., robust = TRUE)`:
-
-```r
-library(sandwich)
-library(lmtest)
-
-robust_vcov <- vcovHC(model_adj_age, type = "HC0")
-coeftest(model_adj_age, vcov = robust_vcov)        # coefficients with robust SEs and p-values
-exp(coef(model_adj_age))                           # PRs
-exp(coefci(model_adj_age, vcov = robust_vcov))     # 95% CIs for the PRs
-```
-:::
-
-## Step 5: Compare crude and adjusted estimates **in the same people**
-
-There is a subtle trap in comparing the age-adjusted PR with the crude PR from Step 1. Three
-participants are missing `r_age`, so R dropped them from the age-adjusted model — but not from the
-crude model. Part of any difference between the two estimates could simply be that they were
-estimated in **different groups of people**.
-
-The fix: for each candidate, fit the crude model in the **same participants** as the adjusted
-model, that is, those with no missing data on the outcome, the exposure, or that covariate.
-
-```{webr-r}
-data_age <- data %>%
-  filter(!is.na(high_blood_pressure), !is.na(tree_top_quartile), !is.na(r_age))
-
-nrow(data_age)
-
-model_crude_age_sample <- glm(high_blood_pressure ~ tree_top_quartile, data = data_age,
-                              family = poisson(link = "log"))
-
-bind_rows(
-  extract_ratio(model_crude_mp, "Crude, everyone with outcome data", robust = TRUE),
-  extract_ratio(model_crude_age_sample, "Crude, participants with age data", robust = TRUE)
+  extract_ratio(model_logit,  "Logistic (OR)"),
+  extract_ratio(model_logbin, "Log-binomial (PR)")
 )
 ```
 
-Here the crude PR barely moves (0.598 vs. 0.602), because only a few participants are missing age.
-With a covariate that has a lot of missing data, the difference can be much larger. The loop in
-Step 6 does this restriction automatically.
-
-## Step 6: Check every candidate at once
-
-Repeating Steps 3–5 by hand for every candidate is tedious and easy to get wrong. The loop below
-does it for each variable in `candidates`. It includes:
-
-- **education** and **tract poverty** (`pov_allage`) — the DAG's minimally sufficient set;
-- **age**, **gender**, and **race/ethnicity** — not required by the DAG (age is part of another
-  valid adjustment set);
-- **obesity** (`obese`) — a mediator in our DAG, included only to show what the data say about it.
-
-```{webr-r}
-candidates <- c("education", "pov_allage", "r_age", "gender", "race_ethnicity", "obese")
-
-cie_table <- data.frame()
-
-for (covariate in candidates) {
-
-  # 1. Keep participants with no missing data on the outcome, exposure, or this covariate
-  data_cc <- data %>%
-    filter(!is.na(high_blood_pressure), !is.na(tree_top_quartile), !is.na(.data[[covariate]]))
-
-  # 2. Crude model in those participants
-  crude <- glm(high_blood_pressure ~ tree_top_quartile, data = data_cc,
-               family = poisson(link = "log"))
-
-  # 3. Model adjusted for this covariate only
-  adj_formula <- as.formula(paste("high_blood_pressure ~ tree_top_quartile +", covariate))
-  adjusted <- glm(adj_formula, data = data_cc, family = poisson(link = "log"))
-
-  # 4. Pull out the tree canopy PRs (robust CIs) and calculate the percent change
-  pr_c <- extract_ratio(crude, "crude", robust = TRUE) %>% filter(Term == "tree_top_quartile")
-  pr_a <- extract_ratio(adjusted, covariate, robust = TRUE) %>% filter(Term == "tree_top_quartile")
-
-  cie_table <- bind_rows(cie_table, data.frame(
-    Covariate   = covariate,
-    N           = nobs(adjusted),
-    PR_crude    = pr_c$Estimate,
-    PR_adjusted = pr_a$Estimate,
-    CI_Lower    = pr_a$CI_Lower,
-    CI_Upper    = pr_a$CI_Upper,
-    Pct_change  = (pr_c$Estimate - pr_a$Estimate) / pr_c$Estimate * 100
-  ))
-}
-
-cie_table %>%
-  mutate(across(PR_crude:CI_Upper, ~ round(.x, 2)),
-         Pct_change = round(Pct_change, 1)) %>%
-  arrange(desc(abs(Pct_change)))
-```
-
-**What the loop does:** `for (covariate in candidates)` runs the code inside the braces once for
-each name in `candidates`, storing the current name in `covariate`. `.data[[covariate]]` lets
-`filter()` refer to a column whose name is stored in a variable. `paste()` builds the model formula
-as text (e.g., `"high_blood_pressure ~ tree_top_quartile + education"`), and `as.formula()` turns
-that text into a formula R can use. Each pass adds one row to `cie_table` with `bind_rows()`.
-
 **Questions to consider:**
 
-- Which variables change the estimate by 10% or more? Which change it by less than 5%?
-- Gender barely changes the estimate. Using what you checked in Lesson 3, explain why.
-- Age changes the estimate by about 3–4% even though the DAG says it is not a confounder. Does that
-  mean the DAG is wrong?
-- Obesity changes the estimate by only about 1%. Does that mean it would be fine to adjust for it?
-
-::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
-| Covariate | PR adjusted (95% CI) | % change |
-|---|---|---|
-| Education | 0.68 (0.56, 0.82) | −13.4 |
-| Tract poverty | 0.64 (0.53, 0.78) | −7.1 |
-| Age | 0.62 (0.52, 0.75) | −3.5 |
-| Race/ethnicity | 0.61 (0.50, 0.73) | −1.8 |
-| Obesity | 0.60 (0.50, 0.73) | −1.0 |
-| Gender | 0.60 (0.50, 0.72) | 0.0 |
-
-*(Crude PR = 0.60 in each comparison sample.)*
-
-- **Education** is the only variable above 10%. **Tract poverty** is below 10% but not trivial
-  (7%). Race/ethnicity, obesity, and gender change the estimate by less than 2%.
-- In Lesson 3 you saw that tree canopy is about the same for men and women. Gender is associated
-  with the outcome but **not with the exposure**, so it cannot confound — exactly what the DAG
-  assumed (no arrow from gender to tree canopy).
-- Not necessarily. Participants in the top canopy quartile are, by chance, slightly younger on
-  average (43.8 vs. 45.2 years), and age is a strong risk factor for high blood pressure, so even a
-  small imbalance shifts the estimate a little. {age, education, tract poverty} is also a valid
-  adjustment set for this DAG, so including age would be defensible. A small change like this does not
-  overturn the DAG.
-- **No.** The change-in-estimate approach cannot tell a confounder from a mediator — it only shows
-  how much the estimate moves. Whether obesity *should* be adjusted for depends on where it sits in
-  the causal structure, and our DAG places it on the causal pathway. Adjusting for a mediator is
-  overadjustment, however much or little the estimate changes. This is the main reason to draw the
-  DAG first.
-:::
-
-::: {.callout-warning}
-## What the change-in-estimate approach cannot tell you
-
-- It **cannot distinguish confounders from mediators or colliders.** Adjusting for either can change
-  the estimate a lot. Only your causal assumptions (the DAG) can tell you which is which.
-- It **can't detect confounding by variables you haven't measured.** If a confounder is not in the
-  dataset, no amount of modeling will reveal it — note it as a limitation.
-- **The percent change depends on how the exposure is coded.** See the next box.
-:::
-
-::: {.callout-note collapse="true" title="💡 What if my exposure is continuous? Click to read before calculating your own % change"}
-With a continuous exposure, the PR is for a **one-unit** change. If that unit is small, the PR is
-very close to 1, and even real confounding produces a tiny percent change.
-
-Here is tree canopy as a continuous percentage, crude and adjusted for education:
-
-```{webr-r}
-data <- data %>% mutate(hrlctree_pct = hrlctree * 100)   # as in Lesson 5: 1 unit = 1 percentage point
-
-m_c <- glm(high_blood_pressure ~ hrlctree_pct, data = data, family = poisson(link = "log"))
-m_a <- glm(high_blood_pressure ~ hrlctree_pct + education, data = data, family = poisson(link = "log"))
-
-b_c <- coef(m_c)["hrlctree_pct"]
-b_a <- coef(m_a)["hrlctree_pct"]
-
-data.frame(
-  Contrast    = c("Per 1 percentage point", "Per 10 percentage points"),
-  PR_crude    = exp(c(1, 10) * b_c),
-  PR_adjusted = exp(c(1, 10) * b_a)
-) %>%
-  mutate(Pct_change = (PR_crude - PR_adjusted) / PR_crude * 100)
-```
-
-Per 1 percentage point, the PR moves from 0.973 to 0.980 — a change of under 1%. Per 10 percentage
-points, the *same* models give 0.76 and 0.82 — a change of about 8%. The amount of confounding is
-the same; only the size of the contrast differs.
-
-**What to do:** calculate the percent change for a **meaningful contrast** — for example, per 10
-units, or per interquartile-range (IQR) increase (`IQR(data$YOUR_EXPOSURE, na.rm = TRUE)`) — and
-report which contrast you used. Choose the contrast before you look at the results.
-:::
-
-## Step 7: Fit the final adjusted model
-
-Now bring the two approaches together. Our DAG says **education and tract poverty** are sufficient
-to remove confounding, and the data agree that both move the estimate (13% and 7%). We adjust for
-both in one model.
-
-```{webr-r}
-model_final <- glm(high_blood_pressure ~ tree_top_quartile + education + pov_allage,
-                   data = data, family = poisson(link = "log"))
-
-final_pr <- extract_ratio(model_final, "Adjusted for education and tract poverty", robust = TRUE)
-final_pr
-
-# Crude vs. adjusted, side by side -- the start of Table 2 in your final report
-bind_rows(
-  extract_ratio(model_crude_mp, "Crude", robust = TRUE),
-  final_pr
-) %>%
-  filter(Term == "tree_top_quartile") %>%
-  mutate(across(Estimate:CI_Upper, ~ round(.x, 2)))
-```
-
-**Questions to consider:**
-
-- How much did the PR change from crude to fully adjusted?
-- Interpret the adjusted PR in one sentence.
-- The model also returns PRs for education and tract poverty. Should you report and interpret
-  those?
+- Compare each estimate to the one you calculated by hand in Step 2. Do they match?
+- Write a one-sentence interpretation of the PR and its 95% CI.
 
 ::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've written your own"}
-- The PR moved from **0.60** (crude) to **0.71** (adjusted), a change of about **18%** — more than
-  either variable produced on its own.
-- *Example interpretation:* After adjusting for individual education and census-tract poverty, the
-  prevalence of high blood pressure among participants living in the greenest quarter of census
-  tracts was 0.71 times the prevalence among those living in the other three quarters (95% CI:
-  0.58, 0.86) — about 29% lower. Adjustment moved the estimate toward the null, but the association
-  remained.
-- **Generally, no.** The model was built to estimate the effect of **tree canopy**, and the
-  adjustment set was chosen to remove confounding of *that* association. The education and poverty
-  PRs are not adjusted for *their own* confounders, and the tree canopy term may even be a mediator
-  for them. Interpreting them as causal effects is a well-known mistake called the
-  **"Table 2 fallacy."** Report the exposure estimate; list the covariates you adjusted for.
+- Yes — the logistic model's OR (0.63) and the log-binomial model's PR (0.72) match the
+  two-by-two table exactly. A crude model with a single binary exposure is doing the same
+  calculation as the table; what the model adds is a confidence interval, and (from next week)
+  the ability to adjust for other variables.
+- *Example interpretation:* The prevalence of high blood pressure among participants living in
+  census tracts with tree canopy above the median was 0.72 times the prevalence among those living
+  in tracts at or below the median (95% CI: 0.63, 0.83) — about 28% lower. Because the whole CI is
+  below 1, the data are not consistent with no association (a PR of 1).
 :::
 
-::: {.callout-note}
-## Writing up your adjustment decision (Milestone 3)
+## Step 4: Entering the exposure as a continuous term
 
-A clear justification states the rule you used and applies it. For example:
+Dichotomizing at the median throws away information. By creating a binary variable in this way,
+we are in essence treating someone who lives in a census tract with 13% tree canopy coverage (just
+greater than the median) the same as someone living in a tract with ~63% coverage (the maximum of
+the distribution). Entering `hrlctree` as a continuous term uses
+all the information available. But recall that `hrlctree` is a **proportion** (0 to 1), so a
+"one-unit increase" would mean going from 0% to 100% canopy — a meaningless comparison. We rescale
+by multiplying by 100, so that the exposure is a **percentage** (0 to 100) and a one-unit increase
+means a **one-percentage-point** increase in tree canopy cover (for example, from 12% to 13%).
 
-*"We used a DAG to identify a minimally sufficient adjustment set (individual education and
-census-tract poverty). We then added each candidate covariate to the crude model one at a time and
-considered a change of 10% or more in the prevalence ratio to indicate meaningful confounding.
-Education changed the estimate by 13% and tract poverty by 7%. We adjusted for both because they
-form the DAG's minimally sufficient set, even though tract poverty fell below the 10% threshold.
-We did not adjust for obesity or physical activity, which we hypothesized to be mediators."*
+```{webr-r}
+data <- data %>%
+  mutate(hrlctree_pct = hrlctree * 100)   # percent canopy: 1 unit = 1 percentage point
 
-There is rarely a single right answer. There are trade-offs to adjusting (lost precision, lost
-participants if a covariate has missing data, overadjustment) and trade-offs to not adjusting
-(residual confounding). What matters is that your rule is stated in advance, applied consistently,
-and justified.
+summary(data$hrlctree_pct)                # check the rescaling: now about 2 to 63
+
+model_cont <- glm(high_blood_pressure ~ hrlctree_pct, data = data,
+                  family = binomial(link = "log"))
+
+summary(model_cont)
+
+extract_ratio(model_cont, "Log-binomial, continuous (per 1 percentage point)")
+```
+
+**Questions to consider:**
+
+- Interpret the PR per one-percentage-point increase in tree canopy.
+- This model assumes that *every* one-point increase — from 5% to 6%, or from 40% to 41% —
+  multiplies prevalence by the same amount. Is that a reasonable assumption?
+
+::: {.callout-note collapse="true" title="💡 Answers — click to reveal after you've thought about it"}
+- Each one-percentage-point increase in census-tract tree canopy cover was associated with a
+  **2.7% lower prevalence** of high blood pressure (PR = 0.973; 95% CI: 0.964, 0.983). Because the
+  PR for a single percentage point is close to 1, report it to three decimal places so the
+  estimate and CI are distinguishable.
+- A one-point change is small relative to the range of canopy (about 2% to 63%). Because the model
+  multiplies the PR for each additional point, you can also describe a larger contrast by raising
+  the PR to that power: for a 10-point increase, 0.973¹⁰ ≈ 0.76, or about 24% lower prevalence.
+  (In R: `exp(10 * coef(model_cont)[2])`.) The model and its assumptions are the same; only the size
+  of the comparison you report changes.
+- We can't tell from this model — a single continuous term will return one PR no matter what the
+  true shape of the relationship is. That is exactly what Part 2 checks.
+:::
+
+::: {.callout-note collapse="true" title="💡 What if my log-binomial model won't converge?"}
+Log-binomial models sometimes fail with an error like *"no valid set of coefficients has been
+found: please supply starting values"*. This happens because predicted prevalences must stay below
+1, which the fitting algorithm can struggle with — especially when an exposure has a few extremely
+high values. Two common fixes:
+
+1. **Supply starting values.** Set the intercept to the log of the overall prevalence and the other
+   coefficients to 0, e.g. `start = c(log(0.3), 0)` for a model with one exposure term.
+2. **Use a modified Poisson model** — a Poisson model with robust ("sandwich") standard errors,
+   which also estimates a prevalence ratio.
+
+**Code: running a modified Poisson model (in RStudio)**
+
+```r
+# Packages for robust ("sandwich") standard errors -- install once with install.packages()
+library(sandwich)
+library(lmtest)
+
+# Fit a Poisson model with a log link (same outcome and exposure as the log-binomial model)
+model_pois <- glm(high_blood_pressure ~ hrlctree_pct, data = data,
+                  family = poisson(link = "log"))
+
+# Replace the usual standard errors with robust ones
+robust_se <- vcovHC(model_pois, type = "HC0")
+
+coeftest(model_pois, vcov = robust_se)      # coefficients with robust SEs
+exp(coef(model_pois))                       # PR point estimate
+exp(coefci(model_pois, vcov = robust_se))   # PR 95% CI
+```
 :::
 
 ---
 
-::: {.callout-tip title="🧠 Your Turn: A change-in-estimate table for your own project"}
-Using **your project's exposure, outcome, and DAG**:
+::: {.callout-tip title="🧠 Your Turn: Fit a crude model for your own project"}
+Using the **exposure and outcome from your project** (and the exposure coding you decided on in
+Lesson 5):
 
-1. Fit your crude model (modified Poisson for a binary outcome; `lm()` for a continuous one).
-2. Edit the loop in Step 6: change `candidates` to the variables in your DAG's adjustment set (plus
-   any others you want to check), and swap in your exposure and outcome names. If your exposure is
-   continuous, calculate the percent change for a meaningful contrast (see the box above).
-3. Fit your final adjusted model and write two or three sentences justifying your final adjustment
-   set.
+1. Check whether your outcome is binary or continuous and, if binary, how common it is.
+2. Fit the appropriate crude model: log-binomial (or logistic, if you can justify it) for a binary
+   outcome, or `lm()` for a continuous one. If your exposure is continuous and a one-unit change
+   isn't meaningful (e.g., it's a proportion), rescale it first.
+3. Use `extract_ratio()` to get your estimate and 95% CI (skip the exponentiating for a linear
+   model — use `coef()` and `confint()` instead), and write a one-sentence interpretation.
 :::
 
 ```{webr-r}
-# Your code here — change-in-estimate table and final model for your own project
+# Your code here — a crude model for your own exposure and outcome
 
 ```
 
-::: {.callout-note collapse="true" title="💡 Example: traffic density and asthma — click to reveal"}
+::: {.callout-note collapse="true" title="💡 Example: traffic density (ctb1traff) and asthma — click to reveal"}
 ```{webr-r}
+# Asthma is binary; how common is it?
+prop.table(table(data$asthma))
+
+# Traffic density dichotomized at the median: 1 = above the median, 0 = at or below it
 data <- data %>%
   mutate(traffic_high = ifelse(ctb1traff > median(ctb1traff, na.rm = TRUE), 1, 0))
 
-candidates <- c("pov_allage", "current_smoker", "education")
-cie_asthma <- data.frame()
+model_asthma_pr <- glm(asthma ~ traffic_high, data = data, family = binomial(link = "log"))
+model_asthma_or <- glm(asthma ~ traffic_high, data = data, family = binomial(link = "logit"))
 
-for (covariate in candidates) {
-  data_cc <- data %>%
-    filter(!is.na(asthma), !is.na(traffic_high), !is.na(.data[[covariate]]))
-
-  crude <- glm(asthma ~ traffic_high, data = data_cc, family = poisson(link = "log"))
-  adjusted <- glm(as.formula(paste("asthma ~ traffic_high +", covariate)),
-                  data = data_cc, family = poisson(link = "log"))
-
-  pr_c <- extract_ratio(crude, "crude", robust = TRUE) %>% filter(Term == "traffic_high")
-  pr_a <- extract_ratio(adjusted, covariate, robust = TRUE) %>% filter(Term == "traffic_high")
-
-  cie_asthma <- bind_rows(cie_asthma, data.frame(
-    Covariate = covariate, N = nobs(adjusted),
-    PR_crude = pr_c$Estimate, PR_adjusted = pr_a$Estimate,
-    CI_Lower = pr_a$CI_Lower, CI_Upper = pr_a$CI_Upper,
-    Pct_change = (pr_c$Estimate - pr_a$Estimate) / pr_c$Estimate * 100
-  ))
-}
-
-cie_asthma %>% mutate(across(PR_crude:Pct_change, ~ round(.x, 2)))
-
-# Final model: the DAG's minimally sufficient set was {tract_poverty}
-model_asthma_final <- glm(asthma ~ traffic_high + pov_allage, data = data,
-                          family = poisson(link = "log"))
-extract_ratio(model_asthma_final, "Adjusted for tract poverty", robust = TRUE)
+bind_rows(
+  extract_ratio(model_asthma_pr, "Log-binomial (PR)"),
+  extract_ratio(model_asthma_or, "Logistic (OR)")
+)
 ```
 
-None of the candidates moves the traffic–asthma PR by anywhere near 10%, so the crude and adjusted
-estimates are nearly the same. That is a perfectly good result to report: it means that, *among the
-variables we measured and believe to be confounders*, there is little evidence of confounding.
-Following the DAG, the final model adjusts for tract poverty. Smoking was checked too, because it is
-a strong asthma risk factor, but it did not change the estimate and the DAG did not require it.
+Interpretation: the prevalence of asthma among participants living in census tracts with traffic
+density above the median was 1.81 times the prevalence among those in tracts at or below the median
+(95% CI: 1.37, 2.38).
+
+Asthma affects only about 10% of participants, so the OR (1.93) and PR are closer to each other
+here than they were for high blood pressure — the rarer the outcome, the better the OR approximates
+the PR.
+
+Why dichotomize rather than enter traffic as a continuous term? Traffic density is very
+right-skewed — a handful of tracts have traffic many times higher than everyone else — and a
+log-binomial model with continuous traffic fails to converge for exactly the reason described in
+the "won't converge" box above. The quartile approach in Part 2 is another way to handle it.
+:::
+
+---
+
+# Part 2: Checking the Linearity Assumption
+
+The continuous model in Step 4 produced **one** number to summarize the whole relationship. The
+check below asks whether that one number is a fair summary. The steps:
+
+1. Categorize the exposure into several groups (quartiles here).
+2. Fit a model with a separate **indicator term** for each category, compared with a reference
+   category.
+3. Plot the estimates. If they change by roughly the same amount from one category to the next,
+   the linearity assumption is reasonable; if they bend, level off, or jump, it isn't.
+
+## Step 1: Categorize tree canopy into quartiles
+
+```{webr-r}
+data <- data %>%
+  mutate(tree_quartile = factor(ntile(hrlctree, 4)))   # factor() -> one indicator per level
+
+# Range of canopy and prevalence of high blood pressure in each quartile
+data %>%
+  group_by(tree_quartile) %>%
+  summarise(
+    n = n(),
+    min_canopy = min(hrlctree),
+    median_canopy = median(hrlctree),
+    max_canopy = max(hrlctree),
+    prevalence_hbp = mean(high_blood_pressure, na.rm = TRUE)
+  )
+```
+
+`ntile(hrlctree, 4)` sorts participants from lowest to highest tree canopy and splits them into
+four groups of (nearly) equal size — 500 participants each:
+
+- **Q1** — the 25% of participants living in the **least green** tracts (about 2% to 8% canopy)
+- **Q2** — the next 25% (about 8% to 12% canopy)
+- **Q3** — the next 25% (about 12% to 18% canopy)
+- **Q4** — the 25% of participants living in the **greenest** tracts (about 18% to 63% canopy)
+
+Notice that the quartiles have equal numbers of *people*, not equal ranges of *canopy*: because
+canopy is right-skewed, Q4 spans a much wider range of canopy (about 45 percentage points) than
+Q1–Q3 combined (about 16).
+
+Look at the last column: prevalence of high blood pressure is about 35–36% in Q1 and Q2, 31% in
+Q3, and 20% in Q4.
+
+## Step 2: Fit the model with quartiles as indicator terms
+
+```{webr-r}
+model_quart <- glm(high_blood_pressure ~ tree_quartile, data = data,
+                   family = binomial(link = "log"))
+
+extract_ratio(model_quart, "Log-binomial, quartiles (ref = Q1)")
+```
+
+Wrapping the quartile variable in `factor()` is what tells R to create a separate indicator term
+for each category. Without it, R treats 1, 2, 3, 4 as a continuous number and returns a single
+coefficient — which would *assume* linearity instead of testing it.
+
+**What "ref = Q1" means.** With a categorical exposure, R needs a **reference category** that every
+other category is compared with. By default it uses the first level — here, Q1, the least green
+quartile. Q1 therefore does not get its own row in the output: its PR is 1 by definition. Each
+PR you see is the prevalence of high blood pressure in that quartile **divided by the prevalence
+in Q1**. That is why every interpretation below says "compared with participants in the lowest
+quartile."
+
+**Interpreting the results:**
+
+| Quartile | PR (95% CI) | Interpretation |
+|---|---|---|
+| Q1 (2–8% canopy) | 1 (reference) | The comparison group for every other row |
+| Q2 (8–12%) | 1.03 (0.87, 1.22) | Prevalence essentially the same as Q1 (3% higher). The CI includes 1, so the data are consistent with no difference. |
+| Q3 (12–18%) | 0.89 (0.74, 1.06) | Prevalence 11% lower than Q1, but the CI still includes 1, so this could plausibly be no difference. |
+| Q4 (18–63%) | 0.58 (0.47, 0.72) | Prevalence 42% lower than Q1. The whole CI is below 1: the data are not consistent with no difference. |
+
+In words, for Q4: *the prevalence of high blood pressure among participants living in the greenest
+quarter of tracts was 0.58 times the prevalence among those in the least green quarter (95% CI:
+0.47, 0.72).*
+
+## Step 3: Plot the estimates
+
+We plot each quartile's PR, with Q1 fixed at 1, against the quartile itself. Each quartile gets the
+same amount of space on the x-axis, so you can see directly how much the PR changes from one
+quartile to the next. The canopy range of each quartile is shown under its label.
+
+```{webr-r}
+quartile_labels <- data %>%
+  group_by(tree_quartile) %>%
+  summarise(label = paste0("Q", first(tree_quartile), "\n(",
+                           round(min(hrlctree) * 100), "–", round(max(hrlctree) * 100), "%)"))
+
+quartile_results <- extract_ratio(model_quart, "Quartiles") %>%
+  mutate(tree_quartile = factor(2:4)) %>%
+  bind_rows(data.frame(tree_quartile = factor(1), Estimate = 1, CI_Lower = 1, CI_Upper = 1)) %>%
+  left_join(quartile_labels, by = "tree_quartile") %>%
+  mutate(tree_quartile = factor(tree_quartile, levels = 1:4)) %>%   # put Q1 first
+  arrange(tree_quartile)
+
+ggplot(quartile_results, aes(x = tree_quartile, y = Estimate, group = 1)) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
+  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0.15) +
+  geom_point(size = 3, color = "blue") +
+  geom_line(color = "blue") +
+  scale_x_discrete(labels = quartile_results$label) +
+  scale_y_log10() +
+  labs(x = "Tree canopy quartile (canopy range)",
+       y = "Prevalence ratio (95% CI, log scale)",
+       title = "High blood pressure by tree canopy quartile (reference = Q1)") +
+  theme_minimal()
+```
+
+The y-axis is on a **log scale** because the log-binomial model is linear on the log scale: if the
+linearity assumption holds, the PRs should step down (or up) by about the same amount from each
+quartile to the next.
+
+**Questions to consider:**
+
+- Do Q1, Q2, and Q3 look different from each other? Where does most of the change happen?
+- Does the line fall at a steady rate across the quartiles, or does it stay flat and then drop?
+- Now look at the canopy ranges under each label. How does the width of Q4 change your reading of
+  the "drop"?
+- Given this plot, would you keep tree canopy as a single continuous term, use the quartile
+  categories, or collapse some categories together?
+
+::: {.callout-note collapse="true" title="💡 Discussion — click to reveal after you've looked at the plot yourself"}
+Q2 is essentially the same as Q1, Q3 is slightly lower, and Q4 is much lower (PR ≈ 0.58). On
+this plot the line is roughly **flat from Q1 to Q3 and then drops sharply to Q4** — not the steady,
+equal-sized steps we would expect if the linearity assumption held. That is a sign the assumption
+may not hold.
+
+The canopy ranges add an important caveat. The quartiles are equal-sized groups of *people*, not
+equal-width ranges of *canopy*: Q1–Q3 together cover only about 2% to 18% canopy, while Q4 alone
+covers about 18% to 63%. Part of the "sudden drop" is simply that Q4 contains a much wider — and
+much greener — range of tracts. Measured in canopy percentage points, the decline above roughly
+10% canopy is more gradual than this plot makes it look. This is why it is always worth checking
+what range of the exposure each category covers before interpreting the shape.
+
+There is no single right answer about what to do next — reasonable options include:
+
+- **Keep the continuous term**, if you judge the departure from linearity to be small. It is the
+  most efficient and easiest to communicate (one PR per percentage point of canopy).
+- **Collapse categories that look alike.** Here, Q1–Q3 could be combined into one reference group
+  and compared with Q4 (the top quartile): fewer coefficients, and the estimate reflects where the
+  change actually appears.
+- **Use a flexible term such as a spline** (optional section below).
+
+Whatever you choose, justify it using the plot, your sample size in each category, and what will be
+most meaningful for your research question.
+:::
+
+## Collapsing categories that look alike
+
+```{webr-r}
+data <- data %>%
+  mutate(tree_top_quartile = ifelse(tree_quartile == "4", 1, 0))  # Q4 vs. Q1-Q3
+
+table(data$tree_quartile, data$tree_top_quartile)   # always check a recode
+
+model_top <- glm(high_blood_pressure ~ tree_top_quartile, data = data,
+                 family = binomial(link = "log"))
+
+extract_ratio(model_top, "Log-binomial, top quartile vs. Q1-Q3")
+```
+
+**Question to consider:** interpret this PR. How is it different from the PR for tree canopy
+dichotomized at the median (Part 1, Step 3), and why?
+
+::: {.callout-note collapse="true" title="💡 Answer — click to reveal after you've thought about it"}
+The prevalence of high blood pressure among participants in the top quartile of tree canopy was
+0.60 times the prevalence among participants in the lower three quartiles combined (95% CI: 0.49,
+0.72) — about 40% lower.
+
+This is further from the null than the median-dichotomized PR (0.72) because the comparison is
+different. Dichotomizing at the median puts Q3 in the "high canopy" group, even though Q3's
+prevalence is close to Q1 and Q2's; that dilutes the contrast. Comparing Q4 with Q1–Q3 separates
+the groups where the difference actually appears.
+:::
+
+## Optional: relaxing linearity with a spline
+
+You will not be required to use splines in this course, but they are common in environmental
+epidemiology (for example, temperature–mortality curves). A **natural cubic spline** lets the
+relationship bend smoothly instead of forcing a straight line. `df` sets how flexible the curve is.
+
+```{webr-r}
+library(splines)
+
+model_spline <- glm(high_blood_pressure ~ ns(hrlctree, df = 3), data = data,
+                    family = binomial(link = "log"),
+                    start = c(log(0.3), 0, 0, 0))   # starting values help log-binomial converge
+
+model_linear <- glm(high_blood_pressure ~ hrlctree, data = data,
+                    family = binomial(link = "log"))
+
+# Predicted prevalence across the range of canopy, from each model
+canopy_grid <- data.frame(hrlctree = seq(0.02, 0.60, by = 0.01))
+canopy_grid$Spline <- predict(model_spline, newdata = canopy_grid, type = "response")
+canopy_grid$Linear <- predict(model_linear, newdata = canopy_grid, type = "response")
+
+spline_plot <- canopy_grid %>%
+  pivot_longer(c(Spline, Linear), names_to = "Model", values_to = "Predicted") %>%
+  ggplot(aes(x = hrlctree * 100, y = Predicted, color = Model)) +
+  geom_line(linewidth = 1) +
+  labs(x = "Tree canopy cover (%)", y = "Predicted prevalence of high blood pressure",
+       title = "Linear vs. spline model for tree canopy") +
+  theme_minimal()
+
+spline_plot                                    # prevalence scale
+
+spline_plot + scale_y_log10() +                # log scale
+  labs(y = "Predicted prevalence (log scale)", title = "The same models on a log scale")
+
+# Compare model fit: lower AIC = better fit (after penalizing for extra terms)
+AIC(model_linear, model_spline, model_quart, model_top)
+```
+
+::: {.callout-note}
+## Why doesn't the "linear" model look like a straight line?
+
+In the first plot, the curve labeled "Linear" bends. That's because the log-binomial model is
+linear in the **log** of prevalence, not in prevalence itself: log(P) = β₀ + β₁ × canopy. Undoing
+the log gives P = exp(β₀ + β₁ × canopy), which is a curve — each additional percentage point of
+canopy *multiplies* prevalence by the same amount (the PR), rather than subtracting the same
+amount. In the second plot, with the y-axis on a log scale, the "Linear" model is a straight line.
+The linearity assumption we are checking is always about the scale the model works on — here, the
+log scale.
+:::
+
+**Question to consider:** the spline and the linear model have almost identical AIC values. What
+does that suggest about how much the linearity assumption actually matters for this particular
+exposure and outcome?
+
+::: {.callout-note collapse="true" title="💡 Answer — click to reveal after you've thought about it"}
+The spline allows the curve to bend wherever the data suggest, yet it fits the data no better than
+a single straight line on the log scale (the AICs differ by less than 1). The two curves differ
+mainly at the lowest canopy values, where the spline levels off, and slightly at the highest values,
+where few participants live. So, for tree canopy and high
+blood pressure, the linearity assumption appears to be a reasonable approximation, and a
+continuous term (per percentage point of canopy) is a defensible choice. The quartile plot is still
+valuable: it shows *where* along the canopy range the association is concentrated.
+:::
+
+---
+
+::: {.callout-tip title="🧠 Your Turn: Check linearity for your own exposure"}
+Using **your own project's exposure and outcome**:
+
+1. Create quartiles (or quintiles, if your sample size allows) of your exposure with `ntile()`,
+   wrapped in `factor()`, and look at the range of your exposure within each category.
+2. Fit your crude model with the categorical exposure and extract the estimates.
+3. Plot the estimates by category, with the reference category fixed at 1 (or at 0 for a linear
+   model — and use a regular, not log, y-axis).
+4. In two or three sentences, state whether the linearity assumption looks reasonable and what
+   coding you will use in your models going forward.
+:::
+
+```{webr-r}
+# Your code here — linearity check for your own exposure
+
+```
+
+::: {.callout-note collapse="true" title="💡 Example: traffic density (ctb1traff) and asthma — click to reveal"}
+```{webr-r}
+data <- data %>%
+  mutate(traffic_quartile = factor(ntile(ctb1traff, 4)))
+
+# Range of traffic density and asthma prevalence in each quartile
+data %>%
+  group_by(traffic_quartile) %>%
+  summarise(n = n(), min_traffic = min(ctb1traff), max_traffic = max(ctb1traff),
+            prevalence_asthma = mean(asthma))
+
+model_traffic_q <- glm(asthma ~ traffic_quartile, data = data,
+                       family = binomial(link = "log"))
+
+traffic_results <- extract_ratio(model_traffic_q, "Quartiles") %>%
+  mutate(traffic_quartile = factor(2:4)) %>%
+  bind_rows(data.frame(traffic_quartile = factor(1), Estimate = 1, CI_Lower = 1, CI_Upper = 1)) %>%
+  mutate(traffic_quartile = factor(traffic_quartile, levels = 1:4)) %>%   # put Q1 first
+  arrange(traffic_quartile)
+
+traffic_results
+
+ggplot(traffic_results, aes(x = traffic_quartile, y = Estimate, group = 1)) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
+  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0.15) +
+  geom_point(size = 3, color = "blue") +
+  geom_line(color = "blue") +
+  scale_x_discrete(labels = c("Q1", "Q2", "Q3", "Q4")) +
+  scale_y_log10() +
+  labs(x = "Traffic density quartile", y = "Prevalence ratio (95% CI, log scale)",
+       title = "Asthma by traffic density quartile (reference = Q1)") +
+  theme_minimal()
+```
+
+Compared with Q1 (the lowest-traffic quarter of participants), asthma prevalence is similar in Q2
+(PR 1.09), somewhat higher in Q3 (PR 1.35; CI includes 1), and more than twice as high in Q4 (PR
+2.41; 95% CI: 1.65, 3.53). The rise is steepest at the top, so a continuous term may not capture
+the shape well; the quartile categories, or the top quartile vs. the rest, are reasonable choices.
 :::
 
 ---
@@ -800,56 +760,71 @@ a strong asthma risk factor, but it did not change the estimate and the DAG did 
 ```r
 # ---- Setup ----
 library(tidyverse)
-library(sandwich)   # robust standard errors  -- install.packages("sandwich") once
 
 # ---- Read in your processed data ----
 data <- read.csv(file.path("data_processed", "class_data_processed.csv"))
 
-# ---- Helper: exponentiate coefficients and 95% CIs (robust = TRUE for modified Poisson) ----
-extract_ratio <- function(model, label, robust = FALSE) {
-  vc <- if (robust) vcovHC(model, type = "HC0") else vcov(model)
+# ---- Helper: exponentiate coefficients and 95% CIs ----
+extract_ratio <- function(model, label) {
   b  <- coef(model)[-1]
-  se <- sqrt(diag(vc))[-1]
+  se <- sqrt(diag(vcov(model)))[-1]
   data.frame(Model = label, Term = names(b), Estimate = exp(b),
              CI_Lower = exp(b - 1.96 * se), CI_Upper = exp(b + 1.96 * se),
              row.names = NULL)
 }
 
 # ============================================================
-# REPLACE: swap in your own variable names throughout
+# REPLACE: swap in your own exposure and outcome variable names
 # ============================================================
 
-# ---- 1. Change in estimate, one candidate at a time ----
-# candidates = the adjustment set from your DAG, plus any others you want to check
-candidates <- c("CONFOUNDER_1", "CONFOUNDER_2")
-cie_table <- data.frame()
+# ---- Outcome: binary or continuous? rare or common? ----
+table(data$YOUR_OUTCOME, useNA = "ifany")
+prop.table(table(data$YOUR_OUTCOME))
 
-for (covariate in candidates) {
-  data_cc <- data %>%
-    filter(!is.na(YOUR_OUTCOME), !is.na(YOUR_EXPOSURE), !is.na(.data[[covariate]]))
+# ---- Look at your exposure's coding and distribution ----
+summary(data$YOUR_EXPOSURE)
+hist(data$YOUR_EXPOSURE)
 
-  crude <- glm(YOUR_OUTCOME ~ YOUR_EXPOSURE, data = data_cc, family = poisson(link = "log"))
-  adjusted <- glm(as.formula(paste("YOUR_OUTCOME ~ YOUR_EXPOSURE +", covariate)),
-                  data = data_cc, family = poisson(link = "log"))
+# ---- OPTIONAL: rescale a continuous exposure ----
+# Only needed if a one-unit change isn't meaningful for your exposure. For a proportion
+# (0-1, like tree canopy), multiplying by 100 converts it to a percentage, so one unit =
+# one percentage point.
+# Choose the scaling based on your exposure's units and distribution -- or skip this step
+# and use YOUR_EXPOSURE directly below.
+data <- data %>% mutate(YOUR_EXPOSURE_scaled = YOUR_EXPOSURE * 100)   # adjust the scaling
 
-  pr_c <- extract_ratio(crude, "crude", robust = TRUE) %>% filter(Term == "YOUR_EXPOSURE")
-  pr_a <- extract_ratio(adjusted, covariate, robust = TRUE) %>% filter(Term == "YOUR_EXPOSURE")
+# ---- Crude model, continuous exposure ----
+model_cont <- glm(YOUR_OUTCOME ~ YOUR_EXPOSURE_scaled, data = data,
+                  family = binomial(link = "log"))   # continuous outcome: lm(YOUR_OUTCOME ~ ...)
+extract_ratio(model_cont, "Continuous")
 
-  cie_table <- bind_rows(cie_table, data.frame(
-    Covariate = covariate, N = nobs(adjusted),
-    PR_crude = pr_c$Estimate, PR_adjusted = pr_a$Estimate,
-    CI_Lower = pr_a$CI_Lower, CI_Upper = pr_a$CI_Upper,
-    Pct_change = (pr_c$Estimate - pr_a$Estimate) / pr_c$Estimate * 100
-  ))
-}
+# ---- Linearity check: quartiles as indicator terms ----
+data <- data %>% mutate(YOUR_EXPOSURE_quartile = factor(ntile(YOUR_EXPOSURE, 4)))
 
-cie_table %>% mutate(across(PR_crude:Pct_change, ~ round(.x, 2)))
-# Continuous exposure? Compare exp(k * coef) for a meaningful contrast k (e.g., 10 units or the IQR)
+data %>%                                   # exposure range in each quartile
+  group_by(YOUR_EXPOSURE_quartile) %>%
+  summarise(n = n(), min = min(YOUR_EXPOSURE, na.rm = TRUE), max = max(YOUR_EXPOSURE, na.rm = TRUE))
 
-# ---- 2. Final adjusted model ----
-model_final <- glm(YOUR_OUTCOME ~ YOUR_EXPOSURE + CONFOUNDER_1 + CONFOUNDER_2,
-                   data = data, family = poisson(link = "log"))
-extract_ratio(model_final, "Fully adjusted", robust = TRUE)
+model_quart <- glm(YOUR_OUTCOME ~ YOUR_EXPOSURE_quartile, data = data,
+                   family = binomial(link = "log"))
+
+results <- extract_ratio(model_quart, "Quartiles") %>%
+  mutate(YOUR_EXPOSURE_quartile = factor(2:4)) %>%
+  bind_rows(data.frame(YOUR_EXPOSURE_quartile = factor(1), Estimate = 1,
+                       CI_Lower = 1, CI_Upper = 1)) %>%
+  mutate(YOUR_EXPOSURE_quartile = factor(YOUR_EXPOSURE_quartile, levels = 1:4)) %>%   # put Q1 first
+  arrange(YOUR_EXPOSURE_quartile)
+
+ggplot(results, aes(x = YOUR_EXPOSURE_quartile, y = Estimate, group = 1)) +
+  geom_hline(yintercept = 1, linetype = "dashed", color = "red") +
+  geom_errorbar(aes(ymin = CI_Lower, ymax = CI_Upper), width = 0.15) +
+  geom_point(size = 3) +
+  geom_line() +
+  scale_x_discrete(labels = c("Q1", "Q2", "Q3", "Q4")) +
+  scale_y_log10() +
+  labs(x = "[Exposure] quartile", y = "Prevalence ratio (95% CI)",
+       title = "[Outcome] by [exposure] quartile (reference = Q1)") +
+  theme_minimal()
 ```
 :::
 
@@ -859,19 +834,18 @@ extract_ratio(model_final, "Fully adjusted", robust = TRUE)
 
 This tutorial covered:
 
-- The three conditions for confounding, and why the third (not on the causal pathway) requires
-  causal assumptions rather than data
-- Reading a DAG: sorting causal and backdoor paths, and recognizing colliders
-- Identifying a minimally sufficient adjustment set, and why mediators should not be adjusted for
-- Using modified Poisson regression with robust standard errors when a log-binomial model won't
-  converge
-- The change-in-estimate approach: adding candidates one at a time, comparing estimates in the same
-  participants, and why the percent change depends on how the exposure is coded
-- Combining the DAG and the change-in-estimate results to choose and justify a final adjustment set
+- Choosing a model from the outcome type, and preferring the log-binomial model (prevalence ratio)
+  over logistic regression (odds ratio) when a binary outcome is common
+- Reproducing a hand-calculated two-by-two table estimate with a regression model, and why we
+  exponentiate coefficients and confidence intervals to get ratio measures
+- Rescaling a continuous exposure so that "one unit" is a meaningful comparison
+- Checking the linearity assumption with categorical indicator terms, interpreting each category's
+  estimate relative to the reference category, and deciding whether to keep a continuous term,
+  collapse categories, or use a spline
 
-The DAG, change-in-estimate table, and final adjustment set you produced for your own project are
-the core of **Milestone 3**.
+The crude model and linearity check you completed for your own project are the core of
+Milestone 2.
 
-**Next week:** Effect modification — so far we have estimated a single PR for everyone. Next week
-you'll ask whether the association between your exposure and outcome *differs* across groups (for
-example, by education or gender), and how to test that formally.
+**Next week:** Confounding and causal diagrams — every model in this tutorial was **crude**
+(unadjusted). Next week you'll use a DAG to decide which variables belong in the model alongside
+your exposure, and see how adjusting for them changes your estimate.

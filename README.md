@@ -9,32 +9,32 @@ no R or RStudio installation required. Built with [Quarto](https://quarto.org) a
 
 ## What's here
 
-- **[Lesson 1: Intro to R and Handling Data](https://schinasi.github.io/EOH635/lesson1.html)**
+- **[Lesson 2: Intro to R and Handling Data](https://schinasi.github.io/EOH635/lesson2.html)**
   — R basics (assignment, data frames, indexing), project organization and file paths, loading
   packages, reading in data, exploratory functions (`head`, `str`, `summary`, `dim`), recoding
   variables, and merging in a second dataset by a shared key.
-- **[Lesson 2: Reading a Published Conceptual Framework](https://schinasi.github.io/EOH635/lesson2.html)**
+- **[Lesson 3: Reading a Published Conceptual Framework](https://schinasi.github.io/EOH635/lesson3.html)**
   — a reading/reflection activity applying exposure, outcome, mediator, confounder, and effect
   modifier vocabulary to a published greenspace-and-health framework (Lachowycz & Jones 2013).
-- **[Lesson 3: Exploratory Data Analysis & Data Cleaning](https://schinasi.github.io/EOH635/lesson3.html)**
+- **[Lesson 4: Exploratory Data Analysis & Data Cleaning](https://schinasi.github.io/EOH635/lesson4.html)**
   — identifying and recoding implausible values (age outliers), visualizing distributions
   (histograms, boxplots), and a first look at the course's primary exposure–outcome
   relationship — tree canopy cover and high blood pressure — including how to check whether a
   third variable (like gender or education) might be confounding that relationship.
-- **[Lesson 4: Exposure Assessment & Misclassification](https://schinasi.github.io/EOH635/lesson4.html)**
+- **[Lesson 5: Exposure Assessment & Misclassification](https://schinasi.github.io/EOH635/lesson5.html)**
   — coding a continuous exposure (quartiles, tertiles, median/mean splits) using NDVI, and how
   differential vs. non-differential misclassification bias an effect estimate, using a simulated
   ozone/asthma dataset where the true exposure is known.
-- **[Lesson 5: Regression, Linearity & Dose-Response](https://schinasi.github.io/EOH635/lesson5.html)**
+- **[Lesson 6: Regression, Linearity & Dose-Response](https://schinasi.github.io/EOH635/lesson6.html)**
   — choosing a model from the outcome type, logistic vs. log-binomial regression for a common
   outcome, interpreting exponentiated estimates, and checking the linearity assumption with
   categorical indicator terms (tree canopy and high blood pressure).
-- **[Lesson 6: Confounding & Directed Acyclic Graphs](https://schinasi.github.io/EOH635/lesson6.html)**
+- **[Lesson 7: Confounding & Directed Acyclic Graphs](https://schinasi.github.io/EOH635/lesson7.html)**
   — writing a DAG with `dagitty`, listing causal and backdoor paths, finding a minimally
   sufficient adjustment set, then the change-in-estimate approach (one covariate at a time, same
   participants), modified Poisson regression with robust standard errors, and a final adjusted
   model.
-- **[Lesson 7: Effect Modification & Heterogeneity of Effects](https://schinasi.github.io/EOH635/lesson7.html)**
+- **[Lesson 8: Effect Modification & Heterogeneity of Effects](https://schinasi.github.io/EOH635/lesson8.html)**
   — whether the tree canopy–high blood pressure association differs by gender: an a priori
   hypothesis, stratified models and a log-scale plot, Cochran's Q, an interaction model with
   stratum-specific estimates, a robust Wald test, a likelihood ratio test on log-binomial models,
@@ -55,7 +55,7 @@ without using identifiable data. It combines individual-level health outcomes an
 (blood pressure, diabetes, asthma, mental health, stress, smoking, physical activity, etc.) and
 demographics with real Philadelphia census-tract-level environmental and sociodemographic data
 (tree canopy cover, traffic density, violent crime, poverty, education, race/ethnicity
-composition). A separate tract-level greenness (NDVI) file is linked in during Lesson 1.
+composition). A separate tract-level greenness (NDVI) file is linked in during Lesson 2.
 
 The health/behavior outcomes carry real, moderate, and deliberately calibrated associations with
 plausible predictors (e.g., tree canopy cover is protective for blood pressure; traffic density
@@ -77,11 +77,11 @@ relationship by education, while gender is deliberately left unrelated to tree c
 quarto_tutorials/
 ├── _quarto.yml                 # Project + site config (output-dir: docs, for GitHub Pages)
 ├── index.qmd                   # Landing page listing lessons
-├── lesson1.qmd ... lesson7.qmd   # The lessons
+├── lesson2.qmd ... lesson8.qmd   # The lessons
 ├── codebook.qmd                # Data codebook
 ├── data/                       # Class data files, fetched by students' browsers at runtime
 │   ├── class_data_raw.csv
-│   ├── class_data_processed.csv  # class_data_raw.csv + NDVI merged — the Lesson 1 output
+│   ├── class_data_processed.csv  # class_data_raw.csv + NDVI merged — the Lesson 2 output
 │   ├── PHL_NDVI_summer_annual.csv
 │   └── codebook.xlsx
 ├── _extensions/coatless/webr/  # quarto-webr extension, vendored (pinned to 0.4.3)
@@ -101,11 +101,11 @@ git push
 
 GitHub Pages (Settings → Pages → Deploy from branch → `main` / `/docs`) picks up the new
 `docs/` output automatically within a minute or two. Nothing else needs to change — Pages
-config, the data-fetch URL in `lesson1.qmd`, and the extension are already set up.
+config, the data-fetch URL in `lesson2.qmd`, and the extension are already set up.
 
 ### Adding a future lesson
 
-1. Duplicate `lesson1.qmd` (or `lesson3.qmd`) as a starting point, keeping the same YAML header
+1. Duplicate `lesson2.qmd` (or `lesson4.qmd`) as a starting point, keeping the same YAML header
    (`webr:`, `filters: [webr]`, etc.).
 2. Add it to the navbar in `_quarto.yml` and link it from `index.qmd`.
 3. If it needs its own data file, drop it in `data/` and fetch it the same way existing lessons
@@ -130,6 +130,6 @@ config, the data-fetch URL in `lesson1.qmd`, and the extension are already set u
 The data-generating scripts (original generation + a later remediation that fixed some
 association/confounding bugs) are kept in a **separate, private** instructor-only repo, not
 here — they document the dataset's exact ground-truth model, which would give away the answer
-to the confounding exercise in Lesson 3 if published alongside it.
+to the confounding exercise in Lesson 4 if published alongside it.
 
 </details>

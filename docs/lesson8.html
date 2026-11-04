@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Leah Schinasi">
-<meta name="dcterms.date" content="2026-10-28">
+<meta name="dcterms.date" content="2026-11-04">
 
-<title>Lesson 1: Intro to R and Handling Data – EOH 635: Environmental Epidemiology Methods</title>
+<title>Lesson 8: Effect Modification &amp; Heterogeneity of Effects – EOH 635: Environmental Epidemiology Methods</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -388,7 +388,7 @@ iframe.qwebr-output-code-browse {
 // Document level settings ----
 
 // Determine if we need to install R packages
-globalThis.qwebrInstallRPackagesList = ['tidyverse'];
+globalThis.qwebrInstallRPackagesList = ['tidyverse', 'sandwich'];
 
 // Specify possible locations to search for the repository
 globalThis.qwebrPackageRepoURLS = ['https://repo.r-wasm.org/'];
@@ -410,7 +410,7 @@ globalThis.qwebrCustomizedWebROptions = {
 };
 
 // Store cell data
-globalThis.qwebrCellDetails = [{"code":"x <- 10  # Assigns the value 10 to x\n\nprint(x)  # Prints x\n\nx  # Also prints x","id":1,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-1","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"my_data <- data.frame(name = c(\"Alice\", \"Bob\"), age = c(25, 30))\n\nprint(my_data)","id":2,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-2","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Extracts the \"name\" column\nmy_data$name","id":3,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-3","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"my_data[1, 2]  # First row, second column\nmy_data[, 1]   # First column (all rows)","id":4,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-4","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here","id":5,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-5","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"my_data$age[2]","id":6,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-6","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"library(tidyverse)","id":7,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-7","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data_base_url <- \"https://raw.githubusercontent.com/schinasi/EOH635/main/data/\"\n\ndir.create(\"data_raw\", showWarnings = FALSE)\n\ndownload.file(paste0(data_base_url, \"class_data_raw.csv\"), file.path(\"data_raw\", \"class_data_raw.csv\"))\n\ndata <- read.csv(file.path(\"data_raw\", \"class_data_raw.csv\"))","id":8,"options":{"autorun":"true","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-8","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"head(data)","id":9,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-9","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"str(data)","id":10,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-10","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data$geoid10 <- as.character(data$geoid10)","id":11,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-11","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"dim(data)","id":12,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-12","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"summary(data)","id":13,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-13","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data$education","id":14,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-14","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(data$education)\n\nprop.table(table(data$education))\n\nprop.table(table(data$education)) * 100","id":15,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-15","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — counts, proportions, and percentages for race_ethnicity\n\n\n# Your answers:\n# 1. Hispanic or Latino (of any race), count =\n# 2. White alone, not Hispanic or Latino, proportion =\n# 3. Asian alone, not Hispanic or Latino, percentage =","id":16,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-16","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(data$race_ethnicity)\n\nprop.table(table(data$race_ethnicity))\n\nprop.table(table(data$race_ethnicity)) * 100","id":17,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-17","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"str(data$education)","id":18,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-18","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data$num_education <- ifelse(data$education == \"< Bachelor's\", 0, 1)","id":19,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-19","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — recreate num_education using mutate() + if_else(), call it num_education2","id":20,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-20","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(num_education2 = if_else(education == \"< Bachelor's\", 0, 1))","id":21,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-21","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(data$num_education, data$education)","id":22,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-22","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"download.file(paste0(data_base_url, \"PHL_NDVI_summer_annual.csv\"), file.path(\"data_raw\", \"PHL_NDVI_summer_annual.csv\"))\n\nPHL_NDVI_summer_annual <- read.csv(file.path(\"data_raw\", \"PHL_NDVI_summer_annual.csv\"))","id":23,"options":{"autorun":"true","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-23","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"names(PHL_NDVI_summer_annual)\nstr(PHL_NDVI_summer_annual)\nhead(PHL_NDVI_summer_annual)","id":24,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-24","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"summary(PHL_NDVI_summer_annual$X2015_NDVI)","id":25,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-25","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"str(data$geoid10)\nstr(PHL_NDVI_summer_annual$GEOID10)","id":26,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-26","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"PHL_NDVI_summer_annual$GEOID10 <- as.character(PHL_NDVI_summer_annual$GEOID10)","id":27,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-27","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data2 <- merge(data, PHL_NDVI_summer_annual, by.x = 'geoid10', by.y = 'GEOID10', all.x = TRUE)","id":28,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-28","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"num_rows <- nrow(data2)\n\nprint(num_rows)","id":29,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-29","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"dim(data2)","id":30,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-30","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"names(data2)","id":31,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-31","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"head(data2)","id":32,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-32","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — check that every geoid10 tract has exactly one unique NDVI value","id":33,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-33","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data2 %>%\n  group_by(geoid10) %>%\n  summarize(n_unique_ndvi = n_distinct(X2015_NDVI)) %>%\n  count(n_unique_ndvi)","id":34,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-34","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"dir.create(\"data_processed\", showWarnings = FALSE)\n\n# Save dataset\nwrite.csv(data2, file.path(\"data_processed\", \"class_data_processed.csv\"), row.names = FALSE)","id":35,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-35","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}}];
+globalThis.qwebrCellDetails = [{"code":"library(tidyverse)\nlibrary(sandwich)","id":1,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-1","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data_base_url <- \"https://raw.githubusercontent.com/schinasi/EOH635/main/data/\"\n\ndir.create(\"data_processed\", showWarnings = FALSE)\n\ndownload.file(paste0(data_base_url, \"class_data_processed.csv\"), file.path(\"data_processed\", \"class_data_processed.csv\"))\n\ndata <- read.csv(file.path(\"data_processed\", \"class_data_processed.csv\"))","id":2,"options":{"autorun":"true","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-2","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(\n    r_age = ifelse(age > 105, NA, age),                       # Lesson 4: implausible ages -> missing\n    tree_quartile = factor(ntile(hrlctree, 4)),               # Lesson 6: canopy quartiles\n    tree_top_quartile = ifelse(tree_quartile == \"4\", 1, 0)    # Lesson 6: Q4 (1) vs. Q1-Q3 (0)\n  )\n\n# Lesson 7 helper: exponentiated coefficients and 95% CIs (robust = TRUE for modified Poisson)\nextract_ratio <- function(model, label, robust = FALSE) {\n  vc <- if (robust) vcovHC(model, type = \"HC0\") else vcov(model)\n  b  <- coef(model)[-1]\n  se <- sqrt(diag(vc))[-1]\n  data.frame(Model = label, Term = names(b), Estimate = exp(b),\n             CI_Lower = exp(b - 1.96 * se), CI_Upper = exp(b + 1.96 * se),\n             row.names = NULL)\n}","id":3,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-3","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_final <- glm(high_blood_pressure ~ tree_top_quartile + education + pov_allage,\n                   data = data, family = poisson(link = \"log\"))\n\nextract_ratio(model_final, \"Adjusted for education and tract poverty\", robust = TRUE) %>%\n  filter(Term == \"tree_top_quartile\")","id":4,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-4","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(data$gender, useNA = \"ifany\")","id":5,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-5","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data %>%\n  filter(!is.na(gender)) %>%\n  count(gender, tree_top_quartile, high_blood_pressure) %>%\n  pivot_wider(names_from = high_blood_pressure, values_from = n,\n              names_prefix = \"high_bp_\")","id":6,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-6","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(woman = case_when(gender == \"Woman\" ~ 1,\n                           gender == \"Man\"   ~ 0,\n                           TRUE              ~ NA_real_))   # non-binary and missing -> NA\n\ntable(data$gender, data$woman, useNA = \"ifany\")   # always check a recode","id":7,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-7","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data_em <- data %>%\n  filter(!is.na(high_blood_pressure), !is.na(tree_top_quartile), !is.na(woman),\n         !is.na(education), !is.na(pov_allage))\n\nnrow(data_em)\ntable(data_em$woman, data_em$tree_top_quartile)","id":8,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-8","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"four_groups <- data_em %>%\n  group_by(woman, tree_top_quartile) %>%\n  summarise(n = n(), prevalence = mean(high_blood_pressure), .groups = \"drop\")\n\nfour_groups\n\n# Within each gender: the crude PR (ratio scale) and prevalence difference (additive scale)\nfour_groups %>%\n  group_by(woman) %>%\n  summarise(\n    PR = prevalence[tree_top_quartile == 1] / prevalence[tree_top_quartile == 0],\n    PD_percentage_points = 100 * (prevalence[tree_top_quartile == 1] - prevalence[tree_top_quartile == 0])\n  )","id":9,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-9","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_men <- glm(high_blood_pressure ~ tree_top_quartile + education + pov_allage,\n                 data = filter(data_em, woman == 0), family = poisson(link = \"log\"))\n\nmodel_women <- glm(high_blood_pressure ~ tree_top_quartile + education + pov_allage,\n                   data = filter(data_em, woman == 1), family = poisson(link = \"log\"))\n\nstratified <- bind_rows(\n  extract_ratio(model_men, \"Men\", robust = TRUE),\n  extract_ratio(model_women, \"Women\", robust = TRUE)\n) %>%\n  filter(Term == \"tree_top_quartile\") %>%                # keep the exposure only\n  mutate(N = c(nobs(model_men), nobs(model_women)))\n\nstratified %>% mutate(across(Estimate:CI_Upper, ~ round(.x, 2)))","id":10,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-10","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"ggplot(stratified, aes(x = Model, y = Estimate, ymin = CI_Lower, ymax = CI_Upper)) +\n  geom_pointrange(size = 0.8) +\n  geom_hline(yintercept = 1, linetype = \"dashed\") +\n  scale_y_log10() +\n  labs(x = NULL, y = \"Adjusted PR (95% CI), log scale\",\n       title = \"Tree canopy (top quartile vs. rest) and high blood pressure, by gender\") +\n  theme_minimal()","id":11,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-11","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Log PRs and robust SEs for tree canopy, from each stratum\nlog_pr <- c(coef(model_men)[\"tree_top_quartile\"],\n            coef(model_women)[\"tree_top_quartile\"])\nse     <- c(sqrt(vcovHC(model_men,   type = \"HC0\")[\"tree_top_quartile\", \"tree_top_quartile\"]),\n            sqrt(vcovHC(model_women, type = \"HC0\")[\"tree_top_quartile\", \"tree_top_quartile\"]))\n\nw <- 1 / se^2                                    # inverse-variance weights\nlog_pr_pooled <- sum(w * log_pr) / sum(w)        # weighted average\nQ  <- sum(w * (log_pr - log_pr_pooled)^2)\ndf <- length(log_pr) - 1\np_Q <- pchisq(Q, df = df, lower.tail = FALSE)\n\nc(pooled_PR = exp(log_pr_pooled), Q = Q, df = df, p_value = p_Q)","id":12,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-12","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"(log(stratified$CI_Upper) - log(stratified$CI_Lower)) / 3.92   # same as `se` above","id":13,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-13","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_int <- glm(high_blood_pressure ~ tree_top_quartile * woman + education + pov_allage,\n                 data = data_em, family = poisson(link = \"log\"))\n\nV_int <- vcovHC(model_int, type = \"HC0\")    # robust variance-covariance matrix\n\ndata.frame(\n  estimate  = coef(model_int),\n  robust_se = sqrt(diag(V_int))\n) %>% round(3)","id":14,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-14","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"b1 <- coef(model_int)[\"tree_top_quartile\"]\nb3 <- coef(model_int)[\"tree_top_quartile:woman\"]\n\nse_men   <- sqrt(V_int[\"tree_top_quartile\", \"tree_top_quartile\"])\nse_women <- sqrt(V_int[\"tree_top_quartile\", \"tree_top_quartile\"] +\n                 V_int[\"tree_top_quartile:woman\", \"tree_top_quartile:woman\"] +\n                 2 * V_int[\"tree_top_quartile\", \"tree_top_quartile:woman\"])\n\ndata.frame(\n  Stratum  = c(\"Men\", \"Women\"),\n  PR       = exp(c(b1, b1 + b3)),\n  CI_Lower = exp(c(b1 - 1.96 * se_men, b1 + b3 - 1.96 * se_women)),\n  CI_Upper = exp(c(b1 + 1.96 * se_men, b1 + b3 + 1.96 * se_women)),\n  row.names = NULL\n) %>% mutate(across(PR:CI_Upper, ~ round(.x, 2)))","id":15,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-15","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"se_b3 <- sqrt(V_int[\"tree_top_quartile:woman\", \"tree_top_quartile:woman\"])\nz_wald <- b3 / se_b3\np_wald <- 2 * pnorm(-abs(z_wald))\n\nc(beta3 = unname(b3), robust_se = se_b3, z = unname(z_wald), p_value = unname(p_wald))","id":16,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-16","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_reduced_lb <- glm(high_blood_pressure ~ tree_top_quartile + woman + education + pov_allage,\n                        data = data_em, family = binomial(link = \"log\"))\nmodel_full_lb    <- glm(high_blood_pressure ~ tree_top_quartile * woman + education + pov_allage,\n                        data = data_em, family = binomial(link = \"log\"))\n\n# The LRT by hand\nll_reduced <- logLik(model_reduced_lb)\nll_full    <- logLik(model_full_lb)\n\nlrt_stat <- -2 * (as.numeric(ll_reduced) - as.numeric(ll_full))\nlrt_df   <- attr(ll_full, \"df\") - attr(ll_reduced, \"df\")      # number of added parameters\np_lrt    <- pchisq(lrt_stat, df = lrt_df, lower.tail = FALSE)\n\nc(logLik_reduced = as.numeric(ll_reduced), logLik_full = as.numeric(ll_full),\n  LRT = lrt_stat, df = lrt_df, p_value = p_lrt)\n\n# The same test in one line\nanova(model_reduced_lb, model_full_lb, test = \"Chisq\")","id":17,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-17","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# The trap in rule 2: a reduced model without `woman`, fit in the full dataset\nmodel_wrong_reduced <- glm(high_blood_pressure ~ tree_top_quartile + education + pov_allage,\n                           data = data, family = binomial(link = \"log\"))\n\nc(N_wrong_reduced = nobs(model_wrong_reduced), N_full = nobs(model_full_lb))","id":18,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-18","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_nonhier <- glm(high_blood_pressure ~ tree_top_quartile + tree_top_quartile:woman +\n                       education + pov_allage,\n                     data = data_em, family = poisson(link = \"log\"))\n\nbind_rows(\n  extract_ratio(model_int, \"Hierarchical (correct)\", robust = TRUE),\n  extract_ratio(model_nonhier, \"Missing main effect of woman\", robust = TRUE)\n) %>%\n  filter(Term %in% c(\"tree_top_quartile\", \"woman\", \"tree_top_quartile:woman\")) %>%\n  mutate(across(Estimate:CI_Upper, ~ round(.x, 2)))","id":19,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-19","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"overall <- extract_ratio(\n  glm(high_blood_pressure ~ tree_top_quartile + education + pov_allage,\n      data = data_em, family = poisson(link = \"log\")),\n  \"Overall\", robust = TRUE) %>%\n  filter(Term == \"tree_top_quartile\") %>%\n  mutate(N = nrow(data_em))\n\nbind_rows(overall, stratified) %>%\n  transmute(Group = Model, N,\n            `Adjusted PR (95% CI)` = sprintf(\"%.2f (%.2f, %.2f)\", Estimate, CI_Lower, CI_Upper))\n\nc(Cochran_Q_p = p_Q, Wald_p = unname(p_wald), LRT_p = p_lrt) %>% round(2)","id":20,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-20","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — stratified estimates and tests of interaction for your own project","id":21,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-21","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(traffic_high = ifelse(ctb1traff > median(ctb1traff, na.rm = TRUE), 1, 0))\n\ndata_asthma <- data %>%\n  filter(!is.na(asthma), !is.na(traffic_high), !is.na(woman), !is.na(pov_allage))\n\n# Cell sizes: gender x exposure x outcome\ndata_asthma %>% count(woman, traffic_high, asthma)\n\n# Stratified models\nm_men   <- glm(asthma ~ traffic_high + pov_allage, data = filter(data_asthma, woman == 0),\n               family = poisson(link = \"log\"))\nm_women <- glm(asthma ~ traffic_high + pov_allage, data = filter(data_asthma, woman == 1),\n               family = poisson(link = \"log\"))\n\nstrat_asthma <- bind_rows(extract_ratio(m_men, \"Men\", robust = TRUE),\n                          extract_ratio(m_women, \"Women\", robust = TRUE)) %>%\n  filter(Term == \"traffic_high\")\nstrat_asthma %>% mutate(across(Estimate:CI_Upper, ~ round(.x, 2)))\n\n# Cochran's Q\nlp <- log(strat_asthma$Estimate)\ns  <- (log(strat_asthma$CI_Upper) - log(strat_asthma$CI_Lower)) / 3.92\nw  <- 1 / s^2\nQ  <- sum(w * (lp - sum(w * lp) / sum(w))^2)\n\n# Robust Wald test\nm_int <- glm(asthma ~ traffic_high * woman + pov_allage, data = data_asthma,\n             family = poisson(link = \"log\"))\nV  <- vcovHC(m_int, type = \"HC0\")\nz  <- coef(m_int)[\"traffic_high:woman\"] / sqrt(V[\"traffic_high:woman\", \"traffic_high:woman\"])\n\n# LRT with log-binomial models\nlb_reduced <- glm(asthma ~ traffic_high + woman + pov_allage, data = data_asthma,\n                  family = binomial(link = \"log\"))\nlb_full    <- glm(asthma ~ traffic_high * woman + pov_allage, data = data_asthma,\n                  family = binomial(link = \"log\"))\nlrt <- anova(lb_reduced, lb_full, test = \"Chisq\")\n\nc(Q_p    = pchisq(Q, df = 1, lower.tail = FALSE),\n  Wald_p = unname(2 * pnorm(-abs(z))),\n  LRT_p  = lrt$`Pr(>Chi)`[2]) %>% round(3)","id":22,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-22","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}}];
 
 </script>
 <script type="module">
@@ -1664,6 +1664,35 @@ globalThis.qwebrExecuteCode = async function (
 
 </script>
 
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script defer="" src="https://cdn.jsdelivr.net/npm/mathjax@4/tex-chtml.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN" && texText && texText.data) {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
@@ -1689,32 +1718,32 @@ globalThis.qwebrExecuteCode = async function (
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link active" href="./lesson1.html" aria-current="page"> 
-<span class="menu-text">Lesson 1: Intro to R</span></a>
-  </li>  
-  <li class="nav-item">
     <a class="nav-link" href="./lesson2.html"> 
-<span class="menu-text">Lesson 2: Conceptual Frameworks</span></a>
+<span class="menu-text">Lesson 2: Intro to R</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./lesson3.html"> 
-<span class="menu-text">Lesson 3: EDA &amp; Cleaning</span></a>
+<span class="menu-text">Lesson 3: Conceptual Frameworks</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./lesson4.html"> 
-<span class="menu-text">Lesson 4: Exposure Assessment</span></a>
+<span class="menu-text">Lesson 4: EDA &amp; Cleaning</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./lesson5.html"> 
-<span class="menu-text">Lesson 5: Regression &amp; Linearity</span></a>
+<span class="menu-text">Lesson 5: Exposure Assessment</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./lesson6.html"> 
-<span class="menu-text">Lesson 6: Confounding &amp; DAGs</span></a>
+<span class="menu-text">Lesson 6: Regression &amp; Linearity</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./lesson7.html"> 
-<span class="menu-text">Lesson 7: Effect Modification</span></a>
+<span class="menu-text">Lesson 7: Confounding &amp; DAGs</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="./lesson8.html" aria-current="page"> 
+<span class="menu-text">Lesson 8: Effect Modification</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./codebook.html"> 
@@ -1736,56 +1765,28 @@ globalThis.qwebrExecuteCode = async function (
     <h2 id="toc-title">On this page</h2>
    
   <ul class="collapse">
-  <li><a href="#section" id="toc-section" class="nav-link active" data-scroll-target="#section">======================================================</a></li>
-  <li><a href="#introduction-to-r-and-data-handling-in-rstudio" id="toc-introduction-to-r-and-data-handling-in-rstudio" class="nav-link" data-scroll-target="#introduction-to-r-and-data-handling-in-rstudio">📌 Introduction to R and Data Handling in RStudio</a></li>
-  <li><a href="#section-1" id="toc-section-1" class="nav-link" data-scroll-target="#section-1">======================================================</a></li>
-  <li><a href="#basic-r-concepts" id="toc-basic-r-concepts" class="nav-link" data-scroll-target="#basic-r-concepts">🛠 1. Basic R Concepts</a>
+  <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a></li>
+  <li><a href="#effect-modification-vs.-confounding" id="toc-effect-modification-vs.-confounding" class="nav-link" data-scroll-target="#effect-modification-vs.-confounding">Effect Modification vs.&nbsp;Confounding</a></li>
+  <li><a href="#part-1-stratified-analysis" id="toc-part-1-stratified-analysis" class="nav-link" data-scroll-target="#part-1-stratified-analysis">Part 1: Stratified Analysis</a>
   <ul class="collapse">
-  <li><a href="#assignment-operator--" id="toc-assignment-operator--" class="nav-link" data-scroll-target="#assignment-operator--">Assignment Operator (<code>&lt;-</code>)</a></li>
-  <li><a href="#creating-a-simple-data-frame" id="toc-creating-a-simple-data-frame" class="nav-link" data-scroll-target="#creating-a-simple-data-frame">Creating a Simple Data Frame</a></li>
-  <li><a href="#accessing-columns-in-a-data-frame" id="toc-accessing-columns-in-a-data-frame" class="nav-link" data-scroll-target="#accessing-columns-in-a-data-frame">Accessing Columns in a Data Frame (<code>$</code>)</a></li>
-  <li><a href="#indexing-rows-and-columns-row-column" id="toc-indexing-rows-and-columns-row-column" class="nav-link" data-scroll-target="#indexing-rows-and-columns-row-column">Indexing Rows and Columns <code>[row, column]</code></a></li>
+  <li><a href="#step-1-state-your-hypothesis-first" id="toc-step-1-state-your-hypothesis-first" class="nav-link" data-scroll-target="#step-1-state-your-hypothesis-first">Step 1: State your hypothesis first</a></li>
+  <li><a href="#step-2-code-the-modifier-and-check-the-cell-sizes" id="toc-step-2-code-the-modifier-and-check-the-cell-sizes" class="nav-link" data-scroll-target="#step-2-code-the-modifier-and-check-the-cell-sizes">Step 2: Code the modifier and check the cell sizes</a></li>
+  <li><a href="#step-3-look-at-the-four-groups" id="toc-step-3-look-at-the-four-groups" class="nav-link" data-scroll-target="#step-3-look-at-the-four-groups">Step 3: Look at the four groups</a></li>
+  <li><a href="#step-4-fit-the-adjusted-model-within-each-stratum" id="toc-step-4-fit-the-adjusted-model-within-each-stratum" class="nav-link" data-scroll-target="#step-4-fit-the-adjusted-model-within-each-stratum">Step 4: Fit the adjusted model within each stratum</a></li>
+  <li><a href="#step-5-qualitative-assessment-compare-the-estimates-by-eye" id="toc-step-5-qualitative-assessment-compare-the-estimates-by-eye" class="nav-link" data-scroll-target="#step-5-qualitative-assessment-compare-the-estimates-by-eye">Step 5: Qualitative assessment — compare the estimates by eye</a></li>
+  <li><a href="#step-6-cochrans-q-a-test-of-heterogeneity-across-strata" id="toc-step-6-cochrans-q-a-test-of-heterogeneity-across-strata" class="nav-link" data-scroll-target="#step-6-cochrans-q-a-test-of-heterogeneity-across-strata">Step 6: Cochran’s Q — a test of heterogeneity across strata</a></li>
   </ul></li>
-  <li><a href="#section-2" id="toc-section-2" class="nav-link" data-scroll-target="#section-2">======================================================</a></li>
-  <li><a href="#a-note-on-project-organization" id="toc-a-note-on-project-organization" class="nav-link" data-scroll-target="#a-note-on-project-organization">📁 2. A Note on Project Organization</a></li>
-  <li><a href="#section-3" id="toc-section-3" class="nav-link" data-scroll-target="#section-3">======================================================</a></li>
-  <li><a href="#section-4" id="toc-section-4" class="nav-link" data-scroll-target="#section-4">======================================================</a></li>
-  <li><a href="#loading-required-packages" id="toc-loading-required-packages" class="nav-link" data-scroll-target="#loading-required-packages">📦 3. Loading Required Packages</a></li>
-  <li><a href="#section-5" id="toc-section-5" class="nav-link" data-scroll-target="#section-5">======================================================</a></li>
-  <li><a href="#section-6" id="toc-section-6" class="nav-link" data-scroll-target="#section-6">======================================================</a></li>
-  <li><a href="#reading-data-into-r" id="toc-reading-data-into-r" class="nav-link" data-scroll-target="#reading-data-into-r">📊 4. Reading Data into R</a></li>
-  <li><a href="#section-7" id="toc-section-7" class="nav-link" data-scroll-target="#section-7">======================================================</a></li>
-  <li><a href="#section-8" id="toc-section-8" class="nav-link" data-scroll-target="#section-8">======================================================</a></li>
-  <li><a href="#exploring-your-data" id="toc-exploring-your-data" class="nav-link" data-scroll-target="#exploring-your-data">👀 5. Exploring Your Data</a></li>
-  <li><a href="#section-9" id="toc-section-9" class="nav-link" data-scroll-target="#section-9">======================================================</a>
+  <li><a href="#part-2-interaction-models" id="toc-part-2-interaction-models" class="nav-link" data-scroll-target="#part-2-interaction-models">Part 2: Interaction Models</a>
   <ul class="collapse">
-  <li><a href="#summary-of-numerical-variables" id="toc-summary-of-numerical-variables" class="nav-link" data-scroll-target="#summary-of-numerical-variables">Summary of numerical variables</a></li>
+  <li><a href="#step-7-fit-a-model-with-an-interaction-term" id="toc-step-7-fit-a-model-with-an-interaction-term" class="nav-link" data-scroll-target="#step-7-fit-a-model-with-an-interaction-term">Step 7: Fit a model with an interaction term</a></li>
+  <li><a href="#step-8-stratum-specific-estimates-from-the-interaction-model" id="toc-step-8-stratum-specific-estimates-from-the-interaction-model" class="nav-link" data-scroll-target="#step-8-stratum-specific-estimates-from-the-interaction-model">Step 8: Stratum-specific estimates from the interaction model</a></li>
+  <li><a href="#step-9-testing-the-interaction-the-wald-test" id="toc-step-9-testing-the-interaction-the-wald-test" class="nav-link" data-scroll-target="#step-9-testing-the-interaction-the-wald-test">Step 9: Testing the interaction — the Wald test</a></li>
+  <li><a href="#step-10-testing-the-interaction-the-likelihood-ratio-test" id="toc-step-10-testing-the-interaction-the-likelihood-ratio-test" class="nav-link" data-scroll-target="#step-10-testing-the-interaction-the-likelihood-ratio-test">Step 10: Testing the interaction — the likelihood ratio test</a></li>
+  <li><a href="#step-11-keep-the-model-hierarchical" id="toc-step-11-keep-the-model-hierarchical" class="nav-link" data-scroll-target="#step-11-keep-the-model-hierarchical">Step 11: Keep the model hierarchical</a></li>
+  <li><a href="#step-12-put-it-together-a-results-table-and-interpretation" id="toc-step-12-put-it-together-a-results-table-and-interpretation" class="nav-link" data-scroll-target="#step-12-put-it-together-a-results-table-and-interpretation">Step 12: Put it together — a results table and interpretation</a></li>
   </ul></li>
-  <li><a href="#section-10" id="toc-section-10" class="nav-link" data-scroll-target="#section-10">======================================================</a></li>
-  <li><a href="#accessing-specific-variables-in-a-data-frame" id="toc-accessing-specific-variables-in-a-data-frame" class="nav-link" data-scroll-target="#accessing-specific-variables-in-a-data-frame">🗃 6. Accessing Specific Variables in a Data Frame</a></li>
-  <li><a href="#section-11" id="toc-section-11" class="nav-link" data-scroll-target="#section-11">======================================================</a></li>
-  <li><a href="#section-12" id="toc-section-12" class="nav-link" data-scroll-target="#section-12">======================================================</a></li>
-  <li><a href="#creating-a-new-variable" id="toc-creating-a-new-variable" class="nav-link" data-scroll-target="#creating-a-new-variable">🔄 7. Creating a New Variable</a></li>
-  <li><a href="#section-13" id="toc-section-13" class="nav-link" data-scroll-target="#section-13">======================================================</a>
-  <ul class="collapse">
-  <li><a href="#creating-a-numeric-version-of-the-education-variable" id="toc-creating-a-numeric-version-of-the-education-variable" class="nav-link" data-scroll-target="#creating-a-numeric-version-of-the-education-variable">Creating a numeric version of the education variable</a></li>
-  </ul></li>
-  <li><a href="#section-14" id="toc-section-14" class="nav-link" data-scroll-target="#section-14">======================================================</a></li>
-  <li><a href="#merging-data-with-external-information" id="toc-merging-data-with-external-information" class="nav-link" data-scroll-target="#merging-data-with-external-information">📝 8. Merging Data with External Information</a></li>
-  <li><a href="#section-15" id="toc-section-15" class="nav-link" data-scroll-target="#section-15">======================================================</a>
-  <ul class="collapse">
-  <li><a href="#load-another-dataset" id="toc-load-another-dataset" class="nav-link" data-scroll-target="#load-another-dataset">Load another dataset</a></li>
-  <li><a href="#summarize-the-ndvi-values-across-philadelphia" id="toc-summarize-the-ndvi-values-across-philadelphia" class="nav-link" data-scroll-target="#summarize-the-ndvi-values-across-philadelphia">Summarize the NDVI values across Philadelphia</a></li>
-  </ul></li>
-  <li><a href="#section-16" id="toc-section-16" class="nav-link" data-scroll-target="#section-16">======================================================</a></li>
-  <li><a href="#saving-your-processed-data" id="toc-saving-your-processed-data" class="nav-link" data-scroll-target="#saving-your-processed-data">📂 9. Saving Your Processed Data</a></li>
-  <li><a href="#section-17" id="toc-section-17" class="nav-link" data-scroll-target="#section-17">======================================================</a></li>
-  <li><a href="#section-18" id="toc-section-18" class="nav-link" data-scroll-target="#section-18">======================================================</a></li>
-  <li><a href="#quick-start-script-for-your-own-project" id="toc-quick-start-script-for-your-own-project" class="nav-link" data-scroll-target="#quick-start-script-for-your-own-project">🚀 10. Quick-Start Script for Your Own Project</a></li>
-  <li><a href="#section-19" id="toc-section-19" class="nav-link" data-scroll-target="#section-19">======================================================</a></li>
-  <li><a href="#section-20" id="toc-section-20" class="nav-link" data-scroll-target="#section-20">======================================================</a></li>
-  <li><a href="#youre-ready-for-more" id="toc-youre-ready-for-more" class="nav-link" data-scroll-target="#youre-ready-for-more">🎉 You’re Ready for More!</a></li>
-  <li><a href="#section-21" id="toc-section-21" class="nav-link" data-scroll-target="#section-21">======================================================</a></li>
+  <li><a href="#quick-start-script-for-your-own-project" id="toc-quick-start-script-for-your-own-project" class="nav-link" data-scroll-target="#quick-start-script-for-your-own-project">Quick-Start Script for Your Own Project</a></li>
+  <li><a href="#wrap-up" id="toc-wrap-up" class="nav-link" data-scroll-target="#wrap-up">Wrap Up</a></li>
   </ul>
 </nav>
     </div>
@@ -2078,7 +2079,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Lesson 1: Intro to R and Handling Data</h1>
+<h1 class="title">Lesson 8: Effect Modification &amp; Heterogeneity of Effects</h1>
 <p class="subtitle lead">EOH 635 — Environmental Epidemiology Methods</p>
 </div>
 
@@ -2096,7 +2097,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">October 28, 2026</p>
+      <p class="date">November 4, 2026</p>
     </div>
   </div>
   
@@ -2108,16 +2109,12 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </header>
 
 
-<section id="section" class="level1">
-<h1>======================================================</h1>
-</section>
-<section id="introduction-to-r-and-data-handling-in-rstudio" class="level1">
-<h1>📌 Introduction to R and Data Handling in RStudio</h1>
-</section>
-<section id="section-1" class="level1">
-<h1>======================================================</h1>
-<p>There is lots of syntax to learn for working in R. A lot of this will come in time, with practice, and trial and error. Here are some basics to get you started.</p>
-<p>Remember learning R is like learning a language. It will get easier, in time.</p>
+<p>In <a href="./lesson7.html">Lesson 7</a> you estimated a single adjusted prevalence ratio (PR) for tree canopy and high blood pressure: <strong>0.71</strong>, adjusted for education and tract poverty. That one number assumes the association is the same for everyone in the study. This lesson asks whether it <strong>differs across groups</strong> — that is, whether a third variable is an <strong>effect modifier</strong>. We use <strong>gender</strong> as the example. The lesson has two parts:</p>
+<ol type="1">
+<li><strong>Stratified analysis</strong> — fitting the adjusted model separately for men and for women, comparing the two estimates by eye, and testing the difference with <strong>Cochran’s Q</strong>.</li>
+<li><strong>Interaction models</strong> — fitting a single model with an <strong>exposure × modifier</strong> interaction term, getting stratum-specific estimates from it, and testing the interaction with a <strong>Wald test</strong> and a <strong>likelihood ratio test (LRT)</strong>.</li>
+</ol>
+<p>The lesson ends with a <strong>🧠 Your Turn</strong> for the exposure and outcome in your own project. It produces a first draft of the stratified results table and interaction tests that Milestone 4 asks for (and that become <strong>Table 3</strong> of your final report).</p>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -2128,10 +2125,10 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>The gray boxes below are <strong>live R editors</strong> — the code actually runs in your browser (no install needed). In the top-left corner of each gray box, you’ll see a <strong>green arrow button labeled “Run Code.”</strong> Click that green arrow to run the code in that box. The output (whatever the code produces — a number, a table, a plot, etc.) will appear directly underneath the box a moment later.</p>
-<p>You can also edit the code first — click inside the box, change something, then click the green <strong>Run Code</strong> arrow to run your edited version. Nothing you do here can break anything; if you make a mess, just refresh the page to start that box over.</p>
-<p>Some sections are marked <strong>🧠 Your Turn</strong>. Those give you a task and a blank (or partially blank) code editor. Try to write the code yourself before you look at the answer — the solution is hidden underneath in a collapsed box. Click it open only after you’ve given it a real attempt (or if you’re truly stuck).</p>
-<p><strong>A note on browser vs.&nbsp;RStudio code:</strong> Two chunks in this lesson run automatically in the background (you’ll see them labeled <code>#| autorun: true</code>). These chunks fetch the data files from the web so they’re available in your browser — you don’t need to do anything with them. <strong>When you write your own scripts in RStudio, you will not include this fetching code.</strong> Immediately after each autorun chunk, you’ll find a green box labeled <strong>“In your RStudio script”</strong> showing the simpler code you’ll actually use.</p>
+<p>The gray boxes below are <strong>live R editors</strong> — the code actually runs in your browser (no install needed). Click the green <strong>Run Code</strong> arrow in the top-left corner of a box to run it. The output will appear directly underneath.</p>
+<p>You can also edit the code first — click inside the box, change something, then click <strong>Run Code</strong> to run your edited version. Nothing you do here can break anything; if you make a mess, just refresh the page to start that box over.</p>
+<p>Sections marked <strong>🧠 Your Turn</strong> give you a task and a blank or partially blank code editor. Try writing the code yourself before revealing the solution, hidden in a collapsed box underneath. Boxes labeled <strong>💡 Answers</strong> work the same way: think through the questions first, then click to check your reasoning.</p>
+<p><strong>A note on browser vs.&nbsp;RStudio code:</strong> chunks labeled <code>#| autorun: true</code> fetch data from the web in the background so it’s available in your browser. <strong>When you write your own scripts in RStudio, you will not include this fetching code.</strong> Immediately after each one, a green box labeled <strong>“In your RStudio script”</strong> shows the simpler code you’ll actually use.</p>
 </div>
 </div>
 <div class="callout callout-style-default callout-note callout-titled">
@@ -2144,393 +2141,44 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>This lab uses three files, also described in the <a href="./codebook.html">Data Codebook</a>:</p>
-<ul>
-<li><code>class_data_raw.csv</code> — the primary participant-level data set</li>
-<li><code>codebook.xlsx</code> — variable descriptions and coding</li>
-<li><code>PHL_NDVI_summer_annual.csv</code> — tract-level greenness data you’ll link in</li>
-</ul>
-<p>Download all three into the <code>data_raw/</code> folder of the <code>EOH635_project</code> you built in the C01 setup assignment before you start.</p>
+<p>This tutorial uses <strong><code>class_data_processed.csv</code></strong>, the same merged file from earlier lessons, and the same packages as Lesson 7: <strong><code>tidyverse</code></strong> and <strong><code>sandwich</code></strong>. No new packages are needed. See the <a href="./codebook.html">Data Codebook</a> for variable definitions.</p>
 </div>
 </div>
 <hr>
-</section>
-<section id="basic-r-concepts" class="level1">
-<h1>🛠 1. Basic R Concepts</h1>
-<p>There are lots of amazing resources on using R on the web! Don’t be shy about exploring these.</p>
-<p>The following text is excerpted from <a href="https://www.dataquest.io/blog/tutorial-getting-started-with-r-and-rstudio/#tve-jump-173bb2584fe">this resource</a>:</p>
-<blockquote class="blockquote">
-<p>“Let’s start off by introducing some features of the Console. The Console is a tab in RStudio where we can run R code.</p>
-<p>Notice that the window pane where the console is located contains three tabs: Console, Terminal and Jobs (this may vary depending on the version of RStudio in use). We’ll focus on the Console for now.</p>
-<p>When we open RStudio, the console contains information about the version of R we’re working with.”</p>
-</blockquote>
-<p>Below, instead of typing into RStudio’s console, you can just type directly into the editors on this page and click <strong>Run Code</strong>.</p>
-<section id="assignment-operator--" class="level2">
-<h2 class="anchored" data-anchor-id="assignment-operator--">Assignment Operator (<code>&lt;-</code>)</h2>
+<section id="setup" class="level1">
+<h1>Setup</h1>
 <div id="qwebr-insertion-location-1"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-</section>
-<section id="creating-a-simple-data-frame" class="level2">
-<h2 class="anchored" data-anchor-id="creating-a-simple-data-frame">Creating a Simple Data Frame</h2>
-<p>We can read a data frame into R, but we can also create a data frame within R itself.</p>
-<p>The following code creates a data frame called <code>my_data</code>:</p>
+<p>In RStudio:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>In the browser:</p>
 <div id="qwebr-insertion-location-2"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>The data frame has two variables (columns): <code>name</code> and <code>age</code>. It has two rows, each corresponding to one person.</p>
-</section>
-<section id="accessing-columns-in-a-data-frame" class="level2">
-<h2 class="anchored" data-anchor-id="accessing-columns-in-a-data-frame">Accessing Columns in a Data Frame (<code>$</code>)</h2>
-<p>We may want to view a particular column in the data frame, or, later when we start conducting analyses, refer to a particular variable. We do this using the <code>$</code> sign.</p>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>💻 In your RStudio script
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+<p>Recreate the variables from earlier lessons — the cleaned age variable (Lesson 4) and the top-quartile tree canopy exposure (Lesson 6) — and the <code>extract_ratio()</code> helper from Lesson 7.</p>
 <div id="qwebr-insertion-location-3"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-</section>
-<section id="indexing-rows-and-columns-row-column" class="level2">
-<h2 class="anchored" data-anchor-id="indexing-rows-and-columns-row-column">Indexing Rows and Columns <code>[row, column]</code></h2>
-<p>We can also use R’s indexing system to refer to a particular row or column.</p>
+<p>And here is where Lesson 7 ended — the final adjusted model, fit with modified Poisson regression:</p>
 <div id="qwebr-insertion-location-4"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn">
-<div class="callout-header d-flex align-content-center" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="true" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>🧠 Your Turn
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-3" class="callout-3-contents callout-collapse collapse show">
-<div class="callout-body-container callout-body">
-<p>Using <code>my_data</code>, write one line of code that returns <strong>Bob’s age</strong> using <code>$</code>-and-indexing together (i.e., pull the <code>age</code> column, then index the second element).</p>
-</div>
-</div>
-</div>
-<div id="qwebr-insertion-location-5"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 Solution — click to reveal
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-4" class="callout-4-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<div id="qwebr-insertion-location-6"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p><strong>How this works, piece by piece:</strong></p>
-<ul>
-<li><code>my_data$age</code> pulls out the entire <code>age</code> column from <code>my_data</code> — this returns a vector of all the ages, in row order: <code>25 30</code> (Alice’s age, then Bob’s age).</li>
-<li><code>[2]</code> then indexes into that vector and grabs its <strong>2nd element</strong> — since Bob is in the 2nd row of <code>my_data</code>, this returns his age, <code>30</code>.</li>
-<li>Put together, <code>my_data$age[2]</code> reads as “give me the <code>age</code> column, then give me the 2nd value in it.”</li>
-</ul>
-<p>This combination — <code>$</code> to grab a column, then <code>[ ]</code> to grab a specific position within it — comes up constantly in R, so it’s worth being comfortable with both steps individually before chaining them together.</p>
-</div>
-</div>
-</div>
-</section>
-</section>
-<section id="section-2" class="level1">
-<h1>======================================================</h1>
-</section>
-<section id="a-note-on-project-organization" class="level1">
-<h1>📁 2. A Note on Project Organization</h1>
-</section>
-<section id="section-3" class="level1">
-<h1>======================================================</h1>
-<p>In RStudio, we need a reliable way to tell R where to find (and save) files. You’ll sometimes see older code use <code>setwd("C:/Users/yourname/YourFolder")</code> to do this — but <strong>this course does not use <code>setwd()</code> as the standard workflow</strong>. A path like that is tied to one specific computer and breaks the moment the project moves to a different machine (including, for grading, yours to mine).</p>
-<p>Instead, this course uses an <strong>RStudio Project</strong> with a standard folder structure, set up once in the C01 reproducible-workflow assignment:</p>
-<pre><code>EOH635_project/
-├── EOH635_project.Rproj
-├── data_raw/          &lt;- original files exactly as you received them (never edit these by hand)
-├── data_processed/    &lt;- new files your scripts create (cleaned, merged, recoded data)
-├── scripts/           &lt;- your .R / .qmd / .Rmd files
-└── outputs/           &lt;- tables, figures, and other generated results</code></pre>
-<p>When you open <code>EOH635_project.Rproj</code>, RStudio automatically sets your working directory to the project root — no <code>setwd()</code> needed. From there, you use <strong>relative paths</strong>, typically with <code>file.path()</code>, so the same script works on any computer:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"class_data_raw.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>For this lab, that means: Please put <code>class_data_raw.csv</code>, <code>PHL_NDVI_summer_annual.csv</code>, and <code>codebook.xlsx</code> in <code>data_raw/</code>, and save anything you create (like the merged dataset at the end of this lab) into <code>data_processed/</code>.</p>
-<p><strong>In this browser-based tutorial, there’s no local file system to point to at all</strong> — the data files below are fetched automatically for you from the web the moment you load this page, using the same <code>data_raw</code> / <code>data_processed</code> folder names so the code you see here matches what you’ll type in RStudio.</p>
-<p><strong>This is important to keep straight:</strong> the “fetch from the web” step you’ll see below is a workaround that exists <em>only</em> on this tutorial page, because your browser has no access to any files at all — not the tutorial’s, and not yours. <strong>For your actual project, the data will live as real files on your own computer</strong>, saved into the <code>data_raw/</code> folder of the <code>EOH635_project</code> you set up in RStudio. Your project scripts will simply read those files directly off your hard drive with <code>read.csv(file.path("data_raw", "..."))</code> — no downloading, no internet fetch, no <code>data_base_url</code>. Every time this tutorial shows a “fetch from the web” step, look for the green <strong>“In your RStudio script”</strong> box right after it — that box shows the shorter, simpler line you’ll actually use for your project.</p>
-</section>
-<section id="section-4" class="level1">
-<h1>======================================================</h1>
-</section>
-<section id="loading-required-packages" class="level1">
-<h1>📦 3. Loading Required Packages</h1>
-</section>
-<section id="section-5" class="level1">
-<h1>======================================================</h1>
-<p><a href="https://faculty.washington.edu/kenrice/rintro/sess08.pdf">This</a> is a great tutorial on packages in R.</p>
-<p>Briefly (quoting from that guide):</p>
-<blockquote class="blockquote">
-<p>“Base R includes pre-installed packages that allow for a fully functioning statistical environment in which a variety of analyses can be conducted. Thousands of user-contributed extension packages are available that provide enhanced functionality with R.</p>
-<p>R packages are collections of functions, data, and compiled code in a well-defined format.</p>
-<p>In order to install an extension package, we can invoke the <code>install.packages()</code> function, which typically downloads the package from CRAN and installs it for use.”</p>
-</blockquote>
-<p>You only need to install a package one time on your computer (upon first use, or after installing/re-installing/updating R). After installing it, you need to <em>load</em> it every session with <code>library()</code>.</p>
-<p>On your own computer you’d run:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"tidyverse"</span>)</span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="callout callout-style-default callout-note callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-Note
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>This tutorial page has already installed and loaded <strong>tidyverse</strong> for you in the background (that’s what the <code>webr: packages:</code> setting in this page does). You can still call <code>library(tidyverse)</code> yourself below — it won’t hurt anything, it’s just already done.</p>
-</div>
-</div>
-<div id="qwebr-insertion-location-7"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>💻 In your RStudio script
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><strong>This automatic install/load is unique to this tutorial page — it will not happen on your own computer.</strong> <code>tidyverse</code> is actually a bundle of several packages (including <code>dplyr</code> and <code>tidyr</code>, which you’ll use a lot), but the browser installing it silently for you is just a convenience built into this page.</p>
-<p>When you write your own project scripts in RStudio, <strong>you are responsible for installing and loading every package your code uses.</strong> For any package (<code>tidyverse</code> or otherwise):</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="st">"tidyverse"</span>)  <span class="co"># run this once per computer, the first time you use the package</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)              <span class="co"># run this at the top of every script/session that uses it</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>If you forget the <code>library()</code> line, R will give you an error like <code>could not find function "mutate"</code> (or whatever function you tried to use) — that’s your signal to go back and load the package first.</p>
-</div>
-</div>
+<p><strong>PR = 0.71 (95% CI: 0.58, 0.86).</strong> This lesson asks: is that 0.71 a good summary for <em>everyone</em>, or is the association different for men and for women?</p>
 <hr>
 </section>
-<section id="section-6" class="level1">
-<h1>======================================================</h1>
-</section>
-<section id="reading-data-into-r" class="level1">
-<h1>📊 4. Reading Data into R</h1>
-</section>
-<section id="section-7" class="level1">
-<h1>======================================================</h1>
-<p>Recall that we can either create a data frame in R, or read one in. A lot of times, as environmental epidemiologists, we have an already-existing data set that we need to read into R — you’ll primarily do that this quarter.</p>
-<p>For this lab, the raw data file is <strong><code>class_data_raw.csv</code></strong> (find it described in the <a href="./codebook.html">Data Codebook</a>, along with <code>codebook.xlsx</code>). In RStudio, once it’s in <code>data_raw/</code> inside your <code>EOH635_project</code>, you’d run:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"class_data_raw.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p><strong>In the browser, we first have to fetch the file from the web</strong> before R can see it (webR can’t see your OneDrive or hard drive — only files that have been downloaded into its in-browser file system). The chunk below does that automatically when the page loads: it creates a <code>data_raw</code> folder right here in your browser’s R session (mirroring the real project structure) and downloads the file into it, then reads it in exactly the way you would in RStudio.</p>
-<div id="qwebr-insertion-location-8"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>💻 In your RStudio script
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The chunk above runs automatically in the browser to fetch the data file from the web. <strong>In your own RStudio script, you don’t need any of that.</strong> With <code>class_data_raw.csv</code> already saved in your <code>data_raw/</code> folder, all you need is:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"class_data_raw.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>This is the line to copy into your own analysis script.</p>
-</div>
-</div>
-<hr>
-</section>
-<section id="section-8" class="level1">
-<h1>======================================================</h1>
-</section>
-<section id="exploring-your-data" class="level1">
-<h1>👀 5. Exploring Your Data</h1>
-</section>
-<section id="section-9" class="level1">
-<h1>======================================================</h1>
-<p>Now let’s start to have a look at our data frame.</p>
-<p>View first few rows:</p>
-<div id="qwebr-insertion-location-9"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p><strong>Things to think about:</strong></p>
-<ul>
-<li>What do you notice about the structure of the dataset just by looking at these rows?</li>
-<li>Are there any missing or unusual values that stand out?</li>
-<li>Do the variable names seem intuitive? Would renaming any of them improve clarity?</li>
-<li>Does the dataset contain categorical or numerical variables? How can you tell?</li>
-<li>Are there any obvious errors or inconsistencies in the first few rows?</li>
-</ul>
-<p>Let’s view the structure of the dataset:</p>
-<div id="qwebr-insertion-location-10"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p><strong>Some questions:</strong></p>
-<ul>
-<li>What data types are present in the dataset? Are they what you expected?</li>
-<li>Are any variables stored in an inappropriate data type (e.g., categorical variables stored as numeric)?</li>
-<li>How might the structure of the dataset affect downstream analyses?</li>
-<li>Do any variables have an unexpectedly small or large number of unique values?</li>
-<li>Are there any factors with many levels? Should any be combined or reclassified?</li>
-</ul>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 One way to think about it — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 One way to think about it — click to reveal
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-8" class="callout-8-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<p>Most of the individual-level variables (<code>gender</code>, <code>education</code>, <code>race_ethnicity</code>, <code>employment_status</code>) come in as <strong>character</strong> strings rather than factors, and many of the health/behavior indicators (<code>stress</code>, <code>current_smoker</code>, <code>obese</code>, <code>high_blood_pressure</code>, etc.) are stored as <strong>numeric 0/1 flags</strong> even though they’re conceptually categorical (binary). That’s common in survey data, and it’s exactly the kind of thing <code>str()</code> is good for catching <em>before</em> you run an analysis that assumes the wrong type.</p>
-</div>
-</div>
-</div>
-<p>One more thing worth noticing in <code>str(data)</code>: <strong><code>geoid10</code></strong> — the census tract identifier for each participant — shows up as <code>num</code> (numeric), even though it functions as a <em>label</em>, not a quantity. It would never make sense to compute an “average <code>geoid10</code>,” the way it might for <code>age</code>. Because it happens to look like a number, R read it in as one — but ID variables like this are safer to store as <strong>character</strong>, so nothing downstream ever accidentally tries to do math with them. Let’s fix that now:</p>
-<div id="qwebr-insertion-location-11"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>Hang onto this — it’ll matter again later in this lesson, when we merge in a second dataset.</p>
-<p>We can also view the dimensions of the data frame (rows × columns):</p>
-<ul>
-<li>Rows show us the number of observations (in this case, people)</li>
-<li>Columns show us the number of variables</li>
-</ul>
-<div id="qwebr-insertion-location-12"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<blockquote class="blockquote">
-<p>How many rows and columns are in our data frame? Based on this, how many people are in our data frame?</p>
-</blockquote>
-<p>Take a moment to actually answer this from the output above before revealing it below.</p>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 Answer — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 Answer — click to reveal
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-9" class="callout-9-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<p><code>dim(data)</code> returns <code>2000  38</code>: <strong>2,000 rows</strong> and <strong>38 columns</strong>. Since each row is one participant, that means our data frame contains <strong>2,000 people</strong>, each described by 38 variables (columns).</p>
-</div>
-</div>
-</div>
-<hr>
-<section id="summary-of-numerical-variables" class="level2">
-<h2 class="anchored" data-anchor-id="summary-of-numerical-variables">Summary of numerical variables</h2>
-<div id="qwebr-insertion-location-13"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<ul>
-<li>What summary statistics does this function produce?</li>
-<li>What do you observe about key variables?</li>
-<li>Are there particular variables for which these summary statistics do not make sense? (Hint: think about what <code>summary()</code> does with a 0/1 variable versus a truly continuous one like <code>age</code>.)</li>
-</ul>
-<p>Think through these for a couple of variables yourself before checking below.</p>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 Two worked examples — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 Two worked examples — click to reveal
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-10" class="callout-10-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<p><strong><code>age</code></strong> (a genuinely continuous variable): <code>summary()</code> gives six numbers — Min. <code>18.02</code>, 1st Qu. <code>29.99</code>, Median <code>40.36</code>, Mean <code>44.99</code>, 3rd Qu. <code>56.24</code>, Max. <code>116.00</code> — plus a count of missing values (<code>NA's 3</code>). These are all meaningful here: the middle 50% of participants (between the 1st and 3rd quartiles) are roughly 30 to 56 years old. But that <strong>Max. of 116</strong> should catch your eye immediately — a plausible age tops out well below that. That’s exactly the kind of thing <code>summary()</code> is good for catching early, before it quietly distorts an analysis later. (We’ll deal with this specific outlier in Lesson 3.)</p>
-<p><strong><code>high_blood_pressure</code></strong> (a binary 0/1 flag, not a continuous quantity): <code>summary()</code> reports Min. <code>0</code>, Median <code>0</code>, Mean <code>0.3048</code>, Max. <code>1</code>. The Min./Median/Max. here aren’t wrong, exactly, but they’re not very <em>useful</em> — a variable that can only be 0 or 1 doesn’t have a meaningful “middle” or “spread” the way age does. The one number worth keeping from this output is the <strong>Mean, <code>0.3048</code></strong> — for a 0/1 variable, the mean is just the proportion coded <code>1</code>, so about 30.5% of participants have high blood pressure. For everything else about a binary variable’s distribution, a frequency count (<code>table()</code>, coming up in Section 6) is the right tool, not <code>summary()</code>.</p>
-</div>
-</div>
-</div>
-<hr>
-</section>
-</section>
-<section id="section-10" class="level1">
-<h1>======================================================</h1>
-</section>
-<section id="accessing-specific-variables-in-a-data-frame" class="level1">
-<h1>🗃 6. Accessing Specific Variables in a Data Frame</h1>
-</section>
-<section id="section-11" class="level1">
-<h1>======================================================</h1>
-<p>Let’s practice looking at particular variables in our data frame.</p>
-<p>Access the <code>education</code> column:</p>
-<div id="qwebr-insertion-location-14"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>OK, we accessed it, but that looks pretty messy and it’s hard to glean much information! We’re just seeing the raw value of <code>education</code> for every single participant, one after another — technically correct, but far too much to scan by eye and make sense of.</p>
-<p>Instead, it can be helpful to create summary counts.</p>
-<ul>
-<li><code>education</code> is a categorical variable, so we can count the number of participants that fall into each level (category).</li>
-<li>We use the <code>table()</code> function to do this.</li>
-<li>We can also look at the proportion and percentage of participants in each category.</li>
-</ul>
-<div id="qwebr-insertion-location-15"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p><strong>Putting this together:</strong> the first line, <code>table()</code>, gives raw counts — 1,066 participants coded <code>"&lt; Bachelor's"</code> and 934 coded <code>"Bachelor's degree or higher"</code>. <code>prop.table()</code> takes that same table and converts it to proportions of the total (each cell divided by 2,000), and multiplying by 100 turns those proportions into percentages: about 53.3% of participants have less than a bachelor’s degree, and about 46.7% have a bachelor’s degree or higher. All three lines describe the exact same underlying counts — they’re just three different units (counts, proportions, percentages) for reporting the same distribution, and which one you’d report depends on your audience (a raw count is often more useful in a table you’re building for yourself; a percentage usually reads more naturally in written text).</p>
-<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>🧠 Your Turn
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>See if you can do the same thing (raw counts, proportions, and percentages) with the <strong><code>race_ethnicity</code></strong> variable. Then answer these three questions using your output:</p>
-<ol type="1">
-<li>How many people identify as <strong>Hispanic or Latino (of any race)</strong>?</li>
-<li>What <strong>proportion</strong> of the study population identifies as <strong>White alone, not Hispanic or Latino</strong>?</li>
-<li>What <strong>percentage</strong> of the study population identifies as <strong>Asian alone, not Hispanic or Latino</strong>?</li>
-</ol>
-<p>Type your three answers as comments in the code box below before checking the solution.</p>
-</div>
-</div>
-<div id="qwebr-insertion-location-16"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 Solution — click to reveal
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-12" class="callout-12-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<div id="qwebr-insertion-location-17"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p><strong>Answers:</strong></p>
-<ol type="1">
-<li><strong>275</strong> people identify as Hispanic or Latino (of any race).</li>
-<li><strong>0.61</strong> (about 61%) of the study population identifies as White alone, not Hispanic or Latino.</li>
-<li><strong>4.7%</strong> of the study population identifies as Asian alone, not Hispanic or Latino.</li>
-</ol>
-</div>
-</div>
-</div>
-</section>
-<section id="section-12" class="level1">
-<h1>======================================================</h1>
-</section>
-<section id="creating-a-new-variable" class="level1">
-<h1>🔄 7. Creating a New Variable</h1>
-</section>
-<section id="section-13" class="level1">
-<h1>======================================================</h1>
-<p>It’s important to understand how to manipulate the variables in your data frame. Consider, again, the <code>education</code> variable.</p>
-<ul>
-<li>What type of variable is <code>education</code>? Let’s use <code>str()</code> to check how it’s coded in our data frame.</li>
-</ul>
-<div id="qwebr-insertion-location-18"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>Based on this, we see that <code>education</code> is a character variable — we know that because <code>str()</code> labels it <strong><code>chr</code></strong> right at the start of the output.</p>
-<p><code>str()</code> uses a short abbreviation for every variable type, and it’s worth being able to recognize the common ones at a glance:</p>
+<section id="effect-modification-vs.-confounding" class="level1">
+<h1>Effect Modification vs.&nbsp;Confounding</h1>
+<p>Before any code, keep the distinction from Lessons 7 and 8 clear:</p>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 33%">
@@ -2539,292 +2187,514 @@ Note
 </colgroup>
 <thead>
 <tr class="header">
-<th>Abbreviation</th>
-<th>Type</th>
-<th>Example</th>
+<th></th>
+<th>Confounding</th>
+<th>Effect modification</th>
 </tr>
 </thead>
 <tbody>
 <tr class="odd">
-<td><code>chr</code></td>
-<td>character (text/string)</td>
-<td><code>education</code>, <code>gender</code></td>
+<td>What it is</td>
+<td>A <strong>bias</strong>: a third variable distorts the exposure–outcome association</td>
+<td>A <strong>finding</strong>: the association really is different in different groups</td>
 </tr>
 <tr class="even">
-<td><code>int</code></td>
-<td>integer (whole numbers)</td>
-<td><code>id</code>, <code>year</code></td>
+<td>What we do about it</td>
+<td><strong>Remove</strong> it (adjust, using the DAG)</td>
+<td><strong>Describe and report</strong> it (stratify, test)</td>
 </tr>
 <tr class="odd">
-<td><code>num</code></td>
-<td>numeric (double — can hold decimals)</td>
-<td><code>age</code>, <code>hrlctree</code></td>
-</tr>
-<tr class="even">
-<td><code>logi</code></td>
-<td>logical (<code>TRUE</code>/<code>FALSE</code>)</td>
-<td>rare in survey data, but common after a comparison like <code>age &gt; 65</code></td>
-</tr>
-<tr class="odd">
-<td><code>Factor</code></td>
-<td>factor (categorical, with defined levels)</td>
-<td>not currently used in this dataset — R reads categories in as <code>chr</code> by default, but some analyses expect <code>Factor</code> instead</td>
+<td>Question it answers</td>
+<td>“Is the overall estimate distorted?”</td>
+<td>“Is one overall estimate the right summary?”</td>
 </tr>
 </tbody>
 </table>
-<section id="creating-a-numeric-version-of-the-education-variable" class="level2">
-<h2 class="anchored" data-anchor-id="creating-a-numeric-version-of-the-education-variable">Creating a numeric version of the education variable</h2>
-<p>Right now, <code>education</code> is a character variable — useful for reading and for <code>table()</code>, but not for most quantitative work. <strong>Regression models, correlations, and most statistical functions in R need numeric input</strong> — they can’t compute something like a mean, a correlation coefficient, or a regression slope on the text strings <code>"&lt; Bachelor's"</code> and <code>"Bachelor's degree or higher"</code>. To use education status as a predictor or outcome in that kind of analysis later in the course, we first need a consistently coded numeric (here, binary 0/1) version. Let’s do this now, using base R’s <code>ifelse()</code>:</p>
+<p>The same variable can be a confounder, an effect modifier, both, or neither. Education was a confounder in Lesson 7; whether it is also a modifier is a separate question.</p>
+<p>Effect modification also depends on the <strong>scale</strong>. An association can differ across groups on the <strong>multiplicative</strong> (ratio) scale but not the <strong>additive</strong> (difference) scale, or vice versa. Our models estimate PRs, so the formal tests in this lesson are tests of <strong>multiplicative</strong> interaction. Step 3 shows both scales for the crude data.</p>
+<hr>
+</section>
+<section id="part-1-stratified-analysis" class="level1">
+<h1>Part 1: Stratified Analysis</h1>
+<section id="step-1-state-your-hypothesis-first" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-state-your-hypothesis-first">Step 1: State your hypothesis first</h2>
+<p>Effect modification analyses are easy to over-interpret, because with enough subgroups <em>something</em> will look different by chance. The protection is the same as for confounding in Lesson 7: <strong>decide in advance</strong> which modifier you will examine, what you expect, and what threshold you will use.</p>
+<p>For this lesson, we write down the following before looking at the data:</p>
+<blockquote class="blockquote">
+<p><em>A priori hypothesis:</em> The association between tree canopy and high blood pressure will differ by gender. Men and women can differ in how much time they spend in their neighborhood, how they use green space (e.g., for physical activity), and in their risk of high blood pressure, so the benefit of tree canopy may not be the same for both. We will consider a p-value below <strong>0.10</strong> from a test of interaction to be statistical evidence of effect modification.</p>
+</blockquote>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-Note
+<span class="screen-reader-only">Note</span>Why 0.10 and not 0.05?
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><strong>A note for later in the course:</strong> if you only ever plan to use <code>education</code> as an <em>explanatory</em> variable (a predictor) in a regression model — not as the outcome — converting it to a numeric 0/1 variable isn’t your only option. R’s regression functions (like <code>lm()</code> and <code>glm()</code>) can also take a <strong>factor</strong> variable directly as a predictor, and will automatically create the 0/1 coding behind the scenes (this is called “dummy coding”). For a variable with just two categories like this one, numeric 0/1 and factor give you the same result either way. The numeric approach shown here is worth learning first because it makes that dummy-coding step explicit rather than hidden — but once you’re comfortable with what’s happening, <code>factor()</code> is often the more natural choice for a categorical predictor, especially one with more than two levels.</p>
+<p>Tests of interaction compare <em>two</em> estimates, each with its own uncertainty, so they have much less statistical power than a test of the main association. A higher threshold (commonly 0.10, sometimes 0.15 or 0.20) reduces the chance of missing real effect modification (a type II error). Like the 10% rule in Lesson 7, this is a convention: choose it before you look, report it, and don’t move it after you see the results.</p>
 </div>
 </div>
-<div id="qwebr-insertion-location-19"></div>
+</section>
+<section id="step-2-code-the-modifier-and-check-the-cell-sizes" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-code-the-modifier-and-check-the-cell-sizes">Step 2: Code the modifier and check the cell sizes</h2>
+<div id="qwebr-insertion-location-5"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p><strong>What happened here?</strong> This line creates a new variable called <code>num_education</code>, a numeric version of <code>education</code>, using <code>ifelse()</code>:</p>
+<p>There are three gender categories, and two participants are missing gender. Before deciding how to code the modifier, check how many participants fall in each combination of <strong>modifier × exposure × outcome</strong> — these are the people who carry the information in each stratum.</p>
+<div id="qwebr-insertion-location-6"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p><strong>Questions to consider:</strong></p>
 <ul>
-<li>The code checks each value of <code>education</code>.</li>
-<li>If the value is <code>"&lt; Bachelor's"</code> (less than a bachelor’s degree), <code>num_education</code> is set to <code>0</code>.</li>
-<li>For all other values (presumably at least a bachelor’s degree), <code>num_education</code> is set to <code>1</code>.</li>
+<li>How many non-binary participants live in a top-quartile canopy tract <strong>and</strong> have high blood pressure?</li>
+<li>What would happen if you tried to estimate a PR for tree canopy among non-binary participants?</li>
 </ul>
-<p>So this line recodes a categorical <code>education</code> variable into a binary (0/1) numeric variable, where:</p>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
 <ul>
-<li><code>0</code> = less than a bachelor’s degree</li>
-<li><code>1</code> = bachelor’s degree or higher</li>
+<li><strong>One.</strong> Of the 26 non-binary participants, 6 live in a top-quartile tract, and 1 of those 6 has high blood pressure.</li>
+<li>A PR based on one or two cases would have an extremely wide confidence interval (or the model might not converge at all), so it would tell us almost nothing.</li>
 </ul>
-<p><strong>Note:</strong> in R there are lots of ways to do the same thing. Another way to recode this variable is with the <code>dplyr</code> package (loaded as part of <code>tidyverse</code>) instead of base R’s <code>ifelse()</code>.</p>
-<p>Quick reminder of the syntax before you try it: <code>mutate()</code> adds (or changes) a column in a data frame, and <code>if_else()</code> works like <code>ifelse()</code> — a condition, then the value to use when it’s <code>TRUE</code>, then the value to use when it’s <code>FALSE</code>. Put together, the general pattern looks like:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">new_column_name =</span> <span class="fu">if_else</span>(some_condition, value_if_true, value_if_false))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn">
+<p>We have two options: exclude non-binary participants from the effect modification analysis, or combine them with another group. Combining only makes sense if we have reason to believe their association is similar to that group’s — and we have no basis for that. So, as in the original version of this course, <strong>we exclude the 26 non-binary participants from the effect modification analysis</strong> (they remain in the overall analyses), and we note this as a limitation: the study cannot say anything about the association among non-binary people.</p>
+</div>
+</div>
+</div>
+<p>Code gender as a <strong>0/1 numeric variable</strong>. A 0/1 coding makes the interaction model in Part 2 much easier to read.</p>
+<div id="qwebr-insertion-location-7"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>Last, create the <strong>analytic sample</strong>: participants with no missing data on the outcome, exposure, modifier, or adjustment variables. Every model in this lesson uses <code>data_em</code>, so every comparison is made in the same people — the same rule as the change-in-estimate approach in Lesson 7.</p>
+<div id="qwebr-insertion-location-8"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+</section>
+<section id="step-3-look-at-the-four-groups" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-look-at-the-four-groups">Step 3: Look at the four groups</h2>
+<p>Before fitting any models, look at the prevalence of high blood pressure in each of the four combinations of gender and exposure.</p>
+<div id="qwebr-insertion-location-9"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>Among men, how does the prevalence of high blood pressure compare in top-quartile vs.&nbsp;other tracts? Among women?</li>
+<li>On the ratio scale, is the crude association stronger in men or in women? On the additive scale?</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>Men:</strong> 18.1% in top-quartile tracts vs.&nbsp;36.1% elsewhere. <strong>Women:</strong> 22.1% vs.&nbsp;32.3%.</li>
+<li>On the <strong>ratio</strong> scale, the crude PR is <strong>0.50</strong> for men and <strong>0.69</strong> for women — a stronger (further from 1) association among men. On the <strong>additive</strong> scale, the prevalence difference is <strong>−17.9 percentage points</strong> for men and <strong>−10.2</strong> for women — also stronger among men. Here the two scales agree on the direction of the difference; they don’t always. These are <strong>crude</strong> numbers; the next step adjusts for the confounders from Lesson 7.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="step-4-fit-the-adjusted-model-within-each-stratum" class="level2">
+<h2 class="anchored" data-anchor-id="step-4-fit-the-adjusted-model-within-each-stratum">Step 4: Fit the adjusted model within each stratum</h2>
+<p>A <strong>stratified analysis</strong> fits the same adjusted model separately in each level of the modifier. Within each stratum, gender is constant, so it drops out of the model; the adjustment set from Lesson 7 (education and tract poverty) stays in.</p>
+<div id="qwebr-insertion-location-10"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>We keep only the <code>tree_top_quartile</code> rows: the PRs for education and tract poverty are there to adjust the exposure estimate, not to be interpreted (the “Table 2 fallacy” from Lesson 7).</p>
+<p>A plot makes the comparison easier to see. Note the <strong>log scale</strong> on the y-axis: ratios should be plotted on a log scale, so that, for example, 0.5 and 2.0 are the same distance from 1.</p>
+<div id="qwebr-insertion-location-11"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+</section>
+<section id="step-5-qualitative-assessment-compare-the-estimates-by-eye" class="level2">
+<h2 class="anchored" data-anchor-id="step-5-qualitative-assessment-compare-the-estimates-by-eye">Step 5: Qualitative assessment — compare the estimates by eye</h2>
+<p>Two questions guide a qualitative assessment:</p>
+<ol type="1">
+<li><strong>Are the point estimates meaningfully different?</strong> Is the difference large enough to matter for public health, regardless of p-values?</li>
+<li><strong>How much do the confidence intervals overlap?</strong> Substantial overlap — especially if one stratum’s point estimate falls inside the other’s CI — suggests weak evidence of a difference. Little or no overlap suggests a difference that is unlikely to be due to chance alone.</li>
+</ol>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>Interpret the PR for men and the PR for women, each in one sentence.</li>
+<li>Do the confidence intervals overlap? Does either point estimate fall inside the other CI?</li>
+<li>The CI for men excludes 1 and the CI for women includes 1. Does that mean the association is “significant in men but not in women,” and therefore that gender modifies the association?</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Gender</th>
+<th>N</th>
+<th>Adjusted PR (95% CI)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Men</td>
+<td>933</td>
+<td>0.62 (0.45, 0.84)</td>
+</tr>
+<tr class="even">
+<td>Women</td>
+<td>1,027</td>
+<td>0.81 (0.62, 1.05)</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><em>Men:</em> After adjusting for education and tract poverty, the prevalence of high blood pressure among men living in the greenest quarter of census tracts was 0.62 times the prevalence among men living in the other three quarters (95% CI: 0.45, 0.84) — about 38% lower. <em>Women:</em> the corresponding PR was 0.81 (95% CI: 0.62, 1.05) — about 19% lower.</li>
+<li>Yes, substantially. The women’s point estimate (0.81) falls inside the men’s CI (0.45–0.84), and the men’s point estimate (0.62) sits right at the lower edge of the women’s CI (0.62–1.05). The difference in point estimates is suggestive, but this much overlap means it could easily be due to chance.</li>
+<li><strong>No.</strong> This is one of the most common mistakes in effect modification analysis (see this week’s Kaufman &amp; MacLehose reading). “Significant in one group, not in the other” is not a test of whether the two estimates <em>differ from each other</em>. The women’s CI includes 1 partly because the estimate is smaller, but both CIs point in the same, protective direction. To test whether the two estimates differ, we need a formal test of heterogeneity — Steps 6 through 9.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="step-6-cochrans-q-a-test-of-heterogeneity-across-strata" class="level2">
+<h2 class="anchored" data-anchor-id="step-6-cochrans-q-a-test-of-heterogeneity-across-strata">Step 6: Cochran’s Q — a test of heterogeneity across strata</h2>
+<p><strong>Cochran’s Q</strong> tests whether stratum-specific estimates differ more than we would expect by chance. It needs only the estimate and its standard error from each stratum, so it can be used with any stratified estimates — including ones from published papers. Because ratio estimates are approximately normal on the <strong>log</strong> scale, Q is calculated with the log PRs:</p>
+<p><span class="math display">\[Q = \sum_i w_i \left(\ln \text{PR}_i - \ln \text{PR}_{\text{pooled}}\right)^2, \qquad w_i = \frac{1}{SE_i^2}, \qquad \ln \text{PR}_{\text{pooled}} = \frac{\sum_i w_i \ln \text{PR}_i}{\sum_i w_i}\]</span></p>
+<ul>
+<li><span class="math inline">\(\ln \text{PR}_i\)</span> is the log PR in stratum <span class="math inline">\(i\)</span>, and <span class="math inline">\(SE_i\)</span> is its standard error;</li>
+<li>the pooled estimate is a weighted average, giving more weight to more precise strata;</li>
+<li>under the null hypothesis of no heterogeneity, Q follows a chi-square distribution with (number of strata − 1) degrees of freedom.</li>
+</ul>
+<div id="qwebr-insertion-location-12"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Only have the PR and its 95% CI? Click to see how to get the SE">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Only have the PR and its 95% CI? Click to see how to get the SE
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>A 95% CI on the log scale is <span class="math inline">\(\ln \text{PR} \pm 1.96 \times SE\)</span>, so its total width is <span class="math inline">\(2 \times 1.96 \times SE = 3.92 \times SE\)</span>. To recover the SE from a published PR and CI:</p>
+<p><span class="math display">\[SE = \frac{\ln(\text{upper limit}) - \ln(\text{lower limit})}{3.92}\]</span></p>
+<div id="qwebr-insertion-location-13"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>Always work on the <strong>log</strong> scale. Calculating Q or the SE from the PRs themselves (without taking logs) gives the wrong answer.</p>
+</div>
+</div>
+</div>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>What is the p-value for Cochran’s Q? Using our pre-specified threshold of 0.10, is there statistical evidence of heterogeneity?</li>
+<li>Why might Q fail to detect a real difference here?</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>Q = 1.70, 1 df, p = 0.19.</strong> That is above 0.10, so there is no statistical evidence of heterogeneity by this test.</li>
+<li>Q has <strong>low power</strong> when there are few strata and each estimate is imprecise — exactly our situation (two strata, wide CIs). A p-value of 0.19 does <strong>not</strong> show that the association is the same in men and women; it shows the data can’t rule out a difference of this size arising by chance.</li>
+</ul>
+</div>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="part-2-interaction-models" class="level1">
+<h1>Part 2: Interaction Models</h1>
+<section id="step-7-fit-a-model-with-an-interaction-term" class="level2">
+<h2 class="anchored" data-anchor-id="step-7-fit-a-model-with-an-interaction-term">Step 7: Fit a model with an interaction term</h2>
+<p>Instead of fitting separate models, we can fit <strong>one</strong> model that includes the exposure, the modifier, and their product — an <strong>interaction term</strong>:</p>
+<p><span class="math display">\[\ln(\text{prevalence}) = \beta_0 + \beta_1\,\text{TreeTop} + \beta_2\,\text{Woman} + \beta_3\,(\text{TreeTop} \times \text{Woman}) + \beta_4\,\text{Education} + \beta_5\,\text{TractPoverty}\]</span></p>
+<p>In R, <code>tree_top_quartile * woman</code> is shorthand for <code>tree_top_quartile + woman + tree_top_quartile:woman</code> — both <strong>main effects</strong> plus their interaction.</p>
+<div id="qwebr-insertion-location-14"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>What each coefficient means (everything holds education and tract poverty constant):</p>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 33%">
+<col style="width: 33%">
+<col style="width: 33%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Coefficient</th>
+<th>Term</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><span class="math inline">\(\beta_1\)</span></td>
+<td><code>tree_top_quartile</code></td>
+<td>Log PR for tree canopy <strong>among men</strong> (woman = 0)</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\beta_2\)</span></td>
+<td><code>woman</code></td>
+<td>Log PR for women vs.&nbsp;men <strong>in tracts outside the top quartile</strong></td>
+</tr>
+<tr class="odd">
+<td><span class="math inline">\(\beta_3\)</span></td>
+<td><code>tree_top_quartile:woman</code></td>
+<td>How much the log PR for tree canopy <strong>differs</strong> in women compared with men</td>
+</tr>
+<tr class="even">
+<td><span class="math inline">\(\beta_1 + \beta_3\)</span></td>
+<td></td>
+<td>Log PR for tree canopy <strong>among women</strong> (woman = 1)</td>
+</tr>
+</tbody>
+</table>
+<p>Where does <span class="math inline">\(\beta_1 + \beta_3\)</span> come from? Write out the model for women (Woman = 1) in top-quartile and other tracts, and subtract:</p>
+<ul>
+<li>Top quartile: <span class="math inline">\(\beta_0 + \beta_1 + \beta_2 + \beta_3 + \ldots\)</span></li>
+<li>Other tracts: <span class="math inline">\(\beta_0 + \beta_2 + \ldots\)</span></li>
+<li>Difference: <span class="math inline">\(\beta_1 + \beta_3\)</span> (everything else cancels)</li>
+</ul>
+<p>For men (Woman = 0), the <span class="math inline">\(\beta_2\)</span> and <span class="math inline">\(\beta_3\)</span> terms are multiplied by 0, so the difference is just <span class="math inline">\(\beta_1\)</span>.</p>
+</section>
+<section id="step-8-stratum-specific-estimates-from-the-interaction-model" class="level2">
+<h2 class="anchored" data-anchor-id="step-8-stratum-specific-estimates-from-the-interaction-model">Step 8: Stratum-specific estimates from the interaction model</h2>
+<p>The PR for men is <span class="math inline">\(e^{\beta_1}\)</span>, and the PR for women is <span class="math inline">\(e^{\beta_1 + \beta_3}\)</span>. The CI for women needs the variance of a <strong>sum</strong> of two coefficients, which includes their covariance:</p>
+<p><span class="math display">\[\text{Var}(\hat\beta_1 + \hat\beta_3) = \text{Var}(\hat\beta_1) + \text{Var}(\hat\beta_3) + 2\,\text{Cov}(\hat\beta_1, \hat\beta_3)\]</span></p>
+<div id="qwebr-insertion-location-15"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>How do these PRs compare with the stratified PRs from Step 4? Why aren’t they identical?</li>
+<li>What is <span class="math inline">\(e^{\beta_3}\)</span>, and how would you put it into words?</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>From the interaction model: men <strong>0.61 (0.45, 0.82)</strong>, women <strong>0.82 (0.63, 1.06)</strong>. From the stratified models: men 0.62 (0.45, 0.84), women 0.81 (0.62, 1.05). They are very close but not identical, because the interaction model lets only the <strong>tree canopy</strong> association differ by gender — it assumes the associations of education and tract poverty with high blood pressure are the same for men and women. The stratified models let <em>every</em> coefficient differ. Either approach is acceptable; say which one you used.</li>
+<li>$e^{_3} = e^{0.300} = $ <strong>1.35</strong> — the <strong>ratio of the two PRs</strong> (0.82 / 0.61 ≈ 1.35). The PR for tree canopy among women is 1.35 times the PR among men; that is, the association is weaker (closer to 1) among women. If there were no multiplicative interaction, <span class="math inline">\(\beta_3\)</span> would be 0 and <span class="math inline">\(e^{\beta_3}\)</span> would be 1.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="step-9-testing-the-interaction-the-wald-test" class="level2">
+<h2 class="anchored" data-anchor-id="step-9-testing-the-interaction-the-wald-test">Step 9: Testing the interaction — the Wald test</h2>
+<p>The <strong>Wald test</strong> asks whether the interaction coefficient is different from zero:</p>
+<p><span class="math display">\[z = \frac{\hat\beta_3}{SE(\hat\beta_3)}\]</span></p>
+<p>Compare <span class="math inline">\(z\)</span> with a standard normal distribution. For a modified Poisson model, use the <strong>robust</strong> standard error.</p>
+<div id="qwebr-insertion-location-16"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<div class="callout callout-style-default callout-warning callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>🧠 Your Turn
+<span class="screen-reader-only">Warning</span>Don’t read the Wald p-value from <code>summary()</code> for a modified Poisson model
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><code>dplyr</code>’s equivalent of <code>ifelse()</code> is <code>if_else()</code>, typically used inside <code>mutate()</code>. Try rewriting the <code>num_education</code> recode above using <code>data %&gt;% mutate(...)</code> and <code>if_else()</code> instead of base R. Call the new column <code>num_education2</code> so you can compare it to the original.</p>
+<p><code>summary(model_int)</code> also prints a z value and p-value for every coefficient, but those use the <strong>model-based</strong> Poisson standard errors, which are wrong for a 0/1 outcome (Lesson 7, Step 4). Here <code>summary()</code> gives p = 0.18; the correct, robust Wald test gives p = 0.12. Always use the robust SE for modified Poisson models.</p>
 </div>
 </div>
+</section>
+<section id="step-10-testing-the-interaction-the-likelihood-ratio-test" class="level2">
+<h2 class="anchored" data-anchor-id="step-10-testing-the-interaction-the-likelihood-ratio-test">Step 10: Testing the interaction — the likelihood ratio test</h2>
+<p>The <strong>likelihood ratio test (LRT)</strong> compares how well two <strong>nested</strong> models fit the data:</p>
+<ul>
+<li>a <strong>reduced</strong> model, <em>without</em> the interaction term: <code>exposure + modifier + covariates</code></li>
+<li>a <strong>full</strong> model, <em>with</em> it: <code>exposure * modifier + covariates</code></li>
+</ul>
+<p><span class="math display">\[\text{LRT statistic} = -2 \times \left(\ln L_{\text{reduced}} - \ln L_{\text{full}}\right) \sim \chi^2_{df}\]</span></p>
+<p>where <span class="math inline">\(\ln L\)</span> is each model’s log-likelihood, and <span class="math inline">\(df\)</span> is the number of parameters added in the full model (1 for a single interaction term).</p>
+<div class="callout callout-style-default callout-important callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Important</span>Use a model with a real likelihood for the LRT
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>An LRT compares <strong>likelihoods</strong>, so the likelihood has to be the right one for the data. A modified Poisson model uses the Poisson likelihood, which is the <em>wrong</em> likelihood for a 0/1 outcome — that is exactly why it needs robust standard errors. So for a binary outcome, run the LRT on <strong>log-binomial</strong> models (if they converge), which estimate the same PR with the correct likelihood. If your log-binomial models won’t converge, rely on the robust Wald test (Step 9), plus Cochran’s Q.</p>
+</div>
+</div>
+<p>Our log-binomial models converge here, so we use them:</p>
+<div id="qwebr-insertion-location-17"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>In the <code>anova()</code> output, <code>Deviance</code> in the second row is the LRT statistic, <code>Df</code> is its degrees of freedom, and <code>Pr(&gt;Chi)</code> is the p-value.</p>
+<p>Two rules keep an LRT valid:</p>
+<ol type="1">
+<li><strong>The models must be nested.</strong> The reduced model contains <em>everything</em> in the full model except the interaction term — including the modifier’s main effect. Comparing <code>outcome ~ exposure</code> with <code>outcome ~ exposure * modifier</code> tests two parameters at once (the modifier’s main effect and the interaction), which is not a test of effect modification.</li>
+<li><strong>Both models must be fit in the same participants.</strong> If the modifier has missing values and the reduced model doesn’t include it, R will fit the two models in different people, and the comparison is meaningless. Fitting both models in <code>data_em</code> prevents this.</li>
+</ol>
+<div id="qwebr-insertion-location-18"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>The two models use different numbers of participants (the 26 non-binary participants and those missing gender are in one but not the other). <code>anova()</code> will refuse to compare them, or, in some situations, compare them silently with a meaningless result.</p>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>What are the Wald and LRT p-values? Using our pre-specified threshold of 0.10, what do you conclude?</li>
+<li>Would your conclusion change with a threshold of 0.15? What does that tell you about choosing the threshold in advance?</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-13-contents" aria-controls="callout-13" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-13" class="callout-13-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li><strong>Robust Wald test: z = 1.54, p = 0.12.</strong> <strong>LRT (log-binomial): statistic = 2.20, 1 df, p = 0.14.</strong> Both are above 0.10, so by our pre-specified rule there is <strong>no statistical evidence</strong> of multiplicative effect modification by gender. Cochran’s Q (p = 0.19) agrees.</li>
+<li>With a 0.15 threshold, both the Wald test and the LRT would count as evidence of modification. The data are the same; only the rule changed. That is why the threshold must be chosen <strong>before</strong> you see the results. Choosing it afterward to get the answer you want is a form of p-hacking. Whatever the threshold, report the actual p-values so readers can judge for themselves.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="step-11-keep-the-model-hierarchical" class="level2">
+<h2 class="anchored" data-anchor-id="step-11-keep-the-model-hierarchical">Step 11: Keep the model hierarchical</h2>
+<p>When a model contains an interaction term, it must also contain <strong>both main effects</strong> that make up the interaction. This is the <strong>hierarchy principle</strong>. Here is what happens if the main effect of gender is left out:</p>
+<div id="qwebr-insertion-location-19"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>Without the <code>woman</code> main effect, the model assumes that women and men in tracts outside the top quartile have <em>exactly the same</em> prevalence of high blood pressure. The interaction term then soaks up part of the difference between women and men, so it no longer measures only how the tree canopy association differs by gender (here it shrinks from 1.35 to 1.22). Writing <code>exposure * modifier</code> always includes both main effects for you.</p>
+</section>
+<section id="step-12-put-it-together-a-results-table-and-interpretation" class="level2">
+<h2 class="anchored" data-anchor-id="step-12-put-it-together-a-results-table-and-interpretation">Step 12: Put it together — a results table and interpretation</h2>
+<p>Effect modification results are usually presented as a table of stratum-specific estimates with the test(s) of interaction — <strong>Table 3</strong> of your final report:</p>
 <div id="qwebr-insertion-location-20"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Writing up effect modification (Milestone 4)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><em>“We hypothesized a priori that the association between tree canopy and high blood pressure would differ by gender, and we considered p &lt; 0.10 from a test of interaction to indicate statistical evidence of effect modification. Twenty-six non-binary participants were excluded from this analysis because of small numbers. After adjustment for education and tract poverty, living in a top-quartile canopy tract was associated with a lower prevalence of high blood pressure among men (PR = 0.62, 95% CI: 0.45, 0.84) and, to a lesser extent, among women (PR = 0.81, 95% CI: 0.62, 1.05). The confidence intervals overlapped substantially, and tests of multiplicative interaction did not meet our threshold (robust Wald p = 0.12; likelihood ratio test p = 0.14; Cochran’s Q p = 0.19). We therefore found limited statistical evidence that gender modifies this association, although the difference in point estimates suggests a possibly stronger association among men that could be examined in a larger study.”</em></p>
+<p>Notice what the paragraph does: it states the hypothesis and threshold, reports <strong>both</strong> stratum estimates with CIs, reports the actual p-values, and does not claim the association is “absent” in women or “the same” in men and women.</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 What if my modifier has more than two levels? Click to read">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-15-contents" aria-controls="callout-15" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 Solution — click to reveal
+<span class="screen-reader-only">Note</span>💡 What if my modifier has more than two levels? Click to read
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
 <div id="callout-15" class="callout-15-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
+<p>With a modifier that has <span class="math inline">\(k\)</span> levels (e.g., three education categories), the interaction model has <span class="math inline">\(k - 1\)</span> interaction terms, and a test of effect modification needs to test them <strong>all at once</strong>.</p>
+<ul>
+<li><strong>Stratified models and Cochran’s Q:</strong> fit one model per level; Q has <span class="math inline">\(k - 1\)</span> degrees of freedom. The code in Step 6 works unchanged with more strata.</li>
+<li><strong>LRT:</strong> compare the reduced and full models as in Step 10. <code>anova()</code> calculates the degrees of freedom (<span class="math inline">\(k - 1\)</span>) automatically. This is the main reason the LRT is often preferred: it handles several interaction terms in one test.</li>
+<li><strong>Robust Wald test for several terms:</strong> with modified Poisson, test all the interaction terms together using their robust variance-covariance matrix:</li>
+</ul>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>int_terms <span class="ot">&lt;-</span> <span class="fu">grep</span>(<span class="st">":"</span>, <span class="fu">names</span>(<span class="fu">coef</span>(model_int)), <span class="at">value =</span> <span class="cn">TRUE</span>)   <span class="co"># all interaction terms</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="fu">coef</span>(model_int)[int_terms]</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>V <span class="ot">&lt;-</span> <span class="fu">vcovHC</span>(model_int, <span class="at">type =</span> <span class="st">"HC0"</span>)[int_terms, int_terms]</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>wald_chisq <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">t</span>(b) <span class="sc">%*%</span> <span class="fu">solve</span>(V) <span class="sc">%*%</span> b)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">pchisq</span>(wald_chisq, <span class="at">df =</span> <span class="fu">length</span>(b), <span class="at">lower.tail =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>Each level also needs enough exposed and unexposed participants <strong>with and without the outcome</strong> (Step 2). If a level is too small, combine it with a similar level — and say why.</p>
+<p><strong>Continuous modifiers</strong> (e.g., age in years) can also go into an interaction term, but the stratum-specific estimates then change with every unit of the modifier, which makes them harder to present. For this course, use a categorical version of your modifier, with cut points chosen in advance (e.g., ages &lt; 50 vs.&nbsp;≥ 50).</p>
+</div>
+</div>
+</div>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn: Effect modification in your own project">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>🧠 Your Turn: Effect modification in your own project
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Using <strong>your project’s exposure, outcome, and final adjustment set</strong> from Milestone 3:</p>
+<ol type="1">
+<li>Choose <strong>one</strong> potential effect modifier and write down your a priori hypothesis (which group do you expect to show the stronger association, and why?) and your p-value threshold — <strong>before</strong> running anything.</li>
+<li>Code the modifier (0/1 if possible), check the modifier × exposure × outcome cell sizes, and create an analytic sample with no missing data on any model variable.</li>
+<li>Fit your adjusted model within each stratum of the modifier, and make a table and plot of the stratum-specific estimates.</li>
+<li>Fit the interaction model, and calculate Cochran’s Q, the robust Wald test, and (if your log-binomial models converge) the LRT.</li>
+<li>Write two or three sentences interpreting your results.</li>
+</ol>
+</div>
+</div>
 <div id="qwebr-insertion-location-21"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-</div>
-</div>
-</div>
-<p>Verify that the coding of the new variable worked as we wanted, by creating a two-by-two table looking at the distribution of the numeric education variable against the character one:</p>
-<div id="qwebr-insertion-location-22"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<hr>
-</section>
-</section>
-<section id="section-14" class="level1">
-<h1>======================================================</h1>
-</section>
-<section id="merging-data-with-external-information" class="level1">
-<h1>📝 8. Merging Data with External Information</h1>
-</section>
-<section id="section-15" class="level1">
-<h1>======================================================</h1>
-<p>A lot of times in environmental epidemiology, we have additional environmental information that we want to link into our data. Examples include:</p>
-<ul>
-<li>Air pollution data</li>
-<li>Housing data</li>
-<li>Tract-level sociodemographic composition variables</li>
-<li>Green space data</li>
-<li>Crime data</li>
-</ul>
-<p>You can probably think of additional types of data we might want to link in.</p>
-<p>Why would we want to do this? Here’s a concrete example: if we’re interested in studying the association between residential air pollution exposure and asthma diagnosis, our survey data alone won’t have an air pollution measurement for each participant — so we’d want to link in a separate data source that does have it, matched to where each participant lives.</p>
-<p>We can do this by <strong>merging</strong> a second data frame — which has the environmental information of interest — into our primary data frame, by combining them using a common variable or variables.</p>
-<ul>
-<li>Often, we use information about participants’ neighborhoods (e.g., census tracts) to merge in environmental data. A <strong>census tract</strong> is a small, relatively permanent geographic area defined by the U.S. Census Bureau — roughly neighborhood-sized, typically a few thousand residents — that’s commonly used in public health research as a proxy for someone’s local environment, since exact addresses usually aren’t available (or shared) for privacy reasons.</li>
-</ul>
-<p>Let’s do that now.</p>
-<hr>
-<section id="load-another-dataset" class="level2">
-<h2 class="anchored" data-anchor-id="load-another-dataset">Load another dataset</h2>
-<p>You’ll find an additional data frame, which contains neighborhood-level (tract-level) data on <strong>NDVI</strong> (greenness), called <code>PHL_NDVI_summer_annual.csv</code>. (For the other tract-level environmental and sociodemographic variables already in <code>data</code> — like <code>hrlctree</code> or <code>pov_allage</code> — see the <a href="./codebook.html">Data Codebook</a>.)</p>
-<p>This data frame shows the median value of the summertime NDVI value for each census tract in Philadelphia — that is, how green each census tract is. NDVI stands for Normalized Difference Vegetation Index. <em>NDVI ranges in value from -1 to 1.</em></p>
-<ul>
-<li>Negative values represent water.</li>
-<li>Values close to 1 mean dense vegetation.</li>
-<li>Values close to 0 mean a lack of vegetation (there might instead be lots of concrete).</li>
-</ul>
-<p><a href="https://gisgeography.com/ndvi-normalized-difference-vegetation-index/">This page</a> tells us a bit more about NDVI.</p>
-<p>Let’s read in that data (again, in the browser we first fetch it from the web; in RStudio you’d just need it in your working directory):</p>
-<div id="qwebr-insertion-location-23"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Example: traffic density and asthma, by gender — click to reveal">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-17-contents" aria-controls="callout-17" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>💻 In your RStudio script
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>The chunk above fetches the NDVI file from the web for the browser. <strong>In your own RStudio script</strong>, with <code>PHL_NDVI_summer_annual.csv</code> already in your <code>data_raw/</code> folder, all you need is:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>PHL_NDVI_summer_annual <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"PHL_NDVI_summer_annual.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</div>
-</div>
-<p>Inspect the dataset using the <code>names</code>, <code>str</code>, and <code>head</code> functions. Do you remember what each of these shows you?</p>
-<div id="qwebr-insertion-location-24"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p><strong>Questions:</strong></p>
-<ul>
-<li>How many observations (rows) are in the NDVI data frame?</li>
-<li>What are the names of the variables (columns) in this data frame?</li>
-<li>What seems to be the unique identifier in the NDVI data frame?</li>
-</ul>
-<hr>
-</section>
-<section id="summarize-the-ndvi-values-across-philadelphia" class="level2">
-<h2 class="anchored" data-anchor-id="summarize-the-ndvi-values-across-philadelphia">Summarize the NDVI values across Philadelphia</h2>
-<p>Using our Philadelphia tract-level data frame, let’s look at the distribution of NDVI across the city of Philadelphia.</p>
-<ul>
-<li>What is the minimum NDVI value? What does this tell you?</li>
-<li>What’s the median? What’s the max?</li>
-</ul>
-<div id="qwebr-insertion-location-25"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<ul>
-<li>But we want to know how green the neighborhoods of our study participants are.</li>
-<li>To do so, we’re going to link the NDVI data frame to our primary data frame using a common variable found in both.</li>
-</ul>
-<p>The common variable is called <strong>geoid10</strong>. In our class data frame, <code>geoid10</code> refers to the census tract in which the study participant lives. In the NDVI data frame, <code>GEOID10</code> refers to each unique Philadelphia census tract.</p>
-<p>In order for the merge/linkage to work, both variables have to be in the <strong>same format</strong> (both character, or both numeric, etc.). Let’s check on this now.</p>
-<div id="qwebr-insertion-location-26"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>Notice these <strong>don’t match</strong>: <code>data$geoid10</code> shows up as <code>chr</code>, because we deliberately converted it back in Section 5 (it’s a label, not a quantity, remember?) — but <code>PHL_NDVI_summer_annual$GEOID10</code> is freshly read in from its own file and is still <code>num</code>. This is exactly the situation the earlier conversion was setting up: without it, both would have looked numeric and matched by coincidence, hiding the fact that ID columns need this treatment at all. Since they don’t match now, let’s convert <code>GEOID10</code> to character too:</p>
-<div id="qwebr-insertion-location-27"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>(Re-running <code>data$geoid10 &lt;- as.character(data$geoid10)</code> here as well wouldn’t hurt anything — converting an already-character column to character is a harmless no-op — but it’s only <em>necessary</em> for the one that’s still numeric.)</p>
-<p>Now let’s merge the datasets, using a left join:</p>
-<div id="qwebr-insertion-location-28"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>Now the data frame called <code>data2</code> should have all of our original variables, plus the variables from the NDVI data frame.</p>
-<p>As a check, think about how many variables were in each separate data frame.</p>
-<ul>
-<li>How many rows are in <code>data2</code>?</li>
-</ul>
-<p>We’re specifically checking this because a left join (<code>all.x = TRUE</code>) is supposed to keep <strong>every</strong> row from <code>data</code> — one row per participant, no more and no fewer — while just adding columns from <code>PHL_NDVI_summer_annual</code> onto each one. If the row count in <code>data2</code> doesn’t match the row count in <code>data</code> (2,000), that’s a red flag: it would mean the merge either dropped some participants, or duplicated some (which happens if the NDVI file accidentally has more than one row per <code>geoid10</code> — each extra match creates an extra output row). Checking <code>nrow()</code> before and after any merge is one of the simplest, most important habits for confirming a merge did what you expected.</p>
-<div id="qwebr-insertion-location-29"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>Or we can use <code>dim()</code>, which shows us rows and columns:</p>
-<div id="qwebr-insertion-location-30"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>We can also look at the names of the variables in the merged data frame — is everything in there?</p>
-<div id="qwebr-insertion-location-31"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>It’s also helpful to look at the top rows of the merged data frame, to be sure we don’t have a bunch of missing values (coded <code>NA</code>) — if we see missings in the NDVI variables, that likely means something went wrong with our merge!</p>
-<div id="qwebr-insertion-location-32"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>We can also do some logic checks to be sure everything checks out.</p>
-<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>🧠 Your Turn
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>Do participants living in the identical census tract get assigned the <strong>same</strong> NDVI value? Write code to check this — for example, group <code>data2</code> by <code>geoid10</code> and count the number of <em>distinct</em> <code>X2015_NDVI</code> values within each tract. If the merge worked correctly, every tract should have exactly 1 distinct NDVI value.</p>
-<p><strong>Why should that be true?</strong> <code>X2015_NDVI</code> is a <em>tract-level</em> measurement — it describes the neighborhood, not the individual person. A left join doesn’t create new NDVI values; it just looks up the one value that belongs to each participant’s <code>geoid10</code> and copies it onto every row that matches. So everyone sharing a tract should end up with the identical copied value. If any tract shows more than one distinct value, something’s wrong — most likely a formatting issue (like the one we just fixed) that caused some participants to match the wrong row, or a duplicate tract entry in the NDVI file itself.</p>
-<p>(Hint: <code>dplyr</code>’s <code>group_by()</code>, <code>summarize()</code>, and <code>n_distinct()</code> are useful here.)</p>
-</div>
-</div>
-<div id="qwebr-insertion-location-33"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-18-contents" aria-controls="callout-18" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 Solution — click to reveal
+<span class="screen-reader-only">Note</span>💡 Example: traffic density and asthma, by gender — click to reveal
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-18" class="callout-18-contents callout-collapse collapse">
+<div id="callout-17" class="callout-17-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<div id="qwebr-insertion-location-34"></div>
+<p>Continuing the Lesson 7 example: the final model for high traffic density (above the median) and asthma adjusted for tract poverty. <em>A priori hypothesis:</em> the association will differ by gender, because asthma prevalence and its triggers differ between adult men and women. Threshold: p &lt; 0.10.</p>
+<div id="qwebr-insertion-location-22"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p><strong>What this output is telling you:</strong> the <code>summarize()</code> step produces one row per tract, giving the number of distinct NDVI values found within it (<code>n_unique_ndvi</code>) — then <code>count(n_unique_ndvi)</code> collapses <em>that</em> down into a small frequency table, showing how many tracts (<code>n</code>) had each possible value of <code>n_unique_ndvi</code>. What you’re looking for is a <strong>single row</strong>: <code>n_unique_ndvi = 1</code>, with <code>n</code> equal to the total number of tracts (384) — meaning every tract, without exception, has exactly one NDVI value. If you instead saw a second row (e.g., <code>n_unique_ndvi = 2</code> with some nonzero <code>n</code>), that would tell you exactly how many tracts have the problem, which is your starting point for troubleshooting.</p>
+<p>After adjusting for tract poverty, living in a high-traffic tract was associated with a higher prevalence of asthma among both men (PR = 1.40, 95% CI: 0.94, 2.08) and women (PR = 2.40, 95% CI: 1.60, 3.58). All three tests of interaction gave p-values between 0.06 and 0.07, below our pre-specified threshold of 0.10, so there is statistical evidence that the traffic–asthma association is stronger among women than among men on the multiplicative scale. Compare this with the tree canopy example, where the difference between strata was smaller and the tests did not meet the threshold.</p>
 </div>
 </div>
 </div>
-<p>Assuming everything looks OK, let’s move on. If not, we’d need to do some troubleshooting!</p>
 <hr>
 </section>
 </section>
-<section id="section-16" class="level1">
-<h1>======================================================</h1>
-</section>
-<section id="saving-your-processed-data" class="level1">
-<h1>📂 9. Saving Your Processed Data</h1>
-</section>
-<section id="section-17" class="level1">
-<h1>======================================================</h1>
-<p>Currently, our new data frame just lives in our R environment (or, on this page, in your browser’s temporary in-browser R session). Once we close R (or this browser tab), we lose our changes unless we save them. We can either rerun this code again, or save our new data frame with any changes we made. Let’s do this now.</p>
-<p><strong>Note:</strong> it’s good practice to save your data frame using a <strong>new</strong> name, and — per this course’s project convention — into <code>data_processed/</code>, not <code>data_raw/</code>. That way <code>data_raw/class_data_raw.csv</code> stays untouched as your original source, and anyone (including you, later) can tell at a glance that <code>data_processed/</code> files were generated by a script rather than hand-edited.</p>
-<p>Why does that separation matter so much? Think about reproducibility (recall this from Week 1): the whole point of the <code>data_raw/</code> → script → <code>data_processed/</code> pattern is that your <strong>script</strong>, not a person clicking around in a spreadsheet, is the record of every transformation applied to the data. If <code>class_data_raw.csv</code> ever got hand-edited directly, there would be no way to tell what changed or why — the original data would effectively be lost, and nobody (including future you) could regenerate it from scratch. Keeping <code>data_raw/</code> untouched means you can always delete <code>data_processed/</code> entirely and rebuild it by just re-running your script — which is exactly what “reproducible” means in practice.</p>
-<div class="callout callout-style-default callout-tip callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>💻 In your RStudio script
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>This is the line to use in your own script to save the processed dataset. The <code>data_processed/</code> folder already exists in your <code>EOH635_project</code> from the setup assignment:</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(data2, <span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>This saves <code>class_data_processed.csv</code> into <code>data_processed/</code> inside your project, where it will persist between sessions.</p>
-</div>
-</div>
-<p>You can also run the chunk below in the browser to see how it works — but note that in the browser the file is only saved temporarily and disappears when you close the tab. <strong>To actually save this file permanently to your hard drive, run the single line shown in the green “In your RStudio script” box just above, inside RStudio</strong> — with <code>data2</code> in your R environment and <code>data_processed/</code> already existing in your <code>EOH635_project</code>, that <code>write.csv(...)</code> line writes the file to your computer’s disk, where it will still be there the next time you open RStudio.</p>
-<div id="qwebr-insertion-location-35"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-</section>
-<section id="section-18" class="level1">
-<h1>======================================================</h1>
-</section>
 <section id="quick-start-script-for-your-own-project" class="level1">
-<h1>🚀 10. Quick-Start Script for Your Own Project</h1>
-</section>
-<section id="section-19" class="level1">
-<h1>======================================================</h1>
-<p>This script covers only the <strong>data preparation</strong> work we did in this lesson — reading in the NDVI data, merging it with our primary dataset, and recoding the <code>education</code> variable. It’s not a full analysis; think of it as getting your dataset ready for one. Everything above walked through each of those steps one at a time, with the browser-only fetching code mixed in. Below is everything put together as a <strong>single clean script</strong> — this is what actually goes in your <code>.R</code> or <code>.qmd</code> file inside <code>EOH635_project/scripts/</code>, running on your own computer with <code>class_data_raw.csv</code> and <code>PHL_NDVI_summer_annual.csv</code> already sitting in <code>data_raw/</code>.</p>
+<h1>Quick-Start Script for Your Own Project</h1>
 <div class="callout callout-style-default callout-tip callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -2835,55 +2705,93 @@ Note
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Copy the whole block below into a new script in RStudio to get started on your own computer. There’s no downloading step here — R just reads the files straight from your <code>data_raw/</code> folder.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Setup ----</span></span>
-<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Read in your data ----</span></span>
-<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"class_data_raw.csv"</span>))</span>
-<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>PHL_NDVI_summer_annual <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"PHL_NDVI_summer_annual.csv"</span>))</span>
-<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Take a first look ----</span></span>
-<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data)</span>
-<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(data)</span>
-<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(data)</span>
-<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(data)</span>
-<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Recode education into a numeric 0/1 variable ----</span></span>
-<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
-<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">num_education =</span> <span class="fu">if_else</span>(education <span class="sc">==</span> <span class="st">"&lt; Bachelor's"</span>, <span class="dv">0</span>, <span class="dv">1</span>))</span>
-<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Match variable types before merging ----</span></span>
-<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>geoid10 <span class="ot">&lt;-</span> <span class="fu">as.character</span>(data<span class="sc">$</span>geoid10)</span>
-<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>PHL_NDVI_summer_annual<span class="sc">$</span>GEOID10 <span class="ot">&lt;-</span> <span class="fu">as.character</span>(PHL_NDVI_summer_annual<span class="sc">$</span>GEOID10)</span>
-<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Merge in the NDVI (greenness) data ----</span></span>
-<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>data2 <span class="ot">&lt;-</span> <span class="fu">merge</span>(data, PHL_NDVI_summer_annual,</span>
-<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>                <span class="at">by.x =</span> <span class="st">"geoid10"</span>, <span class="at">by.y =</span> <span class="st">"GEOID10"</span>, <span class="at">all.x =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Check that the merge worked ----</span></span>
-<span id="cb10-27"><a href="#cb10-27" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(data2)</span>
-<span id="cb10-28"><a href="#cb10-28" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data2)</span>
-<span id="cb10-29"><a href="#cb10-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb10-30"><a href="#cb10-30" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Save your processed dataset ----</span></span>
-<span id="cb10-31"><a href="#cb10-31" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(data2, <span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Setup ----</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sandwich)   <span class="co"># robust standard errors</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Read in your processed data ----</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>))</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Helper: exponentiate coefficients and 95% CIs (robust = TRUE for modified Poisson) ----</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>extract_ratio <span class="ot">&lt;-</span> <span class="cf">function</span>(model, label, <span class="at">robust =</span> <span class="cn">FALSE</span>) {</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  vc <span class="ot">&lt;-</span> <span class="cf">if</span> (robust) <span class="fu">vcovHC</span>(model, <span class="at">type =</span> <span class="st">"HC0"</span>) <span class="cf">else</span> <span class="fu">vcov</span>(model)</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  b  <span class="ot">&lt;-</span> <span class="fu">coef</span>(model)[<span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  se <span class="ot">&lt;-</span> <span class="fu">sqrt</span>(<span class="fu">diag</span>(vc))[<span class="sc">-</span><span class="dv">1</span>]</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">data.frame</span>(<span class="at">Model =</span> label, <span class="at">Term =</span> <span class="fu">names</span>(b), <span class="at">Estimate =</span> <span class="fu">exp</span>(b),</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>             <span class="at">CI_Lower =</span> <span class="fu">exp</span>(b <span class="sc">-</span> <span class="fl">1.96</span> <span class="sc">*</span> se), <span class="at">CI_Upper =</span> <span class="fu">exp</span>(b <span class="sc">+</span> <span class="fl">1.96</span> <span class="sc">*</span> se),</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>             <span class="at">row.names =</span> <span class="cn">NULL</span>)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="co"># ============================================================</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co"># REPLACE: swap in your own variable names throughout</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co"># A priori hypothesis: ...</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Threshold for evidence of effect modification: p &lt; 0.10</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="co"># ============================================================</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 1. Code the modifier (0/1) and check cell sizes ----</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">MODIFIER =</span> ...)          <span class="co"># e.g., case_when(...)</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>data <span class="sc">%&gt;%</span> <span class="fu">count</span>(MODIFIER, YOUR_EXPOSURE, YOUR_OUTCOME)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 2. Analytic sample: no missing data on any model variable ----</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>data_em <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(YOUR_OUTCOME), <span class="sc">!</span><span class="fu">is.na</span>(YOUR_EXPOSURE), <span class="sc">!</span><span class="fu">is.na</span>(MODIFIER),</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>         <span class="sc">!</span><span class="fu">is.na</span>(CONFOUNDER_1), <span class="sc">!</span><span class="fu">is.na</span>(CONFOUNDER_2))</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 3. Stratified models ----</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>m0 <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE <span class="sc">+</span> CONFOUNDER_1 <span class="sc">+</span> CONFOUNDER_2,</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>          <span class="at">data =</span> <span class="fu">filter</span>(data_em, MODIFIER <span class="sc">==</span> <span class="dv">0</span>), <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>m1 <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE <span class="sc">+</span> CONFOUNDER_1 <span class="sc">+</span> CONFOUNDER_2,</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>          <span class="at">data =</span> <span class="fu">filter</span>(data_em, MODIFIER <span class="sc">==</span> <span class="dv">1</span>), <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>stratified <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(<span class="fu">extract_ratio</span>(m0, <span class="st">"Modifier = 0"</span>, <span class="at">robust =</span> <span class="cn">TRUE</span>),</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>                        <span class="fu">extract_ratio</span>(m1, <span class="st">"Modifier = 1"</span>, <span class="at">robust =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Term <span class="sc">==</span> <span class="st">"YOUR_EXPOSURE"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">N =</span> <span class="fu">c</span>(<span class="fu">nobs</span>(m0), <span class="fu">nobs</span>(m1)))</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>stratified</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(stratified, <span class="fu">aes</span>(<span class="at">x =</span> Model, <span class="at">y =</span> Estimate, <span class="at">ymin =</span> CI_Lower, <span class="at">ymax =</span> CI_Upper)) <span class="sc">+</span></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_pointrange</span>() <span class="sc">+</span> <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">1</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="st">"Adjusted PR (95% CI), log scale"</span>) <span class="sc">+</span> <span class="fu">theme_minimal</span>()</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 4. Cochran's Q ----</span></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>lp <span class="ot">&lt;-</span> <span class="fu">log</span>(stratified<span class="sc">$</span>Estimate)</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>se <span class="ot">&lt;-</span> (<span class="fu">log</span>(stratified<span class="sc">$</span>CI_Upper) <span class="sc">-</span> <span class="fu">log</span>(stratified<span class="sc">$</span>CI_Lower)) <span class="sc">/</span> <span class="fl">3.92</span></span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>w  <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> se<span class="sc">^</span><span class="dv">2</span></span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>Q  <span class="ot">&lt;-</span> <span class="fu">sum</span>(w <span class="sc">*</span> (lp <span class="sc">-</span> <span class="fu">sum</span>(w <span class="sc">*</span> lp) <span class="sc">/</span> <span class="fu">sum</span>(w))<span class="sc">^</span><span class="dv">2</span>)</span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a><span class="fu">pchisq</span>(Q, <span class="at">df =</span> <span class="fu">length</span>(lp) <span class="sc">-</span> <span class="dv">1</span>, <span class="at">lower.tail =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 5. Interaction model and robust Wald test ----</span></span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>m_int <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE <span class="sc">*</span> MODIFIER <span class="sc">+</span> CONFOUNDER_1 <span class="sc">+</span> CONFOUNDER_2,</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>             <span class="at">data =</span> data_em, <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>V <span class="ot">&lt;-</span> <span class="fu">vcovHC</span>(m_int, <span class="at">type =</span> <span class="st">"HC0"</span>)</span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>b3 <span class="ot">&lt;-</span> <span class="fu">coef</span>(m_int)[<span class="st">"YOUR_EXPOSURE:MODIFIER"</span>]</span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span> <span class="sc">*</span> <span class="fu">pnorm</span>(<span class="sc">-</span><span class="fu">abs</span>(b3 <span class="sc">/</span> <span class="fu">sqrt</span>(V[<span class="st">"YOUR_EXPOSURE:MODIFIER"</span>, <span class="st">"YOUR_EXPOSURE:MODIFIER"</span>])))</span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 6. LRT with log-binomial models (same participants; nested) ----</span></span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>lb_reduced <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE <span class="sc">+</span> MODIFIER <span class="sc">+</span> CONFOUNDER_1 <span class="sc">+</span> CONFOUNDER_2,</span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data =</span> data_em, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>lb_full    <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE <span class="sc">*</span> MODIFIER <span class="sc">+</span> CONFOUNDER_1 <span class="sc">+</span> CONFOUNDER_2,</span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data =</span> data_em, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(lb_reduced, lb_full, <span class="at">test =</span> <span class="st">"Chisq"</span>)</span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a><span class="co"># If the log-binomial models don't converge, report the robust Wald test and Cochran's Q.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
+<hr>
 </section>
-<section id="section-20" class="level1">
-<h1>======================================================</h1>
-</section>
-<section id="youre-ready-for-more" class="level1">
-<h1>🎉 You’re Ready for More!</h1>
-</section>
-<section id="section-21" class="level1">
-<h1>======================================================</h1>
-<p><strong>Next steps:</strong></p>
+<section id="wrap-up" class="level1">
+<h1>Wrap Up</h1>
+<p>This tutorial covered:</p>
 <ul>
-<li>Try modifying variables</li>
-<li>Create new derived columns</li>
-<li>Perform statistical analyses</li>
+<li>The difference between confounding (a bias to remove) and effect modification (a finding to report), and why effect modification depends on the scale</li>
+<li>Stating an a priori hypothesis and a p-value threshold before looking at the data</li>
+<li>Coding a modifier and checking modifier × exposure × outcome cell sizes</li>
+<li>Stratified analysis: fitting the adjusted model within each stratum, plotting the estimates on a log scale, and comparing them qualitatively — and why “significant in one group but not the other” is not evidence of effect modification</li>
+<li>Cochran’s Q, calculated on the log scale from stratum-specific estimates</li>
+<li>Interaction models: interpreting <span class="math inline">\(\beta_1\)</span>, <span class="math inline">\(\beta_3\)</span>, and <span class="math inline">\(\beta_1 + \beta_3\)</span>; getting stratum-specific estimates and CIs; and keeping models hierarchical</li>
+<li>The robust Wald test and the likelihood ratio test for interaction, including why the LRT should use log-binomial rather than modified Poisson models, and why the models must be nested and fit in the same participants</li>
 </ul>
+<p>The stratified table and tests you produced for your own project are a first draft of <strong>Milestone 4</strong> and of <strong>Table 3</strong> in your final report.</p>
+<p><strong>Next week:</strong> Communicating epidemiologic results — you’ll turn your analysis into clear tables and figures, starting with a Table 1 that describes who is in your study.</p>
 
 
 </section>

@@ -12,20 +12,20 @@ website:
     left:
       - href: index.qmd
         text: Home
-      - href: lesson1.qmd
-        text: "Lesson 1: Intro to R"
       - href: lesson2.qmd
-        text: "Lesson 2: Conceptual Frameworks"
+        text: "Lesson 2: Intro to R"
       - href: lesson3.qmd
-        text: "Lesson 3: EDA & Cleaning"
+        text: "Lesson 3: Conceptual Frameworks"
       - href: lesson4.qmd
-        text: "Lesson 4: Exposure Assessment"
+        text: "Lesson 4: EDA & Cleaning"
       - href: lesson5.qmd
-        text: "Lesson 5: Regression & Linearity"
+        text: "Lesson 5: Exposure Assessment"
       - href: lesson6.qmd
-        text: "Lesson 6: Confounding & DAGs"
+        text: "Lesson 6: Regression & Linearity"
       - href: lesson7.qmd
-        text: "Lesson 7: Effect Modification"
+        text: "Lesson 7: Confounding & DAGs"
+      - href: lesson8.qmd
+        text: "Lesson 8: Effect Modification"
       - href: codebook.qmd
         text: "Codebook"
 

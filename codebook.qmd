@@ -25,7 +25,7 @@ you work through realistic epidemiologic problems without using identifiable dat
 `class_data_raw.csv` contains **2,000 observations and 38 variables**: health outcomes, health
 behaviors, demographic/socioeconomic characteristics, perceptions of neighborhood conditions, and
 geographic location. `PHL_NDVI_summer_annual.csv` (384 Philadelphia census tracts) is a separate
-file you'll link in during Lesson 1.
+file you'll link in during Lesson 2.
 :::
 
 ## Individual-Level Variables

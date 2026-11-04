@@ -7,9 +7,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Leah Schinasi">
-<meta name="dcterms.date" content="2026-10-28">
+<meta name="dcterms.date" content="2026-11-04">
 
-<title>Lesson 7: Effect Modification &amp; Heterogeneity of Effects – EOH 635: Environmental Epidemiology Methods</title>
+<title>Lesson 7: Confounding &amp; Directed Acyclic Graphs (DAGs) – EOH 635: Environmental Epidemiology Methods</title>
 <style>
 /* Default styles provided by pandoc.
 ** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
@@ -410,7 +410,7 @@ globalThis.qwebrCustomizedWebROptions = {
 };
 
 // Store cell data
-globalThis.qwebrCellDetails = [{"code":"library(tidyverse)\nlibrary(sandwich)","id":1,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-1","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data_base_url <- \"https://raw.githubusercontent.com/schinasi/EOH635/main/data/\"\n\ndir.create(\"data_processed\", showWarnings = FALSE)\n\ndownload.file(paste0(data_base_url, \"class_data_processed.csv\"), file.path(\"data_processed\", \"class_data_processed.csv\"))\n\ndata <- read.csv(file.path(\"data_processed\", \"class_data_processed.csv\"))","id":2,"options":{"autorun":"true","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-2","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(\n    r_age = ifelse(age > 105, NA, age),                       # Lesson 3: implausible ages -> missing\n    tree_quartile = factor(ntile(hrlctree, 4)),               # Lesson 5: canopy quartiles\n    tree_top_quartile = ifelse(tree_quartile == \"4\", 1, 0)    # Lesson 5: Q4 (1) vs. Q1-Q3 (0)\n  )\n\n# Lesson 6 helper: exponentiated coefficients and 95% CIs (robust = TRUE for modified Poisson)\nextract_ratio <- function(model, label, robust = FALSE) {\n  vc <- if (robust) vcovHC(model, type = \"HC0\") else vcov(model)\n  b  <- coef(model)[-1]\n  se <- sqrt(diag(vc))[-1]\n  data.frame(Model = label, Term = names(b), Estimate = exp(b),\n             CI_Lower = exp(b - 1.96 * se), CI_Upper = exp(b + 1.96 * se),\n             row.names = NULL)\n}","id":3,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-3","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_final <- glm(high_blood_pressure ~ tree_top_quartile + education + pov_allage,\n                   data = data, family = poisson(link = \"log\"))\n\nextract_ratio(model_final, \"Adjusted for education and tract poverty\", robust = TRUE) %>%\n  filter(Term == \"tree_top_quartile\")","id":4,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-4","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"table(data$gender, useNA = \"ifany\")","id":5,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-5","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data %>%\n  filter(!is.na(gender)) %>%\n  count(gender, tree_top_quartile, high_blood_pressure) %>%\n  pivot_wider(names_from = high_blood_pressure, values_from = n,\n              names_prefix = \"high_bp_\")","id":6,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-6","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(woman = case_when(gender == \"Woman\" ~ 1,\n                           gender == \"Man\"   ~ 0,\n                           TRUE              ~ NA_real_))   # non-binary and missing -> NA\n\ntable(data$gender, data$woman, useNA = \"ifany\")   # always check a recode","id":7,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-7","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data_em <- data %>%\n  filter(!is.na(high_blood_pressure), !is.na(tree_top_quartile), !is.na(woman),\n         !is.na(education), !is.na(pov_allage))\n\nnrow(data_em)\ntable(data_em$woman, data_em$tree_top_quartile)","id":8,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-8","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"four_groups <- data_em %>%\n  group_by(woman, tree_top_quartile) %>%\n  summarise(n = n(), prevalence = mean(high_blood_pressure), .groups = \"drop\")\n\nfour_groups\n\n# Within each gender: the crude PR (ratio scale) and prevalence difference (additive scale)\nfour_groups %>%\n  group_by(woman) %>%\n  summarise(\n    PR = prevalence[tree_top_quartile == 1] / prevalence[tree_top_quartile == 0],\n    PD_percentage_points = 100 * (prevalence[tree_top_quartile == 1] - prevalence[tree_top_quartile == 0])\n  )","id":9,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-9","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_men <- glm(high_blood_pressure ~ tree_top_quartile + education + pov_allage,\n                 data = filter(data_em, woman == 0), family = poisson(link = \"log\"))\n\nmodel_women <- glm(high_blood_pressure ~ tree_top_quartile + education + pov_allage,\n                   data = filter(data_em, woman == 1), family = poisson(link = \"log\"))\n\nstratified <- bind_rows(\n  extract_ratio(model_men, \"Men\", robust = TRUE),\n  extract_ratio(model_women, \"Women\", robust = TRUE)\n) %>%\n  filter(Term == \"tree_top_quartile\") %>%                # keep the exposure only\n  mutate(N = c(nobs(model_men), nobs(model_women)))\n\nstratified %>% mutate(across(Estimate:CI_Upper, ~ round(.x, 2)))","id":10,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-10","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"ggplot(stratified, aes(x = Model, y = Estimate, ymin = CI_Lower, ymax = CI_Upper)) +\n  geom_pointrange(size = 0.8) +\n  geom_hline(yintercept = 1, linetype = \"dashed\") +\n  scale_y_log10() +\n  labs(x = NULL, y = \"Adjusted PR (95% CI), log scale\",\n       title = \"Tree canopy (top quartile vs. rest) and high blood pressure, by gender\") +\n  theme_minimal()","id":11,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-11","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Log PRs and robust SEs for tree canopy, from each stratum\nlog_pr <- c(coef(model_men)[\"tree_top_quartile\"],\n            coef(model_women)[\"tree_top_quartile\"])\nse     <- c(sqrt(vcovHC(model_men,   type = \"HC0\")[\"tree_top_quartile\", \"tree_top_quartile\"]),\n            sqrt(vcovHC(model_women, type = \"HC0\")[\"tree_top_quartile\", \"tree_top_quartile\"]))\n\nw <- 1 / se^2                                    # inverse-variance weights\nlog_pr_pooled <- sum(w * log_pr) / sum(w)        # weighted average\nQ  <- sum(w * (log_pr - log_pr_pooled)^2)\ndf <- length(log_pr) - 1\np_Q <- pchisq(Q, df = df, lower.tail = FALSE)\n\nc(pooled_PR = exp(log_pr_pooled), Q = Q, df = df, p_value = p_Q)","id":12,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-12","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"(log(stratified$CI_Upper) - log(stratified$CI_Lower)) / 3.92   # same as `se` above","id":13,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-13","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_int <- glm(high_blood_pressure ~ tree_top_quartile * woman + education + pov_allage,\n                 data = data_em, family = poisson(link = \"log\"))\n\nV_int <- vcovHC(model_int, type = \"HC0\")    # robust variance-covariance matrix\n\ndata.frame(\n  estimate  = coef(model_int),\n  robust_se = sqrt(diag(V_int))\n) %>% round(3)","id":14,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-14","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"b1 <- coef(model_int)[\"tree_top_quartile\"]\nb3 <- coef(model_int)[\"tree_top_quartile:woman\"]\n\nse_men   <- sqrt(V_int[\"tree_top_quartile\", \"tree_top_quartile\"])\nse_women <- sqrt(V_int[\"tree_top_quartile\", \"tree_top_quartile\"] +\n                 V_int[\"tree_top_quartile:woman\", \"tree_top_quartile:woman\"] +\n                 2 * V_int[\"tree_top_quartile\", \"tree_top_quartile:woman\"])\n\ndata.frame(\n  Stratum  = c(\"Men\", \"Women\"),\n  PR       = exp(c(b1, b1 + b3)),\n  CI_Lower = exp(c(b1 - 1.96 * se_men, b1 + b3 - 1.96 * se_women)),\n  CI_Upper = exp(c(b1 + 1.96 * se_men, b1 + b3 + 1.96 * se_women)),\n  row.names = NULL\n) %>% mutate(across(PR:CI_Upper, ~ round(.x, 2)))","id":15,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-15","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"se_b3 <- sqrt(V_int[\"tree_top_quartile:woman\", \"tree_top_quartile:woman\"])\nz_wald <- b3 / se_b3\np_wald <- 2 * pnorm(-abs(z_wald))\n\nc(beta3 = unname(b3), robust_se = se_b3, z = unname(z_wald), p_value = unname(p_wald))","id":16,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-16","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_reduced_lb <- glm(high_blood_pressure ~ tree_top_quartile + woman + education + pov_allage,\n                        data = data_em, family = binomial(link = \"log\"))\nmodel_full_lb    <- glm(high_blood_pressure ~ tree_top_quartile * woman + education + pov_allage,\n                        data = data_em, family = binomial(link = \"log\"))\n\n# The LRT by hand\nll_reduced <- logLik(model_reduced_lb)\nll_full    <- logLik(model_full_lb)\n\nlrt_stat <- -2 * (as.numeric(ll_reduced) - as.numeric(ll_full))\nlrt_df   <- attr(ll_full, \"df\") - attr(ll_reduced, \"df\")      # number of added parameters\np_lrt    <- pchisq(lrt_stat, df = lrt_df, lower.tail = FALSE)\n\nc(logLik_reduced = as.numeric(ll_reduced), logLik_full = as.numeric(ll_full),\n  LRT = lrt_stat, df = lrt_df, p_value = p_lrt)\n\n# The same test in one line\nanova(model_reduced_lb, model_full_lb, test = \"Chisq\")","id":17,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-17","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# The trap in rule 2: a reduced model without `woman`, fit in the full dataset\nmodel_wrong_reduced <- glm(high_blood_pressure ~ tree_top_quartile + education + pov_allage,\n                           data = data, family = binomial(link = \"log\"))\n\nc(N_wrong_reduced = nobs(model_wrong_reduced), N_full = nobs(model_full_lb))","id":18,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-18","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_nonhier <- glm(high_blood_pressure ~ tree_top_quartile + tree_top_quartile:woman +\n                       education + pov_allage,\n                     data = data_em, family = poisson(link = \"log\"))\n\nbind_rows(\n  extract_ratio(model_int, \"Hierarchical (correct)\", robust = TRUE),\n  extract_ratio(model_nonhier, \"Missing main effect of woman\", robust = TRUE)\n) %>%\n  filter(Term %in% c(\"tree_top_quartile\", \"woman\", \"tree_top_quartile:woman\")) %>%\n  mutate(across(Estimate:CI_Upper, ~ round(.x, 2)))","id":19,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-19","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"overall <- extract_ratio(\n  glm(high_blood_pressure ~ tree_top_quartile + education + pov_allage,\n      data = data_em, family = poisson(link = \"log\")),\n  \"Overall\", robust = TRUE) %>%\n  filter(Term == \"tree_top_quartile\") %>%\n  mutate(N = nrow(data_em))\n\nbind_rows(overall, stratified) %>%\n  transmute(Group = Model, N,\n            `Adjusted PR (95% CI)` = sprintf(\"%.2f (%.2f, %.2f)\", Estimate, CI_Lower, CI_Upper))\n\nc(Cochran_Q_p = p_Q, Wald_p = unname(p_wald), LRT_p = p_lrt) %>% round(2)","id":20,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-20","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — stratified estimates and tests of interaction for your own project","id":21,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-21","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(traffic_high = ifelse(ctb1traff > median(ctb1traff, na.rm = TRUE), 1, 0))\n\ndata_asthma <- data %>%\n  filter(!is.na(asthma), !is.na(traffic_high), !is.na(woman), !is.na(pov_allage))\n\n# Cell sizes: gender x exposure x outcome\ndata_asthma %>% count(woman, traffic_high, asthma)\n\n# Stratified models\nm_men   <- glm(asthma ~ traffic_high + pov_allage, data = filter(data_asthma, woman == 0),\n               family = poisson(link = \"log\"))\nm_women <- glm(asthma ~ traffic_high + pov_allage, data = filter(data_asthma, woman == 1),\n               family = poisson(link = \"log\"))\n\nstrat_asthma <- bind_rows(extract_ratio(m_men, \"Men\", robust = TRUE),\n                          extract_ratio(m_women, \"Women\", robust = TRUE)) %>%\n  filter(Term == \"traffic_high\")\nstrat_asthma %>% mutate(across(Estimate:CI_Upper, ~ round(.x, 2)))\n\n# Cochran's Q\nlp <- log(strat_asthma$Estimate)\ns  <- (log(strat_asthma$CI_Upper) - log(strat_asthma$CI_Lower)) / 3.92\nw  <- 1 / s^2\nQ  <- sum(w * (lp - sum(w * lp) / sum(w))^2)\n\n# Robust Wald test\nm_int <- glm(asthma ~ traffic_high * woman + pov_allage, data = data_asthma,\n             family = poisson(link = \"log\"))\nV  <- vcovHC(m_int, type = \"HC0\")\nz  <- coef(m_int)[\"traffic_high:woman\"] / sqrt(V[\"traffic_high:woman\", \"traffic_high:woman\"])\n\n# LRT with log-binomial models\nlb_reduced <- glm(asthma ~ traffic_high + woman + pov_allage, data = data_asthma,\n                  family = binomial(link = \"log\"))\nlb_full    <- glm(asthma ~ traffic_high * woman + pov_allage, data = data_asthma,\n                  family = binomial(link = \"log\"))\nlrt <- anova(lb_reduced, lb_full, test = \"Chisq\")\n\nc(Q_p    = pchisq(Q, df = 1, lower.tail = FALSE),\n  Wald_p = unname(2 * pnorm(-abs(z))),\n  LRT_p  = lrt$`Pr(>Chi)`[2]) %>% round(3)","id":22,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-22","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}}];
+globalThis.qwebrCellDetails = [{"code":"library(tidyverse)\nlibrary(sandwich)","id":1,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-1","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data_base_url <- \"https://raw.githubusercontent.com/schinasi/EOH635/main/data/\"\n\ndir.create(\"data_processed\", showWarnings = FALSE)\n\ndownload.file(paste0(data_base_url, \"class_data_processed.csv\"), file.path(\"data_processed\", \"class_data_processed.csv\"))\n\ndata <- read.csv(file.path(\"data_processed\", \"class_data_processed.csv\"))","id":2,"options":{"autorun":"true","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-2","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(\n    r_age = ifelse(age > 105, NA, age),                       # Lesson 4: implausible ages -> missing\n    tree_quartile = factor(ntile(hrlctree, 4)),               # Lesson 6: canopy quartiles\n    tree_top_quartile = ifelse(tree_quartile == \"4\", 1, 0)    # Lesson 6: Q4 (1) vs. Q1-Q3 (0)\n  )\n\ntable(data$tree_quartile, data$tree_top_quartile)   # always check a recode","id":3,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-3","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"extract_ratio <- function(model, label, robust = FALSE) {\n  # Robust (\"sandwich\") variance if requested; otherwise the usual model-based variance\n  vc <- if (robust) vcovHC(model, type = \"HC0\") else vcov(model)\n  b  <- coef(model)[-1]                  # coefficients (log scale), dropping the intercept\n  se <- sqrt(diag(vc))[-1]               # their standard errors\n  data.frame(\n    Model    = label,\n    Term     = names(b),\n    Estimate = exp(b),                   # exponentiate -> PR (or OR)\n    CI_Lower = exp(b - 1.96 * se),\n    CI_Upper = exp(b + 1.96 * se),\n    row.names = NULL\n  )\n}\n\nmodel_crude <- glm(high_blood_pressure ~ tree_top_quartile, data = data,\n                   family = binomial(link = \"log\"))\n\nextract_ratio(model_crude, \"Crude, log-binomial\")","id":4,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-4","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Make a 0/1 version of education to use as a predictor and as an outcome\ndata <- data %>%\n  mutate(educ_ba = ifelse(education == \"Bachelor's degree or higher\", 1, 0))\n\ntable(data$education, data$educ_ba)   # check the recode\n\n# (a) Education and the EXPOSURE: who lives in the greenest quarter of tracts?\ndata %>%\n  group_by(education) %>%\n  summarise(n = n(), prop_top_quartile = mean(tree_top_quartile))\n\nmodel_educ_exp <- glm(tree_top_quartile ~ educ_ba, data = data,\n                      family = binomial(link = \"log\"))\nextract_ratio(model_educ_exp, \"Exposure ~ education\")\n\n# (b) Education and the OUTCOME\nmodel_educ_out <- glm(high_blood_pressure ~ educ_ba, data = data,\n                      family = binomial(link = \"log\"))\nextract_ratio(model_educ_out, \"Outcome ~ education\")","id":5,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-5","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_adj_educ <- glm(high_blood_pressure ~ tree_top_quartile + education, data = data,\n                      family = binomial(link = \"log\"))\n\nextract_ratio(model_adj_educ, \"Adjusted for education, log-binomial\")","id":6,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-6","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"pr_crude <- unname(exp(coef(model_crude)[\"tree_top_quartile\"]))      # unname() just tidies\npr_adj   <- unname(exp(coef(model_adj_educ)[\"tree_top_quartile\"]))   # the printed labels\n\nc(PR_crude = pr_crude, PR_adjusted = pr_adj,\n  pct_change = (pr_crude - pr_adj) / pr_crude * 100)","id":7,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-7","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_adj_age_lb <- glm(high_blood_pressure ~ tree_top_quartile + r_age, data = data,\n                        family = binomial(link = \"log\"))","id":8,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-8","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_adj_age <- glm(high_blood_pressure ~ tree_top_quartile + r_age, data = data,\n                     family = poisson(link = \"log\"))\n\nextract_ratio(model_adj_age, \"Adjusted for age, modified Poisson\", robust = TRUE)","id":9,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-9","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_crude_mp <- glm(high_blood_pressure ~ tree_top_quartile, data = data,\n                      family = poisson(link = \"log\"))\nmodel_adj_educ_mp <- glm(high_blood_pressure ~ tree_top_quartile + education, data = data,\n                         family = poisson(link = \"log\"))\n\nbind_rows(\n  extract_ratio(model_crude, \"Crude, log-binomial\"),\n  extract_ratio(model_crude_mp, \"Crude, modified Poisson\", robust = TRUE),\n  extract_ratio(model_adj_educ, \"+ education, log-binomial\"),\n  extract_ratio(model_adj_educ_mp, \"+ education, modified Poisson\", robust = TRUE)\n) %>%\n  filter(Term == \"tree_top_quartile\")","id":10,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-10","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data_age <- data %>%\n  filter(!is.na(high_blood_pressure), !is.na(tree_top_quartile), !is.na(r_age))\n\nnrow(data_age)\n\nmodel_crude_age_sample <- glm(high_blood_pressure ~ tree_top_quartile, data = data_age,\n                              family = poisson(link = \"log\"))\n\nbind_rows(\n  extract_ratio(model_crude_mp, \"Crude, everyone with outcome data\", robust = TRUE),\n  extract_ratio(model_crude_age_sample, \"Crude, participants with age data\", robust = TRUE)\n)","id":11,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-11","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"candidates <- c(\"education\", \"pov_allage\", \"r_age\", \"gender\", \"race_ethnicity\", \"obese\")\n\ncie_table <- data.frame()\n\nfor (covariate in candidates) {\n\n  # 1. Keep participants with no missing data on the outcome, exposure, or this covariate\n  data_cc <- data %>%\n    filter(!is.na(high_blood_pressure), !is.na(tree_top_quartile), !is.na(.data[[covariate]]))\n\n  # 2. Crude model in those participants\n  crude <- glm(high_blood_pressure ~ tree_top_quartile, data = data_cc,\n               family = poisson(link = \"log\"))\n\n  # 3. Model adjusted for this covariate only\n  adj_formula <- as.formula(paste(\"high_blood_pressure ~ tree_top_quartile +\", covariate))\n  adjusted <- glm(adj_formula, data = data_cc, family = poisson(link = \"log\"))\n\n  # 4. Pull out the tree canopy PRs (robust CIs) and calculate the percent change\n  pr_c <- extract_ratio(crude, \"crude\", robust = TRUE) %>% filter(Term == \"tree_top_quartile\")\n  pr_a <- extract_ratio(adjusted, covariate, robust = TRUE) %>% filter(Term == \"tree_top_quartile\")\n\n  cie_table <- bind_rows(cie_table, data.frame(\n    Covariate   = covariate,\n    N           = nobs(adjusted),\n    PR_crude    = pr_c$Estimate,\n    PR_adjusted = pr_a$Estimate,\n    CI_Lower    = pr_a$CI_Lower,\n    CI_Upper    = pr_a$CI_Upper,\n    Pct_change  = (pr_c$Estimate - pr_a$Estimate) / pr_c$Estimate * 100\n  ))\n}\n\ncie_table %>%\n  mutate(across(PR_crude:CI_Upper, ~ round(.x, 2)),\n         Pct_change = round(Pct_change, 1)) %>%\n  arrange(desc(abs(Pct_change)))","id":12,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-12","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>% mutate(hrlctree_pct = hrlctree * 100)   # as in Lesson 6: 1 unit = 1 percentage point\n\nm_c <- glm(high_blood_pressure ~ hrlctree_pct, data = data, family = poisson(link = \"log\"))\nm_a <- glm(high_blood_pressure ~ hrlctree_pct + education, data = data, family = poisson(link = \"log\"))\n\nb_c <- coef(m_c)[\"hrlctree_pct\"]\nb_a <- coef(m_a)[\"hrlctree_pct\"]\n\ndata.frame(\n  Contrast    = c(\"Per 1 percentage point\", \"Per 10 percentage points\"),\n  PR_crude    = exp(c(1, 10) * b_c),\n  PR_adjusted = exp(c(1, 10) * b_a)\n) %>%\n  mutate(Pct_change = (PR_crude - PR_adjusted) / PR_crude * 100)","id":13,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-13","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"model_final <- glm(high_blood_pressure ~ tree_top_quartile + education + pov_allage,\n                   data = data, family = poisson(link = \"log\"))\n\nfinal_pr <- extract_ratio(model_final, \"Adjusted for education and tract poverty\", robust = TRUE)\nfinal_pr\n\n# Crude vs. adjusted, side by side -- the start of Table 2 in your final report\nbind_rows(\n  extract_ratio(model_crude_mp, \"Crude\", robust = TRUE),\n  final_pr\n) %>%\n  filter(Term == \"tree_top_quartile\") %>%\n  mutate(across(Estimate:CI_Upper, ~ round(.x, 2)))","id":14,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-14","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"# Your code here — change-in-estimate table and final model for your own project","id":15,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-15","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}},{"code":"data <- data %>%\n  mutate(traffic_high = ifelse(ctb1traff > median(ctb1traff, na.rm = TRUE), 1, 0))\n\ncandidates <- c(\"pov_allage\", \"current_smoker\", \"education\")\ncie_asthma <- data.frame()\n\nfor (covariate in candidates) {\n  data_cc <- data %>%\n    filter(!is.na(asthma), !is.na(traffic_high), !is.na(.data[[covariate]]))\n\n  crude <- glm(asthma ~ traffic_high, data = data_cc, family = poisson(link = \"log\"))\n  adjusted <- glm(as.formula(paste(\"asthma ~ traffic_high +\", covariate)),\n                  data = data_cc, family = poisson(link = \"log\"))\n\n  pr_c <- extract_ratio(crude, \"crude\", robust = TRUE) %>% filter(Term == \"traffic_high\")\n  pr_a <- extract_ratio(adjusted, covariate, robust = TRUE) %>% filter(Term == \"traffic_high\")\n\n  cie_asthma <- bind_rows(cie_asthma, data.frame(\n    Covariate = covariate, N = nobs(adjusted),\n    PR_crude = pr_c$Estimate, PR_adjusted = pr_a$Estimate,\n    CI_Lower = pr_a$CI_Lower, CI_Upper = pr_a$CI_Upper,\n    Pct_change = (pr_c$Estimate - pr_a$Estimate) / pr_c$Estimate * 100\n  ))\n}\n\ncie_asthma %>% mutate(across(PR_crude:Pct_change, ~ round(.x, 2)))\n\n# Final model: the DAG's minimally sufficient set was {tract_poverty}\nmodel_asthma_final <- glm(asthma ~ traffic_high + pov_allage, data = data,\n                          family = poisson(link = \"log\"))\nextract_ratio(model_asthma_final, \"Adjusted for tract poverty\", robust = TRUE)","id":16,"options":{"autorun":"false","classes":"","comment":"","context":"interactive","dpi":72,"editor-font-scale":"1","editor-max-height":"","editor-quick-suggestions":"false","editor-word-wrap":"true","fig-cap":"","fig-height":5,"fig-width":7,"label":"unnamed-chunk-16","message":"true","out-height":"","out-width":"700px","output":"true","read-only":"false","results":"markup","warning":"true"}}];
 
 </script>
 <script type="module">
@@ -1718,32 +1718,32 @@ window.Quarto = {
 <span class="menu-text">Home</span></a>
   </li>  
   <li class="nav-item">
-    <a class="nav-link" href="./lesson1.html"> 
-<span class="menu-text">Lesson 1: Intro to R</span></a>
-  </li>  
-  <li class="nav-item">
     <a class="nav-link" href="./lesson2.html"> 
-<span class="menu-text">Lesson 2: Conceptual Frameworks</span></a>
+<span class="menu-text">Lesson 2: Intro to R</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./lesson3.html"> 
-<span class="menu-text">Lesson 3: EDA &amp; Cleaning</span></a>
+<span class="menu-text">Lesson 3: Conceptual Frameworks</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./lesson4.html"> 
-<span class="menu-text">Lesson 4: Exposure Assessment</span></a>
+<span class="menu-text">Lesson 4: EDA &amp; Cleaning</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./lesson5.html"> 
-<span class="menu-text">Lesson 5: Regression &amp; Linearity</span></a>
+<span class="menu-text">Lesson 5: Exposure Assessment</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./lesson6.html"> 
-<span class="menu-text">Lesson 6: Confounding &amp; DAGs</span></a>
+<span class="menu-text">Lesson 6: Regression &amp; Linearity</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link active" href="./lesson7.html" aria-current="page"> 
-<span class="menu-text">Lesson 7: Effect Modification</span></a>
+<span class="menu-text">Lesson 7: Confounding &amp; DAGs</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="./lesson8.html"> 
+<span class="menu-text">Lesson 8: Effect Modification</span></a>
   </li>  
   <li class="nav-item">
     <a class="nav-link" href="./codebook.html"> 
@@ -1766,24 +1766,21 @@ window.Quarto = {
    
   <ul class="collapse">
   <li><a href="#setup" id="toc-setup" class="nav-link active" data-scroll-target="#setup">Setup</a></li>
-  <li><a href="#effect-modification-vs.-confounding" id="toc-effect-modification-vs.-confounding" class="nav-link" data-scroll-target="#effect-modification-vs.-confounding">Effect Modification vs.&nbsp;Confounding</a></li>
-  <li><a href="#part-1-stratified-analysis" id="toc-part-1-stratified-analysis" class="nav-link" data-scroll-target="#part-1-stratified-analysis">Part 1: Stratified Analysis</a>
+  <li><a href="#part-1-choosing-confounders-with-a-dag" id="toc-part-1-choosing-confounders-with-a-dag" class="nav-link" data-scroll-target="#part-1-choosing-confounders-with-a-dag">Part 1: Choosing Confounders with a DAG</a>
   <ul class="collapse">
-  <li><a href="#step-1-state-your-hypothesis-first" id="toc-step-1-state-your-hypothesis-first" class="nav-link" data-scroll-target="#step-1-state-your-hypothesis-first">Step 1: State your hypothesis first</a></li>
-  <li><a href="#step-2-code-the-modifier-and-check-the-cell-sizes" id="toc-step-2-code-the-modifier-and-check-the-cell-sizes" class="nav-link" data-scroll-target="#step-2-code-the-modifier-and-check-the-cell-sizes">Step 2: Code the modifier and check the cell sizes</a></li>
-  <li><a href="#step-3-look-at-the-four-groups" id="toc-step-3-look-at-the-four-groups" class="nav-link" data-scroll-target="#step-3-look-at-the-four-groups">Step 3: Look at the four groups</a></li>
-  <li><a href="#step-4-fit-the-adjusted-model-within-each-stratum" id="toc-step-4-fit-the-adjusted-model-within-each-stratum" class="nav-link" data-scroll-target="#step-4-fit-the-adjusted-model-within-each-stratum">Step 4: Fit the adjusted model within each stratum</a></li>
-  <li><a href="#step-5-qualitative-assessment-compare-the-estimates-by-eye" id="toc-step-5-qualitative-assessment-compare-the-estimates-by-eye" class="nav-link" data-scroll-target="#step-5-qualitative-assessment-compare-the-estimates-by-eye">Step 5: Qualitative assessment — compare the estimates by eye</a></li>
-  <li><a href="#step-6-cochrans-q-a-test-of-heterogeneity-across-strata" id="toc-step-6-cochrans-q-a-test-of-heterogeneity-across-strata" class="nav-link" data-scroll-target="#step-6-cochrans-q-a-test-of-heterogeneity-across-strata">Step 6: Cochran’s Q — a test of heterogeneity across strata</a></li>
+  <li><a href="#step-1-write-down-the-dag" id="toc-step-1-write-down-the-dag" class="nav-link" data-scroll-target="#step-1-write-down-the-dag">Step 1: Write down the DAG</a></li>
+  <li><a href="#step-2-sort-the-paths-between-exposure-and-outcome" id="toc-step-2-sort-the-paths-between-exposure-and-outcome" class="nav-link" data-scroll-target="#step-2-sort-the-paths-between-exposure-and-outcome">Step 2: Sort the paths between exposure and outcome</a></li>
+  <li><a href="#step-3-find-the-minimally-sufficient-adjustment-set" id="toc-step-3-find-the-minimally-sufficient-adjustment-set" class="nav-link" data-scroll-target="#step-3-find-the-minimally-sufficient-adjustment-set">Step 3: Find the minimally sufficient adjustment set</a></li>
   </ul></li>
-  <li><a href="#part-2-interaction-models" id="toc-part-2-interaction-models" class="nav-link" data-scroll-target="#part-2-interaction-models">Part 2: Interaction Models</a>
+  <li><a href="#part-2-checking-confounding-in-the-data-change-in-estimate" id="toc-part-2-checking-confounding-in-the-data-change-in-estimate" class="nav-link" data-scroll-target="#part-2-checking-confounding-in-the-data-change-in-estimate">Part 2: Checking Confounding in the Data — Change in Estimate</a>
   <ul class="collapse">
-  <li><a href="#step-7-fit-a-model-with-an-interaction-term" id="toc-step-7-fit-a-model-with-an-interaction-term" class="nav-link" data-scroll-target="#step-7-fit-a-model-with-an-interaction-term">Step 7: Fit a model with an interaction term</a></li>
-  <li><a href="#step-8-stratum-specific-estimates-from-the-interaction-model" id="toc-step-8-stratum-specific-estimates-from-the-interaction-model" class="nav-link" data-scroll-target="#step-8-stratum-specific-estimates-from-the-interaction-model">Step 8: Stratum-specific estimates from the interaction model</a></li>
-  <li><a href="#step-9-testing-the-interaction-the-wald-test" id="toc-step-9-testing-the-interaction-the-wald-test" class="nav-link" data-scroll-target="#step-9-testing-the-interaction-the-wald-test">Step 9: Testing the interaction — the Wald test</a></li>
-  <li><a href="#step-10-testing-the-interaction-the-likelihood-ratio-test" id="toc-step-10-testing-the-interaction-the-likelihood-ratio-test" class="nav-link" data-scroll-target="#step-10-testing-the-interaction-the-likelihood-ratio-test">Step 10: Testing the interaction — the likelihood ratio test</a></li>
-  <li><a href="#step-11-keep-the-model-hierarchical" id="toc-step-11-keep-the-model-hierarchical" class="nav-link" data-scroll-target="#step-11-keep-the-model-hierarchical">Step 11: Keep the model hierarchical</a></li>
-  <li><a href="#step-12-put-it-together-a-results-table-and-interpretation" id="toc-step-12-put-it-together-a-results-table-and-interpretation" class="nav-link" data-scroll-target="#step-12-put-it-together-a-results-table-and-interpretation">Step 12: Put it together — a results table and interpretation</a></li>
+  <li><a href="#step-1-the-crude-model-a-reminder" id="toc-step-1-the-crude-model-a-reminder" class="nav-link" data-scroll-target="#step-1-the-crude-model-a-reminder">Step 1: The crude model (a reminder)</a></li>
+  <li><a href="#step-2-is-the-candidate-associated-with-the-exposure-and-the-outcome" id="toc-step-2-is-the-candidate-associated-with-the-exposure-and-the-outcome" class="nav-link" data-scroll-target="#step-2-is-the-candidate-associated-with-the-exposure-and-the-outcome">Step 2: Is the candidate associated with the exposure and the outcome?</a></li>
+  <li><a href="#step-3-add-the-candidate-to-the-model-and-calculate-the-change-in-estimate" id="toc-step-3-add-the-candidate-to-the-model-and-calculate-the-change-in-estimate" class="nav-link" data-scroll-target="#step-3-add-the-candidate-to-the-model-and-calculate-the-change-in-estimate">Step 3: Add the candidate to the model and calculate the change in estimate</a></li>
+  <li><a href="#step-4-when-the-log-binomial-model-wont-converge-modified-poisson-regression" id="toc-step-4-when-the-log-binomial-model-wont-converge-modified-poisson-regression" class="nav-link" data-scroll-target="#step-4-when-the-log-binomial-model-wont-converge-modified-poisson-regression">Step 4: When the log-binomial model won’t converge — modified Poisson regression</a></li>
+  <li><a href="#step-5-compare-crude-and-adjusted-estimates-in-the-same-people" id="toc-step-5-compare-crude-and-adjusted-estimates-in-the-same-people" class="nav-link" data-scroll-target="#step-5-compare-crude-and-adjusted-estimates-in-the-same-people">Step 5: Compare crude and adjusted estimates <strong>in the same people</strong></a></li>
+  <li><a href="#step-6-check-every-candidate-at-once" id="toc-step-6-check-every-candidate-at-once" class="nav-link" data-scroll-target="#step-6-check-every-candidate-at-once">Step 6: Check every candidate at once</a></li>
+  <li><a href="#step-7-fit-the-final-adjusted-model" id="toc-step-7-fit-the-final-adjusted-model" class="nav-link" data-scroll-target="#step-7-fit-the-final-adjusted-model">Step 7: Fit the final adjusted model</a></li>
   </ul></li>
   <li><a href="#quick-start-script-for-your-own-project" id="toc-quick-start-script-for-your-own-project" class="nav-link" data-scroll-target="#quick-start-script-for-your-own-project">Quick-Start Script for Your Own Project</a></li>
   <li><a href="#wrap-up" id="toc-wrap-up" class="nav-link" data-scroll-target="#wrap-up">Wrap Up</a></li>
@@ -2079,7 +2076,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Lesson 7: Effect Modification &amp; Heterogeneity of Effects</h1>
+<h1 class="title">Lesson 7: Confounding &amp; Directed Acyclic Graphs (DAGs)</h1>
 <p class="subtitle lead">EOH 635 — Environmental Epidemiology Methods</p>
 </div>
 
@@ -2097,7 +2094,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">October 28, 2026</p>
+      <p class="date">November 4, 2026</p>
     </div>
   </div>
   
@@ -2109,12 +2106,12 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </header>
 
 
-<p>In <a href="./lesson6.html">Lesson 6</a> you estimated a single adjusted prevalence ratio (PR) for tree canopy and high blood pressure: <strong>0.71</strong>, adjusted for education and tract poverty. That one number assumes the association is the same for everyone in the study. This lesson asks whether it <strong>differs across groups</strong> — that is, whether a third variable is an <strong>effect modifier</strong>. We use <strong>gender</strong> as the example. The lesson has two parts:</p>
+<p>In <a href="./lesson6.html">Lesson 6</a> you fit a <strong>crude</strong> (unadjusted) model for tree canopy and high blood pressure. This lesson asks whether that crude estimate is distorted by <strong>confounding</strong> — a third variable that is related to both the exposure and the outcome — and what to adjust for. It has two parts:</p>
 <ol type="1">
-<li><strong>Stratified analysis</strong> — fitting the adjusted model separately for men and for women, comparing the two estimates by eye, and testing the difference with <strong>Cochran’s Q</strong>.</li>
-<li><strong>Interaction models</strong> — fitting a single model with an <strong>exposure × modifier</strong> interaction term, getting stratum-specific estimates from it, and testing the interaction with a <strong>Wald test</strong> and a <strong>likelihood ratio test (LRT)</strong>.</li>
+<li><strong>Choosing confounders with a DAG</strong> — reading a directed acyclic graph for tree canopy and high blood pressure, sorting the paths that connect them into causal and backdoor paths, and finding a <strong>minimally sufficient adjustment set</strong>. A separate video tutorial shows how to draw and analyze a DAG with DAGitty.</li>
+<li><strong>Checking confounding in the data with the change-in-estimate approach</strong> — adding each candidate variable to the model one at a time, calculating how much the estimate changes, and fitting a final adjusted model.</li>
 </ol>
-<p>The lesson ends with a <strong>🧠 Your Turn</strong> for the exposure and outcome in your own project. It produces a first draft of the stratified results table and interaction tests that Milestone 4 asks for (and that become <strong>Table 3</strong> of your final report).</p>
+<p>Both parts end with a <strong>🧠 Your Turn</strong> for the exposure and outcome in your own project. Together they produce the DAG, change-in-estimate table, and final adjustment set that Milestone 3 asks for.</p>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
@@ -2141,7 +2138,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>This tutorial uses <strong><code>class_data_processed.csv</code></strong>, the same merged file from earlier lessons, and the same packages as Lesson 6: <strong><code>tidyverse</code></strong> and <strong><code>sandwich</code></strong>. No new packages are needed. See the <a href="./codebook.html">Data Codebook</a> for variable definitions.</p>
+<p>This tutorial uses <strong><code>class_data_processed.csv</code></strong>, the same merged file from Lessons 2, 4, 5, and 6. It uses one package you may not have installed yet: <strong><code>sandwich</code></strong> (for robust standard errors). Install it once with <code>install.packages("sandwich")</code>. See the <a href="./codebook.html">Data Codebook</a> for variable definitions.</p>
 </div>
 </div>
 <hr>
@@ -2167,124 +2164,78 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
-<p>Recreate the variables from earlier lessons — the cleaned age variable (Lesson 3) and the top-quartile tree canopy exposure (Lesson 5) — and the <code>extract_ratio()</code> helper from Lesson 6.</p>
+<p>Next, recreate two variables from earlier lessons: the cleaned age variable from Lesson 4 (ages above 105 recoded to missing), and the tree canopy coding we settled on at the end of Lesson 6 — <strong>top quartile vs.&nbsp;the lower three quartiles</strong>.</p>
 <div id="qwebr-insertion-location-3"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>And here is where Lesson 6 ended — the final adjusted model, fit with modified Poisson regression:</p>
-<div id="qwebr-insertion-location-4"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p><strong>PR = 0.71 (95% CI: 0.58, 0.86).</strong> This lesson asks: is that 0.71 a good summary for <em>everyone</em>, or is the association different for men and for women?</p>
-<hr>
-</section>
-<section id="effect-modification-vs.-confounding" class="level1">
-<h1>Effect Modification vs.&nbsp;Confounding</h1>
-<p>Before any code, keep the distinction from Lessons 6 and 7 clear:</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th></th>
-<th>Confounding</th>
-<th>Effect modification</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>What it is</td>
-<td>A <strong>bias</strong>: a third variable distorts the exposure–outcome association</td>
-<td>A <strong>finding</strong>: the association really is different in different groups</td>
-</tr>
-<tr class="even">
-<td>What we do about it</td>
-<td><strong>Remove</strong> it (adjust, using the DAG)</td>
-<td><strong>Describe and report</strong> it (stratify, test)</td>
-</tr>
-<tr class="odd">
-<td>Question it answers</td>
-<td>“Is the overall estimate distorted?”</td>
-<td>“Is one overall estimate the right summary?”</td>
-</tr>
-</tbody>
-</table>
-<p>The same variable can be a confounder, an effect modifier, both, or neither. Education was a confounder in Lesson 6; whether it is also a modifier is a separate question.</p>
-<p>Effect modification also depends on the <strong>scale</strong>. An association can differ across groups on the <strong>multiplicative</strong> (ratio) scale but not the <strong>additive</strong> (difference) scale, or vice versa. Our models estimate PRs, so the formal tests in this lesson are tests of <strong>multiplicative</strong> interaction. Step 3 shows both scales for the crude data.</p>
-<hr>
-</section>
-<section id="part-1-stratified-analysis" class="level1">
-<h1>Part 1: Stratified Analysis</h1>
-<section id="step-1-state-your-hypothesis-first" class="level2">
-<h2 class="anchored" data-anchor-id="step-1-state-your-hypothesis-first">Step 1: State your hypothesis first</h2>
-<p>Effect modification analyses are easy to over-interpret, because with enough subgroups <em>something</em> will look different by chance. The protection is the same as for confounding in Lesson 6: <strong>decide in advance</strong> which modifier you will examine, what you expect, and what threshold you will use.</p>
-<p>For this lesson, we write down the following before looking at the data:</p>
-<blockquote class="blockquote">
-<p><em>A priori hypothesis:</em> The association between tree canopy and high blood pressure will differ by gender. Men and women can differ in how much time they spend in their neighborhood, how they use green space (e.g., for physical activity), and in their risk of high blood pressure, so the benefit of tree canopy may not be the same for both. We will consider a p-value below <strong>0.10</strong> from a test of interaction to be statistical evidence of effect modification.</p>
-</blockquote>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Why 0.10 and not 0.05?
+<span class="screen-reader-only">Note</span>Why use the top-quartile exposure in this lesson?
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Tests of interaction compare <em>two</em> estimates, each with its own uncertainty, so they have much less statistical power than a test of the main association. A higher threshold (commonly 0.10, sometimes 0.15 or 0.20) reduces the chance of missing real effect modification (a type II error). Like the 10% rule in Lesson 6, this is a convention: choose it before you look, report it, and don’t move it after you see the results.</p>
+<p>Lesson 6 concluded that both a continuous term and “top quartile vs.&nbsp;the rest” were defensible codings for tree canopy. We use the binary version here because it keeps each model to a single exposure estimate, which makes the change-in-estimate calculations easy to follow. If your own exposure is continuous, see the box <strong>“What if my exposure is continuous?”</strong> in Part 2 — there is one extra step.</p>
 </div>
 </div>
+<hr>
 </section>
-<section id="step-2-code-the-modifier-and-check-the-cell-sizes" class="level2">
-<h2 class="anchored" data-anchor-id="step-2-code-the-modifier-and-check-the-cell-sizes">Step 2: Code the modifier and check the cell sizes</h2>
-<div id="qwebr-insertion-location-5"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>There are three gender categories, and two participants are missing gender. Before deciding how to code the modifier, check how many participants fall in each combination of <strong>modifier × exposure × outcome</strong> — these are the people who carry the information in each stratum.</p>
-<div id="qwebr-insertion-location-6"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p><strong>Questions to consider:</strong></p>
+<section id="part-1-choosing-confounders-with-a-dag" class="level1">
+<h1>Part 1: Choosing Confounders with a DAG</h1>
+<p>Recall the three conditions for a variable to be a confounder. It must:</p>
+<ol type="1">
+<li>Be <strong>associated with the exposure</strong>;</li>
+<li>Be a <strong>risk factor for the outcome</strong> (associated with the outcome among the unexposed); and</li>
+<li><strong>Not be on the causal pathway</strong> between the exposure and the outcome (that is, not be a mediator).</li>
+</ol>
+<p>The third condition can’t be checked with data alone — it depends on what you believe causes what. That is the job of a <strong>directed acyclic graph (DAG)</strong>: you write down your assumptions about the causal structure <em>before</em> looking at the data, and the rules of the DAG tell you which variables need to be adjusted for.</p>
+<section id="step-1-write-down-the-dag" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-write-down-the-dag">Step 1: Write down the DAG</h2>
+<p>Here is one DAG for tree canopy and high blood pressure, built from the kind of reasoning you did for your conceptual framework in Week 3:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/lesson6_dag.png" class="img-fluid figure-img" style="width:90.0%"></p>
+<figcaption>A DAG for tree canopy cover and high blood pressure</figcaption>
+</figure>
+</div>
+<p>Each arrow is a claim about cause and effect:</p>
 <ul>
-<li>How many non-binary participants live in a top-quartile canopy tract <strong>and</strong> have high blood pressure?</li>
-<li>What would happen if you tried to estimate a PR for tree canopy among non-binary participants?</li>
+<li><strong>Tree canopy → high blood pressure</strong> — the effect we want to estimate. Tree canopy may also work <em>through</em> <strong>physical activity</strong> and <strong>obesity</strong> (greener places encourage activity, which lowers obesity and blood pressure). Those two are <strong>mediators</strong>: they sit on the causal pathway.</li>
+<li><strong>Education → tree canopy</strong> and <strong>education → high blood pressure</strong> — people with more education (and the income that tends to come with it) are more able to choose to live in greener neighborhoods, and education is independently linked to blood pressure (health care access, diet, job strain).</li>
+<li><strong>Tract poverty → tree canopy</strong> and <strong>tract poverty → high blood pressure</strong> — poorer neighborhoods have historically received less investment in street trees and parks, and neighborhood deprivation affects blood pressure through stress, food access, and other routes. Tract poverty also shapes individual educational opportunity (<strong>tract poverty → education</strong>).</li>
+<li><strong>Race and ethnicity → tract poverty</strong> and <strong>race and ethnicity → high blood pressure</strong> — here, <code>race_ethnicity</code> stands for <strong>exposure to racism</strong>, not biology. Residential segregation and historical policies such as redlining concentrated poverty in some neighborhoods; interpersonal and structural racism also affect blood pressure directly (see the Howe et al.&nbsp;reading).</li>
+<li><strong>Age</strong> and <strong>gender</strong> affect blood pressure. Age also affects education (very young adults may not have finished a degree yet). Neither has an arrow into tree canopy: there is no strong reason to believe age or gender determines how green a person’s census tract is.</li>
 </ul>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
+<span class="screen-reader-only">Note</span>Drawing your own DAG
 </div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-5" class="callout-5-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<ul>
-<li><strong>One.</strong> Of the 26 non-binary participants, 6 live in a top-quartile tract, and 1 of those 6 has high blood pressure.</li>
-<li>A PR based on one or two cases would have an extremely wide confidence interval (or the model might not converge at all), so it would tell us almost nothing.</li>
-</ul>
-<p>We have two options: exclude non-binary participants from the effect modification analysis, or combine them with another group. Combining only makes sense if we have reason to believe their association is similar to that group’s — and we have no basis for that. So, as in the original version of this course, <strong>we exclude the 26 non-binary participants from the effect modification analysis</strong> (they remain in the overall analyses), and we note this as a limitation: the study cannot say anything about the association among non-binary people.</p>
+<p>A separate video tutorial shows how to draw a DAG like this one with DAGitty and have it list the paths and adjustment sets for you. The steps below walk through the same reasoning by hand.</p>
 </div>
 </div>
-</div>
-<p>Code gender as a <strong>0/1 numeric variable</strong>. A 0/1 coding makes the interaction model in Part 2 much easier to read.</p>
-<div id="qwebr-insertion-location-7"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>Last, create the <strong>analytic sample</strong>: participants with no missing data on the outcome, exposure, modifier, or adjustment variables. Every model in this lesson uses <code>data_em</code>, so every comparison is made in the same people — the same rule as the change-in-estimate approach in Lesson 6.</p>
-<div id="qwebr-insertion-location-8"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 </section>
-<section id="step-3-look-at-the-four-groups" class="level2">
-<h2 class="anchored" data-anchor-id="step-3-look-at-the-four-groups">Step 3: Look at the four groups</h2>
-<p>Before fitting any models, look at the prevalence of high blood pressure in each of the four combinations of gender and exposure.</p>
-<div id="qwebr-insertion-location-9"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<section id="step-2-sort-the-paths-between-exposure-and-outcome" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-sort-the-paths-between-exposure-and-outcome">Step 2: Sort the paths between exposure and outcome</h2>
+<p>A DAG tells us which variables to adjust for by looking at every <strong>path</strong> connecting the exposure to the outcome — any route along the arrows, regardless of which direction they point.</p>
+<p>There are two kinds of paths:</p>
+<ul>
+<li><strong>Causal paths</strong> start with an arrow <em>out of</em> the exposure: <code>tree_canopy -&gt; high_bp</code>, and <code>tree_canopy -&gt; physical_activity -&gt; obesity -&gt; high_bp</code>. These are part of the effect we want to estimate, so we leave them open.</li>
+<li><strong>Backdoor paths</strong> start with an arrow <em>into</em> the exposure, such as <code>tree_canopy &lt;- education -&gt; high_bp</code>. These are <strong>non-causal</strong>: they create an association between tree canopy and blood pressure that is not due to tree canopy at all. <strong>Confounding is an open backdoor path.</strong> Our goal is to close every one of them.</li>
+</ul>
+<p>Adjusting for a variable on a backdoor path closes it. One exception: a variable that has two arrows pointing <em>into</em> it on a path (like <code>education</code> in <code>tree_canopy &lt;- tract_poverty -&gt; education &lt;- age -&gt; high_bp</code>) is a <strong>collider</strong>. A path through a collider is already closed — and adjusting for the collider would <em>open</em> it.</p>
 <p><strong>Questions to consider:</strong></p>
 <ul>
-<li>Among men, how does the prevalence of high blood pressure compare in top-quartile vs.&nbsp;other tracts? Among women?</li>
-<li>On the ratio scale, is the crude association stronger in men or in women? On the additive scale?</li>
+<li>Which variables do the backdoor paths in the DAG above pass through?</li>
+<li>Why is the path <code>tree_canopy &lt;- tract_poverty -&gt; education &lt;- age -&gt; high_bp</code> already closed?</li>
+<li>Is there any backdoor path that goes through <code>gender</code>? Through <code>physical_activity</code> or <code>obesity</code>?</li>
 </ul>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
@@ -2299,35 +2250,23 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 <div id="callout-6" class="callout-6-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <ul>
-<li><strong>Men:</strong> 18.1% in top-quartile tracts vs.&nbsp;36.1% elsewhere. <strong>Women:</strong> 22.1% vs.&nbsp;32.3%.</li>
-<li>On the <strong>ratio</strong> scale, the crude PR is <strong>0.50</strong> for men and <strong>0.69</strong> for women — a stronger (further from 1) association among men. On the <strong>additive</strong> scale, the prevalence difference is <strong>−17.9 percentage points</strong> for men and <strong>−10.2</strong> for women — also stronger among men. Here the two scales agree on the direction of the difference; they don’t always. These are <strong>crude</strong> numbers; the next step adjusts for the confounders from Lesson 6.</li>
+<li>Every backdoor path passes through <strong>education</strong>, <strong>tract poverty</strong>, or both, because those are the only two variables with an arrow into tree canopy. Race/ethnicity and age also appear, but only further along paths that already pass through education or tract poverty.</li>
+<li>On that path, <code>education</code> is a <strong>collider</strong>: both <code>tract_poverty -&gt; education</code> and <code>age -&gt; education</code> point into it. A collider blocks the path on its own, so the path is closed without any adjustment.</li>
+<li><strong>No path goes through <code>gender</code>.</strong> Gender has only one arrow, into high blood pressure, so it cannot create a backdoor path. Physical activity and obesity appear only on the <strong>causal</strong> path — they are mediators, not confounders.</li>
 </ul>
 </div>
 </div>
 </div>
 </section>
-<section id="step-4-fit-the-adjusted-model-within-each-stratum" class="level2">
-<h2 class="anchored" data-anchor-id="step-4-fit-the-adjusted-model-within-each-stratum">Step 4: Fit the adjusted model within each stratum</h2>
-<p>A <strong>stratified analysis</strong> fits the same adjusted model separately in each level of the modifier. Within each stratum, gender is constant, so it drops out of the model; the adjustment set from Lesson 6 (education and tract poverty) stays in.</p>
-<div id="qwebr-insertion-location-10"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>We keep only the <code>tree_top_quartile</code> rows: the PRs for education and tract poverty are there to adjust the exposure estimate, not to be interpreted (the “Table 2 fallacy” from Lesson 6).</p>
-<p>A plot makes the comparison easier to see. Note the <strong>log scale</strong> on the y-axis: ratios should be plotted on a log scale, so that, for example, 0.5 and 2.0 are the same distance from 1.</p>
-<div id="qwebr-insertion-location-11"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-</section>
-<section id="step-5-qualitative-assessment-compare-the-estimates-by-eye" class="level2">
-<h2 class="anchored" data-anchor-id="step-5-qualitative-assessment-compare-the-estimates-by-eye">Step 5: Qualitative assessment — compare the estimates by eye</h2>
-<p>Two questions guide a qualitative assessment:</p>
-<ol type="1">
-<li><strong>Are the point estimates meaningfully different?</strong> Is the difference large enough to matter for public health, regardless of p-values?</li>
-<li><strong>How much do the confidence intervals overlap?</strong> Substantial overlap — especially if one stratum’s point estimate falls inside the other’s CI — suggests weak evidence of a difference. Little or no overlap suggests a difference that is unlikely to be due to chance alone.</li>
-</ol>
+<section id="step-3-find-the-minimally-sufficient-adjustment-set" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-find-the-minimally-sufficient-adjustment-set">Step 3: Find the minimally sufficient adjustment set</h2>
+<p>The <strong>minimally sufficient adjustment set</strong> is the smallest set of variables that closes every backdoor path while leaving the causal paths open. Because every backdoor path into tree canopy starts with either education or tract poverty, adjusting for <strong>education and tract poverty</strong> is enough to remove confounding of the tree canopy–high blood pressure association, according to this DAG.</p>
+<p>A minimally sufficient set is not the only valid set. For example, <strong>{age, education, tract poverty}</strong> also closes every backdoor path.</p>
 <p><strong>Questions to consider:</strong></p>
 <ul>
-<li>Interpret the PR for men and the PR for women, each in one sentence.</li>
-<li>Do the confidence intervals overlap? Does either point estimate fall inside the other CI?</li>
-<li>The CI for men excludes 1 and the CI for women includes 1. Does that mean the association is “significant in men but not in women,” and therefore that gender modifies the association?</li>
+<li>Why isn’t <strong>race/ethnicity</strong> in the minimal set, even though it affects both tract poverty and high blood pressure?</li>
+<li>Why isn’t <strong>age</strong> in the minimal set? Would it be <em>wrong</em> to adjust for age?</li>
+<li>What would happen if we adjusted for <strong>obesity</strong>?</li>
 </ul>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
@@ -2341,352 +2280,413 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 <div id="callout-7" class="callout-7-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<table class="caption-top table">
-<thead>
-<tr class="header">
-<th>Gender</th>
-<th>N</th>
-<th>Adjusted PR (95% CI)</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td>Men</td>
-<td>933</td>
-<td>0.62 (0.45, 0.84)</td>
-</tr>
-<tr class="even">
-<td>Women</td>
-<td>1,027</td>
-<td>0.81 (0.62, 1.05)</td>
-</tr>
-</tbody>
-</table>
 <ul>
-<li><em>Men:</em> After adjusting for education and tract poverty, the prevalence of high blood pressure among men living in the greenest quarter of census tracts was 0.62 times the prevalence among men living in the other three quarters (95% CI: 0.45, 0.84) — about 38% lower. <em>Women:</em> the corresponding PR was 0.81 (95% CI: 0.62, 1.05) — about 19% lower.</li>
-<li>Yes, substantially. The women’s point estimate (0.81) falls inside the men’s CI (0.45–0.84), and the men’s point estimate (0.62) sits right at the lower edge of the women’s CI (0.62–1.05). The difference in point estimates is suggestive, but this much overlap means it could easily be due to chance.</li>
-<li><strong>No.</strong> This is one of the most common mistakes in effect modification analysis (see this week’s Kaufman &amp; MacLehose reading). “Significant in one group, not in the other” is not a test of whether the two estimates <em>differ from each other</em>. The women’s CI includes 1 partly because the estimate is smaller, but both CIs point in the same, protective direction. To test whether the two estimates differ, we need a formal test of heterogeneity — Steps 6 through 9.</li>
+<li>Race/ethnicity reaches tree canopy only <strong>through tract poverty</strong> (<code>race_ethnicity -&gt; tract_poverty -&gt; tree_canopy</code>). Once tract poverty is adjusted for, that path is closed, so race/ethnicity is not needed <em>according to this DAG</em>. If you believed racism also affected tree canopy directly (for example, through discriminatory planting decisions that are not captured by tract poverty), you would add that arrow, and race/ethnicity would join the adjustment set. The DAG is only as good as the assumptions you put into it.</li>
+<li>Age has no arrow into tree canopy, so it can’t confound on its own; its only backdoor path runs through education, which is already adjusted for. But <strong>{age, education, tract poverty}</strong> is <em>also</em> a valid set. Adjusting for a strong risk factor for the outcome that is not related to the exposure won’t introduce bias and can make the estimate more precise.</li>
+<li>Adjusting for obesity closes <code>tree_canopy -&gt; physical_activity -&gt; obesity -&gt; high_bp</code> — part of the <strong>causal</strong> effect. The adjusted estimate would then describe only the part of tree canopy’s effect that does <em>not</em> operate through obesity. That is <strong>overadjustment</strong>: removing part of the effect you set out to measure.</li>
 </ul>
 </div>
 </div>
 </div>
-</section>
-<section id="step-6-cochrans-q-a-test-of-heterogeneity-across-strata" class="level2">
-<h2 class="anchored" data-anchor-id="step-6-cochrans-q-a-test-of-heterogeneity-across-strata">Step 6: Cochran’s Q — a test of heterogeneity across strata</h2>
-<p><strong>Cochran’s Q</strong> tests whether stratum-specific estimates differ more than we would expect by chance. It needs only the estimate and its standard error from each stratum, so it can be used with any stratified estimates — including ones from published papers. Because ratio estimates are approximately normal on the <strong>log</strong> scale, Q is calculated with the log PRs:</p>
-<p><span class="math display">\[Q = \sum_i w_i \left(\ln \text{PR}_i - \ln \text{PR}_{\text{pooled}}\right)^2, \qquad w_i = \frac{1}{SE_i^2}, \qquad \ln \text{PR}_{\text{pooled}} = \frac{\sum_i w_i \ln \text{PR}_i}{\sum_i w_i}\]</span></p>
-<ul>
-<li><span class="math inline">\(\ln \text{PR}_i\)</span> is the log PR in stratum <span class="math inline">\(i\)</span>, and <span class="math inline">\(SE_i\)</span> is its standard error;</li>
-<li>the pooled estimate is a weighted average, giving more weight to more precise strata;</li>
-<li>under the null hypothesis of no heterogeneity, Q follows a chi-square distribution with (number of strata − 1) degrees of freedom.</li>
-</ul>
-<div id="qwebr-insertion-location-12"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 Only have the PR and its 95% CI? Click to see how to get the SE">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 Only have the PR and its 95% CI? Click to see how to get the SE
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-8" class="callout-8-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<p>A 95% CI on the log scale is <span class="math inline">\(\ln \text{PR} \pm 1.96 \times SE\)</span>, so its total width is <span class="math inline">\(2 \times 1.96 \times SE = 3.92 \times SE\)</span>. To recover the SE from a published PR and CI:</p>
-<p><span class="math display">\[SE = \frac{\ln(\text{upper limit}) - \ln(\text{lower limit})}{3.92}\]</span></p>
-<div id="qwebr-insertion-location-13"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>Always work on the <strong>log</strong> scale. Calculating Q or the SE from the PRs themselves (without taking logs) gives the wrong answer.</p>
-</div>
-</div>
-</div>
-<p><strong>Questions to consider:</strong></p>
-<ul>
-<li>What is the p-value for Cochran’s Q? Using our pre-specified threshold of 0.10, is there statistical evidence of heterogeneity?</li>
-<li>Why might Q fail to detect a real difference here?</li>
-</ul>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-9" class="callout-9-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<ul>
-<li><strong>Q = 1.70, 1 df, p = 0.19.</strong> That is above 0.10, so there is no statistical evidence of heterogeneity by this test.</li>
-<li>Q has <strong>low power</strong> when there are few strata and each estimate is imprecise — exactly our situation (two strata, wide CIs). A p-value of 0.19 does <strong>not</strong> show that the association is the same in men and women; it shows the data can’t rule out a difference of this size arising by chance.</li>
-</ul>
-</div>
-</div>
-</div>
-<hr>
-</section>
-</section>
-<section id="part-2-interaction-models" class="level1">
-<h1>Part 2: Interaction Models</h1>
-<section id="step-7-fit-a-model-with-an-interaction-term" class="level2">
-<h2 class="anchored" data-anchor-id="step-7-fit-a-model-with-an-interaction-term">Step 7: Fit a model with an interaction term</h2>
-<p>Instead of fitting separate models, we can fit <strong>one</strong> model that includes the exposure, the modifier, and their product — an <strong>interaction term</strong>:</p>
-<p><span class="math display">\[\ln(\text{prevalence}) = \beta_0 + \beta_1\,\text{TreeTop} + \beta_2\,\text{Woman} + \beta_3\,(\text{TreeTop} \times \text{Woman}) + \beta_4\,\text{Education} + \beta_5\,\text{TractPoverty}\]</span></p>
-<p>In R, <code>tree_top_quartile * woman</code> is shorthand for <code>tree_top_quartile + woman + tree_top_quartile:woman</code> — both <strong>main effects</strong> plus their interaction.</p>
-<div id="qwebr-insertion-location-14"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>What each coefficient means (everything holds education and tract poverty constant):</p>
-<table class="caption-top table">
-<colgroup>
-<col style="width: 33%">
-<col style="width: 33%">
-<col style="width: 33%">
-</colgroup>
-<thead>
-<tr class="header">
-<th>Coefficient</th>
-<th>Term</th>
-<th>Meaning</th>
-</tr>
-</thead>
-<tbody>
-<tr class="odd">
-<td><span class="math inline">\(\beta_1\)</span></td>
-<td><code>tree_top_quartile</code></td>
-<td>Log PR for tree canopy <strong>among men</strong> (woman = 0)</td>
-</tr>
-<tr class="even">
-<td><span class="math inline">\(\beta_2\)</span></td>
-<td><code>woman</code></td>
-<td>Log PR for women vs.&nbsp;men <strong>in tracts outside the top quartile</strong></td>
-</tr>
-<tr class="odd">
-<td><span class="math inline">\(\beta_3\)</span></td>
-<td><code>tree_top_quartile:woman</code></td>
-<td>How much the log PR for tree canopy <strong>differs</strong> in women compared with men</td>
-</tr>
-<tr class="even">
-<td><span class="math inline">\(\beta_1 + \beta_3\)</span></td>
-<td></td>
-<td>Log PR for tree canopy <strong>among women</strong> (woman = 1)</td>
-</tr>
-</tbody>
-</table>
-<p>Where does <span class="math inline">\(\beta_1 + \beta_3\)</span> come from? Write out the model for women (Woman = 1) in top-quartile and other tracts, and subtract:</p>
-<ul>
-<li>Top quartile: <span class="math inline">\(\beta_0 + \beta_1 + \beta_2 + \beta_3 + \ldots\)</span></li>
-<li>Other tracts: <span class="math inline">\(\beta_0 + \beta_2 + \ldots\)</span></li>
-<li>Difference: <span class="math inline">\(\beta_1 + \beta_3\)</span> (everything else cancels)</li>
-</ul>
-<p>For men (Woman = 0), the <span class="math inline">\(\beta_2\)</span> and <span class="math inline">\(\beta_3\)</span> terms are multiplied by 0, so the difference is just <span class="math inline">\(\beta_1\)</span>.</p>
-</section>
-<section id="step-8-stratum-specific-estimates-from-the-interaction-model" class="level2">
-<h2 class="anchored" data-anchor-id="step-8-stratum-specific-estimates-from-the-interaction-model">Step 8: Stratum-specific estimates from the interaction model</h2>
-<p>The PR for men is <span class="math inline">\(e^{\beta_1}\)</span>, and the PR for women is <span class="math inline">\(e^{\beta_1 + \beta_3}\)</span>. The CI for women needs the variance of a <strong>sum</strong> of two coefficients, which includes their covariance:</p>
-<p><span class="math display">\[\text{Var}(\hat\beta_1 + \hat\beta_3) = \text{Var}(\hat\beta_1) + \text{Var}(\hat\beta_3) + 2\,\text{Cov}(\hat\beta_1, \hat\beta_3)\]</span></p>
-<div id="qwebr-insertion-location-15"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p><strong>Questions to consider:</strong></p>
-<ul>
-<li>How do these PRs compare with the stratified PRs from Step 4? Why aren’t they identical?</li>
-<li>What is <span class="math inline">\(e^{\beta_3}\)</span>, and how would you put it into words?</li>
-</ul>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-10" class="callout-10-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<ul>
-<li>From the interaction model: men <strong>0.61 (0.45, 0.82)</strong>, women <strong>0.82 (0.63, 1.06)</strong>. From the stratified models: men 0.62 (0.45, 0.84), women 0.81 (0.62, 1.05). They are very close but not identical, because the interaction model lets only the <strong>tree canopy</strong> association differ by gender — it assumes the associations of education and tract poverty with high blood pressure are the same for men and women. The stratified models let <em>every</em> coefficient differ. Either approach is acceptable; say which one you used.</li>
-<li>$e^{_3} = e^{0.300} = $ <strong>1.35</strong> — the <strong>ratio of the two PRs</strong> (0.82 / 0.61 ≈ 1.35). The PR for tree canopy among women is 1.35 times the PR among men; that is, the association is weaker (closer to 1) among women. If there were no multiplicative interaction, <span class="math inline">\(\beta_3\)</span> would be 0 and <span class="math inline">\(e^{\beta_3}\)</span> would be 1.</li>
-</ul>
-</div>
-</div>
-</div>
-</section>
-<section id="step-9-testing-the-interaction-the-wald-test" class="level2">
-<h2 class="anchored" data-anchor-id="step-9-testing-the-interaction-the-wald-test">Step 9: Testing the interaction — the Wald test</h2>
-<p>The <strong>Wald test</strong> asks whether the interaction coefficient is different from zero:</p>
-<p><span class="math display">\[z = \frac{\hat\beta_3}{SE(\hat\beta_3)}\]</span></p>
-<p>Compare <span class="math inline">\(z\)</span> with a standard normal distribution. For a modified Poisson model, use the <strong>robust</strong> standard error.</p>
-<div id="qwebr-insertion-location-16"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<div class="callout callout-style-default callout-warning callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Warning</span>Don’t read the Wald p-value from <code>summary()</code> for a modified Poisson model
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p><code>summary(model_int)</code> also prints a z value and p-value for every coefficient, but those use the <strong>model-based</strong> Poisson standard errors, which are wrong for a 0/1 outcome (Lesson 6, Step 4). Here <code>summary()</code> gives p = 0.18; the correct, robust Wald test gives p = 0.12. Always use the robust SE for modified Poisson models.</p>
-</div>
-</div>
-</section>
-<section id="step-10-testing-the-interaction-the-likelihood-ratio-test" class="level2">
-<h2 class="anchored" data-anchor-id="step-10-testing-the-interaction-the-likelihood-ratio-test">Step 10: Testing the interaction — the likelihood ratio test</h2>
-<p>The <strong>likelihood ratio test (LRT)</strong> compares how well two <strong>nested</strong> models fit the data:</p>
-<ul>
-<li>a <strong>reduced</strong> model, <em>without</em> the interaction term: <code>exposure + modifier + covariates</code></li>
-<li>a <strong>full</strong> model, <em>with</em> it: <code>exposure * modifier + covariates</code></li>
-</ul>
-<p><span class="math display">\[\text{LRT statistic} = -2 \times \left(\ln L_{\text{reduced}} - \ln L_{\text{full}}\right) \sim \chi^2_{df}\]</span></p>
-<p>where <span class="math inline">\(\ln L\)</span> is each model’s log-likelihood, and <span class="math inline">\(df\)</span> is the number of parameters added in the full model (1 for a single interaction term).</p>
-<div class="callout callout-style-default callout-important callout-titled">
-<div class="callout-header d-flex align-content-center">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Important</span>Use a model with a real likelihood for the LRT
-</div>
-</div>
-<div class="callout-body-container callout-body">
-<p>An LRT compares <strong>likelihoods</strong>, so the likelihood has to be the right one for the data. A modified Poisson model uses the Poisson likelihood, which is the <em>wrong</em> likelihood for a 0/1 outcome — that is exactly why it needs robust standard errors. So for a binary outcome, run the LRT on <strong>log-binomial</strong> models (if they converge), which estimate the same PR with the correct likelihood. If your log-binomial models won’t converge, rely on the robust Wald test (Step 9), plus Cochran’s Q.</p>
-</div>
-</div>
-<p>Our log-binomial models converge here, so we use them:</p>
-<div id="qwebr-insertion-location-17"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>In the <code>anova()</code> output, <code>Deviance</code> in the second row is the LRT statistic, <code>Df</code> is its degrees of freedom, and <code>Pr(&gt;Chi)</code> is the p-value.</p>
-<p>Two rules keep an LRT valid:</p>
-<ol type="1">
-<li><strong>The models must be nested.</strong> The reduced model contains <em>everything</em> in the full model except the interaction term — including the modifier’s main effect. Comparing <code>outcome ~ exposure</code> with <code>outcome ~ exposure * modifier</code> tests two parameters at once (the modifier’s main effect and the interaction), which is not a test of effect modification.</li>
-<li><strong>Both models must be fit in the same participants.</strong> If the modifier has missing values and the reduced model doesn’t include it, R will fit the two models in different people, and the comparison is meaningless. Fitting both models in <code>data_em</code> prevents this.</li>
-</ol>
-<div id="qwebr-insertion-location-18"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>The two models use different numbers of participants (the 26 non-binary participants and those missing gender are in one but not the other). <code>anova()</code> will refuse to compare them, or, in some situations, compare them silently with a meaningless result.</p>
-<p><strong>Questions to consider:</strong></p>
-<ul>
-<li>What are the Wald and LRT p-values? Using our pre-specified threshold of 0.10, what do you conclude?</li>
-<li>Would your conclusion change with a threshold of 0.15? What does that tell you about choosing the threshold in advance?</li>
-</ul>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-13-contents" aria-controls="callout-13" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-13" class="callout-13-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<ul>
-<li><strong>Robust Wald test: z = 1.54, p = 0.12.</strong> <strong>LRT (log-binomial): statistic = 2.20, 1 df, p = 0.14.</strong> Both are above 0.10, so by our pre-specified rule there is <strong>no statistical evidence</strong> of multiplicative effect modification by gender. Cochran’s Q (p = 0.19) agrees.</li>
-<li>With a 0.15 threshold, both the Wald test and the LRT would count as evidence of modification. The data are the same; only the rule changed. That is why the threshold must be chosen <strong>before</strong> you see the results. Choosing it afterward to get the answer you want is a form of p-hacking. Whatever the threshold, report the actual p-values so readers can judge for themselves.</li>
-</ul>
-</div>
-</div>
-</div>
-</section>
-<section id="step-11-keep-the-model-hierarchical" class="level2">
-<h2 class="anchored" data-anchor-id="step-11-keep-the-model-hierarchical">Step 11: Keep the model hierarchical</h2>
-<p>When a model contains an interaction term, it must also contain <strong>both main effects</strong> that make up the interaction. This is the <strong>hierarchy principle</strong>. Here is what happens if the main effect of gender is left out:</p>
-<div id="qwebr-insertion-location-19"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>Without the <code>woman</code> main effect, the model assumes that women and men in tracts outside the top quartile have <em>exactly the same</em> prevalence of high blood pressure. The interaction term then soaks up part of the difference between women and men, so it no longer measures only how the tree canopy association differs by gender (here it shrinks from 1.35 to 1.22). Writing <code>exposure * modifier</code> always includes both main effects for you.</p>
-</section>
-<section id="step-12-put-it-together-a-results-table-and-interpretation" class="level2">
-<h2 class="anchored" data-anchor-id="step-12-put-it-together-a-results-table-and-interpretation">Step 12: Put it together — a results table and interpretation</h2>
-<p>Effect modification results are usually presented as a table of stratum-specific estimates with the test(s) of interaction — <strong>Table 3</strong> of your final report:</p>
-<div id="qwebr-insertion-location-20"></div>
-<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-note callout-titled">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>Writing up effect modification (Milestone 4)
+<span class="screen-reader-only">Note</span>DAGs and race
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p><em>“We hypothesized a priori that the association between tree canopy and high blood pressure would differ by gender, and we considered p &lt; 0.10 from a test of interaction to indicate statistical evidence of effect modification. Twenty-six non-binary participants were excluded from this analysis because of small numbers. After adjustment for education and tract poverty, living in a top-quartile canopy tract was associated with a lower prevalence of high blood pressure among men (PR = 0.62, 95% CI: 0.45, 0.84) and, to a lesser extent, among women (PR = 0.81, 95% CI: 0.62, 1.05). The confidence intervals overlapped substantially, and tests of multiplicative interaction did not meet our threshold (robust Wald p = 0.12; likelihood ratio test p = 0.14; Cochran’s Q p = 0.19). We therefore found limited statistical evidence that gender modifies this association, although the difference in point estimates suggests a possibly stronger association among men that could be examined in a larger study.”</em></p>
-<p>Notice what the paragraph does: it states the hypothesis and threshold, reports <strong>both</strong> stratum estimates with CIs, reports the actual p-values, and does not claim the association is “absent” in women or “the same” in men and women.</p>
-</div>
-</div>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 What if my modifier has more than two levels? Click to read">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-15-contents" aria-controls="callout-15" aria-expanded="false" aria-label="Toggle callout">
-<div class="callout-icon-container">
-<i class="callout-icon"></i>
-</div>
-<div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 What if my modifier has more than two levels? Click to read
-</div>
-<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
-</div>
-<div id="callout-15" class="callout-15-contents callout-collapse collapse">
-<div class="callout-body-container callout-body">
-<p>With a modifier that has <span class="math inline">\(k\)</span> levels (e.g., three education categories), the interaction model has <span class="math inline">\(k - 1\)</span> interaction terms, and a test of effect modification needs to test them <strong>all at once</strong>.</p>
-<ul>
-<li><strong>Stratified models and Cochran’s Q:</strong> fit one model per level; Q has <span class="math inline">\(k - 1\)</span> degrees of freedom. The code in Step 6 works unchanged with more strata.</li>
-<li><strong>LRT:</strong> compare the reduced and full models as in Step 10. <code>anova()</code> calculates the degrees of freedom (<span class="math inline">\(k - 1\)</span>) automatically. This is the main reason the LRT is often preferred: it handles several interaction terms in one test.</li>
-<li><strong>Robust Wald test for several terms:</strong> with modified Poisson, test all the interaction terms together using their robust variance-covariance matrix:</li>
-</ul>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>int_terms <span class="ot">&lt;-</span> <span class="fu">grep</span>(<span class="st">":"</span>, <span class="fu">names</span>(<span class="fu">coef</span>(model_int)), <span class="at">value =</span> <span class="cn">TRUE</span>)   <span class="co"># all interaction terms</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>b <span class="ot">&lt;-</span> <span class="fu">coef</span>(model_int)[int_terms]</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>V <span class="ot">&lt;-</span> <span class="fu">vcovHC</span>(model_int, <span class="at">type =</span> <span class="st">"HC0"</span>)[int_terms, int_terms]</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>wald_chisq <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">t</span>(b) <span class="sc">%*%</span> <span class="fu">solve</span>(V) <span class="sc">%*%</span> b)</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">pchisq</span>(wald_chisq, <span class="at">df =</span> <span class="fu">length</span>(b), <span class="at">lower.tail =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-<p>Each level also needs enough exposed and unexposed participants <strong>with and without the outcome</strong> (Step 2). If a level is too small, combine it with a similar level — and say why.</p>
-<p><strong>Continuous modifiers</strong> (e.g., age in years) can also go into an interaction term, but the stratum-specific estimates then change with every unit of the modifier, which makes them harder to present. For this course, use a categorical version of your modifier, with cut points chosen in advance (e.g., ages &lt; 50 vs.&nbsp;≥ 50).</p>
-</div>
+<p>Following Howe et al.&nbsp;(2022), a DAG for a racialized health disparity should represent <strong>racism</strong> — not race itself — as the cause, because race is a social construct and not a biological cause of disease. In our class dataset, <code>race_ethnicity</code> is the only available measure, so in this DAG it stands in for exposure to structural and interpersonal racism. When you describe your own DAG, say what each variable represents.</p>
 </div>
 </div>
 <hr>
-<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn: Effect modification in your own project">
+<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn: Draw a DAG for your own project">
 <div class="callout-header d-flex align-content-center">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Tip</span>🧠 Your Turn: Effect modification in your own project
+<span class="screen-reader-only">Tip</span>🧠 Your Turn: Draw a DAG for your own project
 </div>
 </div>
 <div class="callout-body-container callout-body">
-<p>Using <strong>your project’s exposure, outcome, and final adjustment set</strong> from Milestone 3:</p>
+<p>Using <strong>your project’s exposure and outcome</strong>:</p>
 <ol type="1">
-<li>Choose <strong>one</strong> potential effect modifier and write down your a priori hypothesis (which group do you expect to show the stronger association, and why?) and your p-value threshold — <strong>before</strong> running anything.</li>
-<li>Code the modifier (0/1 if possible), check the modifier × exposure × outcome cell sizes, and create an analytic sample with no missing data on any model variable.</li>
-<li>Fit your adjusted model within each stratum of the modifier, and make a table and plot of the stratum-specific estimates.</li>
-<li>Fit the interaction model, and calculate Cochran’s Q, the robust Wald test, and (if your log-binomial models converge) the LRT.</li>
-<li>Write two or three sentences interpreting your results.</li>
+<li>Start from your conceptual framework (Milestone 1). List the variables that might cause your exposure, your outcome, or both, and any mediators. Include important variables even if they are <strong>not in the dataset</strong>, and mark them as unmeasured.</li>
+<li>Draw the DAG, following the DAGitty video tutorial.</li>
+<li>Sort the paths into causal and backdoor paths. Which variables are in your minimally sufficient adjustment set? Does any set work if some variables are unmeasured?</li>
 </ol>
 </div>
 </div>
-<div id="qwebr-insertion-location-21"></div>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Example: traffic density and asthma — click to reveal">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Example: traffic density and asthma — click to reveal
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Here is one DAG for traffic density and asthma:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="images/lesson6_dag_asthma.png" class="img-fluid figure-img" style="width:90.0%"></p>
+<figcaption>A DAG for traffic density and asthma</figcaption>
+</figure>
+</div>
+<p>Its arrows are:</p>
+<ul>
+<li><code>traffic_density -&gt; air_pollution -&gt; asthma</code></li>
+<li><code>tract_poverty -&gt; traffic_density</code>, <code>tract_poverty -&gt; asthma</code>, and <code>tract_poverty -&gt; current_smoker</code></li>
+<li><code>education -&gt; current_smoker</code></li>
+<li><code>current_smoker -&gt; asthma</code></li>
+</ul>
+<p>In this DAG, tract poverty is the only variable on a backdoor path (<code>traffic_density &lt;- tract_poverty -&gt; asthma</code>, and <code>traffic_density &lt;- tract_poverty -&gt; current_smoker -&gt; asthma</code>), so the minimally sufficient adjustment set is <strong>{tract_poverty}</strong>. Smoking is a strong risk factor for asthma, but in this DAG it does not cause traffic density, so it does not need to be adjusted for to remove confounding. Air pollution is a <strong>mediator</strong> and should not be adjusted for.</p>
+<p>Someone else might reasonably draw this DAG differently — for example, with an arrow from smoking or education to where people live. That is why the DAG is part of what you justify in Milestone 3.</p>
+</div>
+</div>
+</div>
+<hr>
+</section>
+</section>
+<section id="part-2-checking-confounding-in-the-data-change-in-estimate" class="level1">
+<h1>Part 2: Checking Confounding in the Data — Change in Estimate</h1>
+<p>The DAG is built from <strong>theory</strong>, before looking at the data. The change-in-estimate approach is <strong>empirical</strong>: it shows how much the exposure estimate actually moves when a variable is added to the model. Using both together is common practice:</p>
+<ol type="1">
+<li>Use the DAG to identify your <strong>candidate</strong> confounders.</li>
+<li>Add each candidate to the crude model <strong>one at a time</strong> and calculate the percent change in the exposure estimate.</li>
+<li>Use the DAG and the change-in-estimate results together to choose your <strong>final</strong> adjustment set.</li>
+</ol>
+<section id="step-1-the-crude-model-a-reminder" class="level2">
+<h2 class="anchored" data-anchor-id="step-1-the-crude-model-a-reminder">Step 1: The crude model (a reminder)</h2>
+<p>This is the same model as the end of Lesson 6. The <code>extract_ratio()</code> helper has one new option, <code>robust</code>, which we will need in Step 4. Leave it at its default (<code>FALSE</code>) for now.</p>
+<div id="qwebr-insertion-location-4"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<div class="callout callout-style-default callout-note callout-titled" title="💡 Example: traffic density and asthma, by gender — click to reveal">
+<p>The crude PR is <strong>0.60 (95% CI: 0.49, 0.72)</strong>: the prevalence of high blood pressure among participants in the greenest quarter of census tracts was 0.60 times the prevalence among everyone else — about 40% lower.</p>
+</section>
+<section id="step-2-is-the-candidate-associated-with-the-exposure-and-the-outcome" class="level2">
+<h2 class="anchored" data-anchor-id="step-2-is-the-candidate-associated-with-the-exposure-and-the-outcome">Step 2: Is the candidate associated with the exposure and the outcome?</h2>
+<p>Let’s start with <strong>education</strong>, the first variable in our DAG’s adjustment set. A confounder must be associated with both the exposure and the outcome, so check each one.</p>
+<div id="qwebr-insertion-location-5"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>Is education associated with living in a top-quartile canopy tract? How strongly?</li>
+<li>Is education associated with high blood pressure? In which direction?</li>
+<li>Given the direction of both associations, would you expect the crude PR for tree canopy to be <em>further from</em> or <em>closer to</em> the null than the adjusted PR?</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-11" class="callout-11-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>Yes, strongly. 38% of participants with a bachelor’s degree or higher live in a top-quartile canopy tract, compared with 13% of those without one — a PR of <strong>2.91 (95% CI: 2.44, 3.46)</strong>.</li>
+<li>Yes. Participants with a bachelor’s degree or higher have a lower prevalence of high blood pressure: PR = <strong>0.63 (95% CI: 0.55, 0.72)</strong>.</li>
+<li>Higher education goes with <em>more</em> tree canopy and <em>less</em> high blood pressure. So part of the lower prevalence of high blood pressure in greener tracts is really due to the more-educated people who live there. The crude PR should therefore be <strong>further from the null</strong> (more protective-looking) than the adjusted PR. Step 3 checks this.</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="step-3-add-the-candidate-to-the-model-and-calculate-the-change-in-estimate" class="level2">
+<h2 class="anchored" data-anchor-id="step-3-add-the-candidate-to-the-model-and-calculate-the-change-in-estimate">Step 3: Add the candidate to the model and calculate the change in estimate</h2>
+<div id="qwebr-insertion-location-6"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>R now returns two PRs: one for <code>tree_top_quartile</code> (the one we care about) and one for <code>education</code>. The tree canopy PR is now <strong>adjusted for</strong> education — it compares participants in the greenest quarter of tracts with everyone else <strong>with the same level of education</strong>.</p>
+<p>The <strong>percent change in estimate</strong> compares the crude and adjusted PRs:</p>
+<p><span class="math display">\[\% \text{ change} = \frac{\text{PR}_\text{crude} - \text{PR}_\text{adjusted}}{\text{PR}_\text{crude}} \times 100\]</span></p>
+<div id="qwebr-insertion-location-7"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>Look at the <strong>size</strong> of the change. Its sign tells you which way the estimate moved: a negative percent change means the adjusted PR is larger than the crude PR — here, closer to 1.</p>
+<p>A common rule of thumb is that a change of <strong>10% or more</strong> suggests meaningful confounding. Treat it as a guide, not a law: the 10% cutoff is a convention, and a 9% change is not meaningfully different from an 11% change. Decide on your rule before you look at the results, and report it in your methods.</p>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>By how much did the PR change after adjusting for education? Is that above the 10% rule of thumb?</li>
+<li>Did the estimate move in the direction you predicted in Step 2?</li>
+<li>Write a one-sentence interpretation of the adjusted PR.</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-12-contents" aria-controls="callout-12" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-12" class="callout-12-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<ul>
+<li>The PR moved from <strong>0.60</strong> (crude) to <strong>0.68</strong> (adjusted for education), a change of about <strong>13%</strong> — above the 10% rule of thumb, so education confounds this association in our data.</li>
+<li>Yes. The adjusted PR is closer to 1: some of the crude association was due to the more-educated people who live in greener tracts, not to the trees themselves.</li>
+<li><em>Example interpretation:</em> After adjusting for education, the prevalence of high blood pressure among participants living in the greenest quarter of census tracts was 0.68 times the prevalence among those living in the other three quarters (95% CI: 0.56, 0.82).</li>
+</ul>
+</div>
+</div>
+</div>
+</section>
+<section id="step-4-when-the-log-binomial-model-wont-converge-modified-poisson-regression" class="level2">
+<h2 class="anchored" data-anchor-id="step-4-when-the-log-binomial-model-wont-converge-modified-poisson-regression">Step 4: When the log-binomial model won’t converge — modified Poisson regression</h2>
+<p>Now try adjusting for <strong>age</strong>:</p>
+<div id="qwebr-insertion-location-8"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>You should get an error: <em>“no valid set of coefficients has been found: please supply starting values.”</em> As Lesson 6 mentioned, this is common with log-binomial models, and it often appears as soon as a continuous covariate like age is added. The model’s predicted prevalences must stay below 1, and with a strong continuous predictor the fitting algorithm can fail to find estimates that satisfy this.</p>
+<p>The standard fix is <strong>modified Poisson regression</strong>: a Poisson model with a log link, which also estimates a prevalence ratio, combined with <strong>robust (“sandwich”) standard errors</strong>. The robust standard errors are needed because a Poisson model assumes the wrong variance for a 0/1 outcome; without them, the confidence intervals would be too wide.</p>
+<div id="qwebr-insertion-location-9"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p><code>robust = TRUE</code> makes <code>extract_ratio()</code> use <code>vcovHC()</code> from the <code>sandwich</code> package in place of the usual standard errors.</p>
+<p>To check that modified Poisson gives the same answer where both models work, compare the two for the crude and education-adjusted models:</p>
+<div id="qwebr-insertion-location-10"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>The crude estimates are identical, and the adjusted estimates agree to two decimal places. Because modified Poisson converges for every model we need, <strong>we use it for all the models in the rest of this lesson</strong>, so that every crude and adjusted estimate comes from the same kind of model.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Running modified Poisson in RStudio with the lmtest package">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-13-contents" aria-controls="callout-13" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Running modified Poisson in RStudio with the lmtest package
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-13" class="callout-13-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>Many online examples use the <code>lmtest</code> package together with <code>sandwich</code>. It gives the same estimates and CIs as <code>extract_ratio(..., robust = TRUE)</code>:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sandwich)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(lmtest)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>robust_vcov <span class="ot">&lt;-</span> <span class="fu">vcovHC</span>(model_adj_age, <span class="at">type =</span> <span class="st">"HC0"</span>)</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">coeftest</span>(model_adj_age, <span class="at">vcov =</span> robust_vcov)        <span class="co"># coefficients with robust SEs and p-values</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">coef</span>(model_adj_age))                           <span class="co"># PRs</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="fu">exp</span>(<span class="fu">coefci</span>(model_adj_age, <span class="at">vcov =</span> robust_vcov))     <span class="co"># 95% CIs for the PRs</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+</section>
+<section id="step-5-compare-crude-and-adjusted-estimates-in-the-same-people" class="level2">
+<h2 class="anchored" data-anchor-id="step-5-compare-crude-and-adjusted-estimates-in-the-same-people">Step 5: Compare crude and adjusted estimates <strong>in the same people</strong></h2>
+<p>There is a subtle trap in comparing the age-adjusted PR with the crude PR from Step 1. Three participants are missing <code>r_age</code>, so R dropped them from the age-adjusted model — but not from the crude model. Part of any difference between the two estimates could simply be that they were estimated in <strong>different groups of people</strong>.</p>
+<p>The fix: for each candidate, fit the crude model in the <strong>same participants</strong> as the adjusted model, that is, those with no missing data on the outcome, the exposure, or that covariate.</p>
+<div id="qwebr-insertion-location-11"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>Here the crude PR barely moves (0.598 vs.&nbsp;0.602), because only a few participants are missing age. With a covariate that has a lot of missing data, the difference can be much larger. The loop in Step 6 does this restriction automatically.</p>
+</section>
+<section id="step-6-check-every-candidate-at-once" class="level2">
+<h2 class="anchored" data-anchor-id="step-6-check-every-candidate-at-once">Step 6: Check every candidate at once</h2>
+<p>Repeating Steps 3–5 by hand for every candidate is tedious and easy to get wrong. The loop below does it for each variable in <code>candidates</code>. It includes:</p>
+<ul>
+<li><strong>education</strong> and <strong>tract poverty</strong> (<code>pov_allage</code>) — the DAG’s minimally sufficient set;</li>
+<li><strong>age</strong>, <strong>gender</strong>, and <strong>race/ethnicity</strong> — not required by the DAG (age is part of another valid adjustment set);</li>
+<li><strong>obesity</strong> (<code>obese</code>) — a mediator in our DAG, included only to show what the data say about it.</li>
+</ul>
+<div id="qwebr-insertion-location-12"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p><strong>What the loop does:</strong> <code>for (covariate in candidates)</code> runs the code inside the braces once for each name in <code>candidates</code>, storing the current name in <code>covariate</code>. <code>.data[[covariate]]</code> lets <code>filter()</code> refer to a column whose name is stored in a variable. <code>paste()</code> builds the model formula as text (e.g., <code>"high_blood_pressure ~ tree_top_quartile + education"</code>), and <code>as.formula()</code> turns that text into a formula R can use. Each pass adds one row to <code>cie_table</code> with <code>bind_rows()</code>.</p>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>Which variables change the estimate by 10% or more? Which change it by less than 5%?</li>
+<li>Gender barely changes the estimate. Using what you checked in Lesson 4, explain why.</li>
+<li>Age changes the estimate by about 3–4% even though the DAG says it is not a confounder. Does that mean the DAG is wrong?</li>
+<li>Obesity changes the estimate by only about 1%. Does that mean it would be fine to adjust for it?</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've thought about it">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-14-contents" aria-controls="callout-14" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve thought about it
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-14" class="callout-14-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Covariate</th>
+<th>PR adjusted (95% CI)</th>
+<th>% change</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Education</td>
+<td>0.68 (0.56, 0.82)</td>
+<td>−13.4</td>
+</tr>
+<tr class="even">
+<td>Tract poverty</td>
+<td>0.64 (0.53, 0.78)</td>
+<td>−7.1</td>
+</tr>
+<tr class="odd">
+<td>Age</td>
+<td>0.62 (0.52, 0.75)</td>
+<td>−3.5</td>
+</tr>
+<tr class="even">
+<td>Race/ethnicity</td>
+<td>0.61 (0.50, 0.73)</td>
+<td>−1.8</td>
+</tr>
+<tr class="odd">
+<td>Obesity</td>
+<td>0.60 (0.50, 0.73)</td>
+<td>−1.0</td>
+</tr>
+<tr class="even">
+<td>Gender</td>
+<td>0.60 (0.50, 0.72)</td>
+<td>0.0</td>
+</tr>
+</tbody>
+</table>
+<p><em>(Crude PR = 0.60 in each comparison sample.)</em></p>
+<ul>
+<li><strong>Education</strong> is the only variable above 10%. <strong>Tract poverty</strong> is below 10% but not trivial (7%). Race/ethnicity, obesity, and gender change the estimate by less than 2%.</li>
+<li>In Lesson 4 you saw that tree canopy is about the same for men and women. Gender is associated with the outcome but <strong>not with the exposure</strong>, so it cannot confound — exactly what the DAG assumed (no arrow from gender to tree canopy).</li>
+<li>Not necessarily. Participants in the top canopy quartile are, by chance, slightly younger on average (43.8 vs.&nbsp;45.2 years), and age is a strong risk factor for high blood pressure, so even a small imbalance shifts the estimate a little. {age, education, tract poverty} is also a valid adjustment set for this DAG, so including age would be defensible. A small change like this does not overturn the DAG.</li>
+<li><strong>No.</strong> The change-in-estimate approach cannot tell a confounder from a mediator — it only shows how much the estimate moves. Whether obesity <em>should</em> be adjusted for depends on where it sits in the causal structure, and our DAG places it on the causal pathway. Adjusting for a mediator is overadjustment, however much or little the estimate changes. This is the main reason to draw the DAG first.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>What the change-in-estimate approach cannot tell you
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<ul>
+<li>It <strong>cannot distinguish confounders from mediators or colliders.</strong> Adjusting for either can change the estimate a lot. Only your causal assumptions (the DAG) can tell you which is which.</li>
+<li>It <strong>can’t detect confounding by variables you haven’t measured.</strong> If a confounder is not in the dataset, no amount of modeling will reveal it — note it as a limitation.</li>
+<li><strong>The percent change depends on how the exposure is coded.</strong> See the next box.</li>
+</ul>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 What if my exposure is continuous? Click to read before calculating your own % change">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-16-contents" aria-controls="callout-16" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 What if my exposure is continuous? Click to read before calculating your own % change
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-16" class="callout-16-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<p>With a continuous exposure, the PR is for a <strong>one-unit</strong> change. If that unit is small, the PR is very close to 1, and even real confounding produces a tiny percent change.</p>
+<p>Here is tree canopy as a continuous percentage, crude and adjusted for education:</p>
+<div id="qwebr-insertion-location-13"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>Per 1 percentage point, the PR moves from 0.973 to 0.980 — a change of under 1%. Per 10 percentage points, the <em>same</em> models give 0.76 and 0.82 — a change of about 8%. The amount of confounding is the same; only the size of the contrast differs.</p>
+<p><strong>What to do:</strong> calculate the percent change for a <strong>meaningful contrast</strong> — for example, per 10 units, or per interquartile-range (IQR) increase (<code>IQR(data$YOUR_EXPOSURE, na.rm = TRUE)</code>) — and report which contrast you used. Choose the contrast before you look at the results.</p>
+</div>
+</div>
+</div>
+</section>
+<section id="step-7-fit-the-final-adjusted-model" class="level2">
+<h2 class="anchored" data-anchor-id="step-7-fit-the-final-adjusted-model">Step 7: Fit the final adjusted model</h2>
+<p>Now bring the two approaches together. Our DAG says <strong>education and tract poverty</strong> are sufficient to remove confounding, and the data agree that both move the estimate (13% and 7%). We adjust for both in one model.</p>
+<div id="qwebr-insertion-location-14"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p><strong>Questions to consider:</strong></p>
+<ul>
+<li>How much did the PR change from crude to fully adjusted?</li>
+<li>Interpret the adjusted PR in one sentence.</li>
+<li>The model also returns PRs for education and tract poverty. Should you report and interpret those?</li>
+</ul>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Answers — click to reveal after you've written your own">
 <div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-17-contents" aria-controls="callout-17" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
 <div class="callout-title-container flex-fill">
-<span class="screen-reader-only">Note</span>💡 Example: traffic density and asthma, by gender — click to reveal
+<span class="screen-reader-only">Note</span>💡 Answers — click to reveal after you’ve written your own
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
 <div id="callout-17" class="callout-17-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
-<p>Continuing the Lesson 6 example: the final model for high traffic density (above the median) and asthma adjusted for tract poverty. <em>A priori hypothesis:</em> the association will differ by gender, because asthma prevalence and its triggers differ between adult men and women. Threshold: p &lt; 0.10.</p>
-<div id="qwebr-insertion-location-22"></div>
+<ul>
+<li>The PR moved from <strong>0.60</strong> (crude) to <strong>0.71</strong> (adjusted), a change of about <strong>18%</strong> — more than either variable produced on its own.</li>
+<li><em>Example interpretation:</em> After adjusting for individual education and census-tract poverty, the prevalence of high blood pressure among participants living in the greenest quarter of census tracts was 0.71 times the prevalence among those living in the other three quarters (95% CI: 0.58, 0.86) — about 29% lower. Adjustment moved the estimate toward the null, but the association remained.</li>
+<li><strong>Generally, no.</strong> The model was built to estimate the effect of <strong>tree canopy</strong>, and the adjustment set was chosen to remove confounding of <em>that</em> association. The education and poverty PRs are not adjusted for <em>their own</em> confounders, and the tree canopy term may even be a mediator for them. Interpreting them as causal effects is a well-known mistake called the <strong>“Table 2 fallacy.”</strong> Report the exposure estimate; list the covariates you adjusted for.</li>
+</ul>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Writing up your adjustment decision (Milestone 3)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>A clear justification states the rule you used and applies it. For example:</p>
+<p><em>“We used a DAG to identify a minimally sufficient adjustment set (individual education and census-tract poverty). We then added each candidate covariate to the crude model one at a time and considered a change of 10% or more in the prevalence ratio to indicate meaningful confounding. Education changed the estimate by 13% and tract poverty by 7%. We adjusted for both because they form the DAG’s minimally sufficient set, even though tract poverty fell below the 10% threshold. We did not adjust for obesity or physical activity, which we hypothesized to be mediators.”</em></p>
+<p>There is rarely a single right answer. There are trade-offs to adjusting (lost precision, lost participants if a covariate has missing data, overadjustment) and trade-offs to not adjusting (residual confounding). What matters is that your rule is stated in advance, applied consistently, and justified.</p>
+</div>
+</div>
+<hr>
+<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn: A change-in-estimate table for your own project">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>🧠 Your Turn: A change-in-estimate table for your own project
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Using <strong>your project’s exposure, outcome, and DAG</strong>:</p>
+<ol type="1">
+<li>Fit your crude model (modified Poisson for a binary outcome; <code>lm()</code> for a continuous one).</li>
+<li>Edit the loop in Step 6: change <code>candidates</code> to the variables in your DAG’s adjustment set (plus any others you want to check), and swap in your exposure and outcome names. If your exposure is continuous, calculate the percent change for a meaningful contrast (see the box above).</li>
+<li>Fit your final adjusted model and write two or three sentences justifying your final adjustment set.</li>
+</ol>
+</div>
+</div>
+<div id="qwebr-insertion-location-15"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
-<p>After adjusting for tract poverty, living in a high-traffic tract was associated with a higher prevalence of asthma among both men (PR = 1.40, 95% CI: 0.94, 2.08) and women (PR = 2.40, 95% CI: 1.60, 3.58). All three tests of interaction gave p-values between 0.06 and 0.07, below our pre-specified threshold of 0.10, so there is statistical evidence that the traffic–asthma association is stronger among women than among men on the multiplicative scale. Compare this with the tree canopy example, where the difference between strata was smaller and the tests did not meet the threshold.</p>
+<div class="callout callout-style-default callout-note callout-titled" title="💡 Example: traffic density and asthma — click to reveal">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-20-contents" aria-controls="callout-20" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>💡 Example: traffic density and asthma — click to reveal
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-20" class="callout-20-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div id="qwebr-insertion-location-16"></div>
+<noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<p>None of the candidates moves the traffic–asthma PR by anywhere near 10%, so the crude and adjusted estimates are nearly the same. That is a perfectly good result to report: it means that, <em>among the variables we measured and believe to be confounders</em>, there is little evidence of confounding. Following the DAG, the final model adjusts for tract poverty. Smoking was checked too, because it is a strong asthma risk factor, but it did not change the estimate and the DAG did not require it.</p>
 </div>
 </div>
 </div>
@@ -2707,7 +2707,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 <div class="callout-body-container callout-body">
 <div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Setup ----</span></span>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sandwich)   <span class="co"># robust standard errors</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sandwich)   <span class="co"># robust standard errors  -- install.packages("sandwich") once</span></span>
 <span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Read in your processed data ----</span></span>
 <span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>))</span>
@@ -2724,56 +2724,39 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 <span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="co"># ============================================================</span></span>
 <span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="co"># REPLACE: swap in your own variable names throughout</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co"># A priori hypothesis: ...</span></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co"># Threshold for evidence of effect modification: p &lt; 0.10</span></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="co"># ============================================================</span></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 1. Code the modifier (0/1) and check cell sizes ----</span></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="at">MODIFIER =</span> ...)          <span class="co"># e.g., case_when(...)</span></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>data <span class="sc">%&gt;%</span> <span class="fu">count</span>(MODIFIER, YOUR_EXPOSURE, YOUR_OUTCOME)</span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 2. Analytic sample: no missing data on any model variable ----</span></span>
-<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>data_em <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
-<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(YOUR_OUTCOME), <span class="sc">!</span><span class="fu">is.na</span>(YOUR_EXPOSURE), <span class="sc">!</span><span class="fu">is.na</span>(MODIFIER),</span>
-<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>         <span class="sc">!</span><span class="fu">is.na</span>(CONFOUNDER_1), <span class="sc">!</span><span class="fu">is.na</span>(CONFOUNDER_2))</span>
-<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 3. Stratified models ----</span></span>
-<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>m0 <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE <span class="sc">+</span> CONFOUNDER_1 <span class="sc">+</span> CONFOUNDER_2,</span>
-<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>          <span class="at">data =</span> <span class="fu">filter</span>(data_em, MODIFIER <span class="sc">==</span> <span class="dv">0</span>), <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
-<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>m1 <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE <span class="sc">+</span> CONFOUNDER_1 <span class="sc">+</span> CONFOUNDER_2,</span>
-<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>          <span class="at">data =</span> <span class="fu">filter</span>(data_em, MODIFIER <span class="sc">==</span> <span class="dv">1</span>), <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
-<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>stratified <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(<span class="fu">extract_ratio</span>(m0, <span class="st">"Modifier = 0"</span>, <span class="at">robust =</span> <span class="cn">TRUE</span>),</span>
-<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>                        <span class="fu">extract_ratio</span>(m1, <span class="st">"Modifier = 1"</span>, <span class="at">robust =</span> <span class="cn">TRUE</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(Term <span class="sc">==</span> <span class="st">"YOUR_EXPOSURE"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">N =</span> <span class="fu">c</span>(<span class="fu">nobs</span>(m0), <span class="fu">nobs</span>(m1)))</span>
-<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>stratified</span>
-<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(stratified, <span class="fu">aes</span>(<span class="at">x =</span> Model, <span class="at">y =</span> Estimate, <span class="at">ymin =</span> CI_Lower, <span class="at">ymax =</span> CI_Upper)) <span class="sc">+</span></span>
-<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_pointrange</span>() <span class="sc">+</span> <span class="fu">geom_hline</span>(<span class="at">yintercept =</span> <span class="dv">1</span>, <span class="at">linetype =</span> <span class="st">"dashed"</span>) <span class="sc">+</span></span>
-<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>  <span class="fu">scale_y_log10</span>() <span class="sc">+</span> <span class="fu">labs</span>(<span class="at">x =</span> <span class="cn">NULL</span>, <span class="at">y =</span> <span class="st">"Adjusted PR (95% CI), log scale"</span>) <span class="sc">+</span> <span class="fu">theme_minimal</span>()</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="co"># ============================================================</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 1. Change in estimate, one candidate at a time ----</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="co"># candidates = the adjustment set from your DAG, plus any others you want to check</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>candidates <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="st">"CONFOUNDER_1"</span>, <span class="st">"CONFOUNDER_2"</span>)</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>cie_table <span class="ot">&lt;-</span> <span class="fu">data.frame</span>()</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span> (covariate <span class="cf">in</span> candidates) {</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>  data_cc <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>    <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(YOUR_OUTCOME), <span class="sc">!</span><span class="fu">is.na</span>(YOUR_EXPOSURE), <span class="sc">!</span><span class="fu">is.na</span>(.data[[covariate]]))</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>  crude <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE, <span class="at">data =</span> data_cc, <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>  adjusted <span class="ot">&lt;-</span> <span class="fu">glm</span>(<span class="fu">as.formula</span>(<span class="fu">paste</span>(<span class="st">"YOUR_OUTCOME ~ YOUR_EXPOSURE +"</span>, covariate)),</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data =</span> data_cc, <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>  pr_c <span class="ot">&lt;-</span> <span class="fu">extract_ratio</span>(crude, <span class="st">"crude"</span>, <span class="at">robust =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(Term <span class="sc">==</span> <span class="st">"YOUR_EXPOSURE"</span>)</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>  pr_a <span class="ot">&lt;-</span> <span class="fu">extract_ratio</span>(adjusted, covariate, <span class="at">robust =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span> <span class="fu">filter</span>(Term <span class="sc">==</span> <span class="st">"YOUR_EXPOSURE"</span>)</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>  cie_table <span class="ot">&lt;-</span> <span class="fu">bind_rows</span>(cie_table, <span class="fu">data.frame</span>(</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>    <span class="at">Covariate =</span> covariate, <span class="at">N =</span> <span class="fu">nobs</span>(adjusted),</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>    <span class="at">PR_crude =</span> pr_c<span class="sc">$</span>Estimate, <span class="at">PR_adjusted =</span> pr_a<span class="sc">$</span>Estimate,</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>    <span class="at">CI_Lower =</span> pr_a<span class="sc">$</span>CI_Lower, <span class="at">CI_Upper =</span> pr_a<span class="sc">$</span>CI_Upper,</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>    <span class="at">Pct_change =</span> (pr_c<span class="sc">$</span>Estimate <span class="sc">-</span> pr_a<span class="sc">$</span>Estimate) <span class="sc">/</span> pr_c<span class="sc">$</span>Estimate <span class="sc">*</span> <span class="dv">100</span></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>cie_table <span class="sc">%&gt;%</span> <span class="fu">mutate</span>(<span class="fu">across</span>(PR_crude<span class="sc">:</span>Pct_change, <span class="sc">~</span> <span class="fu">round</span>(.x, <span class="dv">2</span>)))</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a><span class="co"># Continuous exposure? Compare exp(k * coef) for a meaningful contrast k (e.g., 10 units or the IQR)</span></span>
 <span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 4. Cochran's Q ----</span></span>
-<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>lp <span class="ot">&lt;-</span> <span class="fu">log</span>(stratified<span class="sc">$</span>Estimate)</span>
-<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>se <span class="ot">&lt;-</span> (<span class="fu">log</span>(stratified<span class="sc">$</span>CI_Upper) <span class="sc">-</span> <span class="fu">log</span>(stratified<span class="sc">$</span>CI_Lower)) <span class="sc">/</span> <span class="fl">3.92</span></span>
-<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>w  <span class="ot">&lt;-</span> <span class="dv">1</span> <span class="sc">/</span> se<span class="sc">^</span><span class="dv">2</span></span>
-<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>Q  <span class="ot">&lt;-</span> <span class="fu">sum</span>(w <span class="sc">*</span> (lp <span class="sc">-</span> <span class="fu">sum</span>(w <span class="sc">*</span> lp) <span class="sc">/</span> <span class="fu">sum</span>(w))<span class="sc">^</span><span class="dv">2</span>)</span>
-<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a><span class="fu">pchisq</span>(Q, <span class="at">df =</span> <span class="fu">length</span>(lp) <span class="sc">-</span> <span class="dv">1</span>, <span class="at">lower.tail =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 5. Interaction model and robust Wald test ----</span></span>
-<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>m_int <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE <span class="sc">*</span> MODIFIER <span class="sc">+</span> CONFOUNDER_1 <span class="sc">+</span> CONFOUNDER_2,</span>
-<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>             <span class="at">data =</span> data_em, <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
-<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>V <span class="ot">&lt;-</span> <span class="fu">vcovHC</span>(m_int, <span class="at">type =</span> <span class="st">"HC0"</span>)</span>
-<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>b3 <span class="ot">&lt;-</span> <span class="fu">coef</span>(m_int)[<span class="st">"YOUR_EXPOSURE:MODIFIER"</span>]</span>
-<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a><span class="dv">2</span> <span class="sc">*</span> <span class="fu">pnorm</span>(<span class="sc">-</span><span class="fu">abs</span>(b3 <span class="sc">/</span> <span class="fu">sqrt</span>(V[<span class="st">"YOUR_EXPOSURE:MODIFIER"</span>, <span class="st">"YOUR_EXPOSURE:MODIFIER"</span>])))</span>
-<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 6. LRT with log-binomial models (same participants; nested) ----</span></span>
-<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>lb_reduced <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE <span class="sc">+</span> MODIFIER <span class="sc">+</span> CONFOUNDER_1 <span class="sc">+</span> CONFOUNDER_2,</span>
-<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data =</span> data_em, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
-<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>lb_full    <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE <span class="sc">*</span> MODIFIER <span class="sc">+</span> CONFOUNDER_1 <span class="sc">+</span> CONFOUNDER_2,</span>
-<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>                  <span class="at">data =</span> data_em, <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
-<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a><span class="fu">anova</span>(lb_reduced, lb_full, <span class="at">test =</span> <span class="st">"Chisq"</span>)</span>
-<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a><span class="co"># If the log-binomial models don't converge, report the robust Wald test and Cochran's Q.</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- 2. Final adjusted model ----</span></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>model_final <span class="ot">&lt;-</span> <span class="fu">glm</span>(YOUR_OUTCOME <span class="sc">~</span> YOUR_EXPOSURE <span class="sc">+</span> CONFOUNDER_1 <span class="sc">+</span> CONFOUNDER_2,</span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>                   <span class="at">data =</span> data, <span class="at">family =</span> <span class="fu">poisson</span>(<span class="at">link =</span> <span class="st">"log"</span>))</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a><span class="fu">extract_ratio</span>(model_final, <span class="st">"Fully adjusted"</span>, <span class="at">robust =</span> <span class="cn">TRUE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 <hr>
@@ -2782,16 +2765,15 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 <h1>Wrap Up</h1>
 <p>This tutorial covered:</p>
 <ul>
-<li>The difference between confounding (a bias to remove) and effect modification (a finding to report), and why effect modification depends on the scale</li>
-<li>Stating an a priori hypothesis and a p-value threshold before looking at the data</li>
-<li>Coding a modifier and checking modifier × exposure × outcome cell sizes</li>
-<li>Stratified analysis: fitting the adjusted model within each stratum, plotting the estimates on a log scale, and comparing them qualitatively — and why “significant in one group but not the other” is not evidence of effect modification</li>
-<li>Cochran’s Q, calculated on the log scale from stratum-specific estimates</li>
-<li>Interaction models: interpreting <span class="math inline">\(\beta_1\)</span>, <span class="math inline">\(\beta_3\)</span>, and <span class="math inline">\(\beta_1 + \beta_3\)</span>; getting stratum-specific estimates and CIs; and keeping models hierarchical</li>
-<li>The robust Wald test and the likelihood ratio test for interaction, including why the LRT should use log-binomial rather than modified Poisson models, and why the models must be nested and fit in the same participants</li>
+<li>The three conditions for confounding, and why the third (not on the causal pathway) requires causal assumptions rather than data</li>
+<li>Reading a DAG: sorting causal and backdoor paths, and recognizing colliders</li>
+<li>Identifying a minimally sufficient adjustment set, and why mediators should not be adjusted for</li>
+<li>Using modified Poisson regression with robust standard errors when a log-binomial model won’t converge</li>
+<li>The change-in-estimate approach: adding candidates one at a time, comparing estimates in the same participants, and why the percent change depends on how the exposure is coded</li>
+<li>Combining the DAG and the change-in-estimate results to choose and justify a final adjustment set</li>
 </ul>
-<p>The stratified table and tests you produced for your own project are a first draft of <strong>Milestone 4</strong> and of <strong>Table 3</strong> in your final report.</p>
-<p><strong>Next week:</strong> Reproducible epidemiologic analysis and using AI to support analyses — you’ll organize your project code so that someone else (or future you) can rerun everything from start to finish.</p>
+<p>The DAG, change-in-estimate table, and final adjustment set you produced for your own project are the core of <strong>Milestone 3</strong>.</p>
+<p><strong>Next week:</strong> Effect modification — so far we have estimated a single PR for everyone. Next week you’ll ask whether the association between your exposure and outcome <em>differs</em> across groups (for example, by education or gender), and how to test that formally.</p>
 
 
 </section>

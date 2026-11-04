@@ -13,24 +13,26 @@ Welcome! These tutorials walk through the R and analysis skills used in this cou
 
 ## Lessons
 
-- [Lesson 1: Intro to R and Handling Data](lesson1.qmd)
-- [Lesson 2: Reading a Published Conceptual Framework](lesson2.qmd)
+Lesson numbers match the course week. Week 1 is orientation and technical setup, so it has no tutorial.
+
+- [Lesson 2: Intro to R and Handling Data](lesson2.qmd)
+- [Lesson 3: Reading a Published Conceptual Framework](lesson3.qmd)
   — a reading/reflection activity applying exposure, outcome, mediator, confounder, and effect
   modifier vocabulary to a published greenspace-and-health framework
-- [Lesson 3: Exploratory Data Analysis & Data Cleaning](lesson3.qmd)
-- [Lesson 4: Exposure Assessment & Misclassification](lesson4.qmd)
+- [Lesson 4: Exploratory Data Analysis & Data Cleaning](lesson4.qmd)
+- [Lesson 5: Exposure Assessment & Misclassification](lesson5.qmd)
   — coding decisions for a continuous exposure (NDVI), and how differential vs. non-differential
   misclassification bias an effect estimate, using a simulated dataset where the true exposure is
   known
-- [Lesson 5: Regression, Linearity & Dose-Response](lesson5.qmd)
+- [Lesson 6: Regression, Linearity & Dose-Response](lesson6.qmd)
   — choosing and fitting a crude regression model (logistic vs. log-binomial) for tree canopy and
   high blood pressure, interpreting the estimate, and checking the linearity assumption with
   categorical indicator terms
-- [Lesson 6: Confounding & Directed Acyclic Graphs (DAGs)](lesson6.qmd)
+- [Lesson 7: Confounding & Directed Acyclic Graphs (DAGs)](lesson7.qmd)
   — drawing a DAG in R to find a minimally sufficient adjustment set, then checking confounding
   in the data with the change-in-estimate approach (including modified Poisson regression when a
   log-binomial model won't converge)
-- [Lesson 7: Effect Modification & Heterogeneity of Effects](lesson7.qmd)
+- [Lesson 8: Effect Modification & Heterogeneity of Effects](lesson8.qmd)
   — asking whether the tree canopy–high blood pressure association differs by gender: stratified
   models, Cochran's Q, interaction models, and Wald and likelihood ratio tests for interaction
 
