@@ -9,7 +9,8 @@ no R or RStudio installation required. Built with [Quarto](https://quarto.org) a
 
 ## What's here
 
-- **[Lesson 2: Intro to R and Handling Data](https://schinasi.github.io/EOH635/lesson2.html)**
+- **Lesson 2: Intro to R and Handling Data**, in three parts: [Part 1](https://schinasi.github.io/EOH635/lesson2a.html),
+  [Part 2](https://schinasi.github.io/EOH635/lesson2b.html), [Part 3](https://schinasi.github.io/EOH635/lesson2c.html)
   — R basics (assignment, data frames, indexing), project organization and file paths, loading
   packages, reading in data, exploratory functions (`head`, `str`, `summary`, `dim`), recoding
   variables, and merging in a second dataset by a shared key.
@@ -77,7 +78,7 @@ relationship by education, while gender is deliberately left unrelated to tree c
 quarto_tutorials/
 ├── _quarto.yml                 # Project + site config (output-dir: docs, for GitHub Pages)
 ├── index.qmd                   # Landing page listing lessons
-├── lesson2.qmd ... lesson8.qmd   # The lessons
+├── lesson2a-c.qmd ... lesson8.qmd   # The lessons (Lesson 2 is split into three parts)
 ├── codebook.qmd                # Data codebook
 ├── data/                       # Class data files, fetched by students' browsers at runtime
 │   ├── class_data_raw.csv
@@ -101,11 +102,11 @@ git push
 
 GitHub Pages (Settings → Pages → Deploy from branch → `main` / `/docs`) picks up the new
 `docs/` output automatically within a minute or two. Nothing else needs to change — Pages
-config, the data-fetch URL in `lesson2.qmd`, and the extension are already set up.
+config, the data-fetch URL in `lesson2b.qmd` and `lesson2c.qmd`, and the extension are already set up.
 
 ### Adding a future lesson
 
-1. Duplicate `lesson2.qmd` (or `lesson4.qmd`) as a starting point, keeping the same YAML header
+1. Duplicate `lesson2b.qmd` (or `lesson4.qmd`) as a starting point, keeping the same YAML header
    (`webr:`, `filters: [webr]`, etc.).
 2. Add it to the navbar in `_quarto.yml` and link it from `index.qmd`.
 3. If it needs its own data file, drop it in `data/` and fetch it the same way existing lessons

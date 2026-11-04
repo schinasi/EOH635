@@ -1,0 +1,235 @@
+---
+title: "Lesson 2, Part 2: Reading and Exploring Data"
+subtitle: "EOH 635 — Environmental Epidemiology Methods"
+author: "Leah Schinasi"
+date: today
+format:
+  html:
+    toc: true
+    toc-depth: 2
+    theme: cosmo
+    code-tools: false
+engine: knitr
+webr:
+  show-startup-message: true
+  packages: ['tidyverse']
+  autoload-packages: true
+filters:
+  - webr
+---
+
+::: {.callout-note}
+## Lesson 2 is in three parts
+
+This is **Part 2 of 3** (Sections 4–6). In [Part 1](lesson2a.qmd) you covered R basics, project organization, and loading packages. Here you'll read the class dataset into R, explore it, and look at specific variables. [Part 3](lesson2c.qmd) covers creating variables, merging, and saving (Sections 7–10).
+:::
+
+::: {.callout-important}
+## How to use this tutorial
+
+The gray boxes below are **live R editors** — the code actually runs in your browser (no install needed). In the top-left corner of each gray box, you'll see a **green arrow button labeled "Run Code."** Click that green arrow to run the code in that box. The output (whatever the code produces — a number, a table, a plot, etc.) will appear directly underneath the box a moment later.
+
+You can also edit the code first — click inside the box, change something, then click the green **Run Code** arrow to run your edited version. Nothing you do here can break anything; if you make a mess, just refresh the page to start that box over.
+
+Some sections are marked **🧠 Your Turn**. Those give you a task and a blank (or partially blank) code editor. Try to write the code yourself before you look at the answer — the solution is hidden underneath in a collapsed box. Click it open only after you've given it a real attempt (or if you're truly stuck).
+
+**A note on browser vs. RStudio code:** One chunk on this page runs automatically in the background (you'll see it labeled `#| autorun: true`). It fetches the class data file from the web so it's available in your browser — you don't need to do anything with it. **When you write your own scripts in RStudio, you will not include this fetching code.** Immediately after the autorun chunk, you'll find a green box labeled **"In your RStudio script"** showing the simpler code you'll actually use.
+:::
+
+
+# ======================================================
+# 📊 4. Reading Data into R
+# ======================================================
+
+Recall that we can either create a data frame in R, or read one in. A lot of times, as environmental epidemiologists, we have an already-existing data set that we need to read into R — you'll primarily do that this quarter.
+
+For this lab, the raw data file is **`class_data_raw.csv`** (find it described in the [Data Codebook](codebook.qmd), along with `codebook.xlsx`). In RStudio, once it's in `data_raw/` inside your `EOH635_project`, you'd run:
+
+```r
+data <- read.csv(file.path("data_raw", "class_data_raw.csv"))
+```
+
+**In the browser, we first have to fetch the file from the web** before R can see it (webR can't see your OneDrive or hard drive — only files that have been downloaded into its in-browser file system). The chunk below does that automatically when the page loads: it creates a `data_raw` folder right here in your browser's R session (mirroring the real project structure) and downloads the file into it, then reads it in exactly the way you would in RStudio.
+
+```{webr-r}
+#| autorun: true
+
+data_base_url <- "https://raw.githubusercontent.com/schinasi/EOH635/main/data/"
+
+dir.create("data_raw", showWarnings = FALSE)
+
+download.file(paste0(data_base_url, "class_data_raw.csv"), file.path("data_raw", "class_data_raw.csv"))
+
+data <- read.csv(file.path("data_raw", "class_data_raw.csv"))
+```
+
+::: {.callout-tip}
+## 💻 In your RStudio script
+
+The chunk above runs automatically in the browser to fetch the data file from the web. **In your own RStudio script, you don't need any of that.** With `class_data_raw.csv` already saved in your `data_raw/` folder, all you need is:
+
+```r
+data <- read.csv(file.path("data_raw", "class_data_raw.csv"))
+```
+
+This is the line to copy into your own analysis script.
+:::
+
+******
+
+# ======================================================
+# 👀 5. Exploring Your Data
+# ======================================================
+
+Now let's start to have a look at our data frame.
+
+View first few rows:
+
+```{webr-r}
+head(data)
+```
+
+**Things to think about:**
+
+* What do you notice about the structure of the dataset just by looking at these rows?
+* Are there any missing or unusual values that stand out?
+* Do the variable names seem intuitive? Would renaming any of them improve clarity?
+* Does the dataset contain categorical or numerical variables? How can you tell?
+* Are there any obvious errors or inconsistencies in the first few rows?
+
+Let's view the structure of the dataset:
+
+```{webr-r}
+str(data)
+```
+
+**Some questions:**
+
+* What data types are present in the dataset? Are they what you expected?
+* Are any variables stored in an inappropriate data type (e.g., categorical variables stored as numeric)?
+* How might the structure of the dataset affect downstream analyses?
+* Do any variables have an unexpectedly small or large number of unique values?
+* Are there any factors with many levels? Should any be combined or reclassified?
+
+::: {.callout-note collapse="true" title="💡 One way to think about it — click to reveal"}
+Most of the individual-level variables (`gender`, `education`, `race_ethnicity`, `employment_status`) come in as **character** strings rather than factors, and many of the health/behavior indicators (`stress`, `current_smoker`, `obese`, `high_blood_pressure`, etc.) are stored as **numeric 0/1 flags** even though they're conceptually categorical (binary). That's common in survey data, and it's exactly the kind of thing `str()` is good for catching *before* you run an analysis that assumes the wrong type.
+:::
+
+One more thing worth noticing in `str(data)`: **`geoid10`** — the census tract identifier for each participant — shows up as `num` (numeric), even though it functions as a *label*, not a quantity. It would never make sense to compute an "average `geoid10`," the way it might for `age`. Because it happens to look like a number, R read it in as one — but ID variables like this are safer to store as **character**, so nothing downstream ever accidentally tries to do math with them. Let's fix that now:
+
+```{webr-r}
+data$geoid10 <- as.character(data$geoid10)
+```
+
+Hang onto this — it'll matter again in Part 3, when we merge in a second dataset.
+
+We can also view the dimensions of the data frame (rows × columns):
+
+* Rows show us the number of observations (in this case, people)
+* Columns show us the number of variables
+
+```{webr-r}
+dim(data)
+```
+
+> How many rows and columns are in our data frame? Based on this, how many people are in our data frame?
+
+Take a moment to actually answer this from the output above before revealing it below.
+
+::: {.callout-note collapse="true" title="💡 Answer — click to reveal"}
+`dim(data)` returns `2000  38`: **2,000 rows** and **38 columns**. Since each row is one participant, that means our data frame contains **2,000 people**, each described by 38 variables (columns).
+:::
+
+******
+
+## Summary of numerical variables
+
+```{webr-r}
+summary(data)
+```
+
+* What summary statistics does this function produce?
+* What do you observe about key variables?
+* Are there particular variables for which these summary statistics do not make sense? (Hint: think about what `summary()` does with a 0/1 variable versus a truly continuous one like `age`.)
+
+Think through these for a couple of variables yourself before checking below.
+
+::: {.callout-note collapse="true" title="💡 Two worked examples — click to reveal"}
+**`age`** (a genuinely continuous variable): `summary()` gives six numbers — Min. `18.02`, 1st Qu. `29.99`, Median `40.36`, Mean `44.99`, 3rd Qu. `56.24`, Max. `116.00` — plus a count of missing values (`NA's 3`). These are all meaningful here: the middle 50% of participants (between the 1st and 3rd quartiles) are roughly 30 to 56 years old. But that **Max. of 116** should catch your eye immediately — a plausible age tops out well below that. That's exactly the kind of thing `summary()` is good for catching early, before it quietly distorts an analysis later. (We'll deal with this specific outlier in Lesson 4.)
+
+**`high_blood_pressure`** (a binary 0/1 flag, not a continuous quantity): `summary()` reports Min. `0`, Median `0`, Mean `0.3048`, Max. `1`. The Min./Median/Max. here aren't wrong, exactly, but they're not very *useful* — a variable that can only be 0 or 1 doesn't have a meaningful "middle" or "spread" the way age does. The one number worth keeping from this output is the **Mean, `0.3048`** — for a 0/1 variable, the mean is just the proportion coded `1`, so about 30.5% of participants have high blood pressure. For everything else about a binary variable's distribution, a frequency count (`table()`, coming up in Section 6) is the right tool, not `summary()`.
+:::
+
+******
+
+# ======================================================
+# 🗃 6. Accessing Specific Variables in a Data Frame
+# ======================================================
+
+Let's practice looking at particular variables in our data frame.
+
+Access the `education` column:
+
+```{webr-r}
+data$education
+```
+
+OK, we accessed it, but that looks pretty messy and it's hard to glean much information! We're just seeing the raw value of `education` for every single participant, one after another — technically correct, but far too much to scan by eye and make sense of.
+
+Instead, it can be helpful to create summary counts.
+
+* `education` is a categorical variable, so we can count the number of participants that fall into each level (category).
+* We use the `table()` function to do this.
+* We can also look at the proportion and percentage of participants in each category.
+
+```{webr-r}
+table(data$education)
+
+prop.table(table(data$education))
+
+prop.table(table(data$education)) * 100
+```
+
+**Putting this together:** the first line, `table()`, gives raw counts — 1,066 participants coded `"< Bachelor's"` and 934 coded `"Bachelor's degree or higher"`. `prop.table()` takes that same table and converts it to proportions of the total (each cell divided by 2,000), and multiplying by 100 turns those proportions into percentages: about 53.3% of participants have less than a bachelor's degree, and about 46.7% have a bachelor's degree or higher. All three lines describe the exact same underlying counts — they're just three different units (counts, proportions, percentages) for reporting the same distribution, and which one you'd report depends on your audience (a raw count is often more useful in a table you're building for yourself; a percentage usually reads more naturally in written text).
+
+::: {.callout-tip title="🧠 Your Turn"}
+See if you can do the same thing (raw counts, proportions, and percentages) with the **`race_ethnicity`** variable. Then answer these three questions using your output:
+
+1. How many people identify as **Hispanic or Latino (of any race)**?
+2. What **proportion** of the study population identifies as **White alone, not Hispanic or Latino**?
+3. What **percentage** of the study population identifies as **Asian alone, not Hispanic or Latino**?
+
+Type your three answers as comments in the code box below before checking the solution.
+:::
+
+```{webr-r}
+# Your code here — counts, proportions, and percentages for race_ethnicity
+
+
+# Your answers:
+# 1. Hispanic or Latino (of any race), count =
+# 2. White alone, not Hispanic or Latino, proportion =
+# 3. Asian alone, not Hispanic or Latino, percentage =
+```
+
+::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
+```{webr-r}
+table(data$race_ethnicity)
+
+prop.table(table(data$race_ethnicity))
+
+prop.table(table(data$race_ethnicity)) * 100
+```
+
+**Answers:**
+
+1. **275** people identify as Hispanic or Latino (of any race).
+2. **0.61** (about 61%) of the study population identifies as White alone, not Hispanic or Latino.
+3. **4.7%** of the study population identifies as Asian alone, not Hispanic or Latino.
+:::
+
+******
+
+# ➡️ Next: Part 3
+
+Continue to [Lesson 2, Part 3: Creating Variables, Merging, and Saving Data](lesson2c.qmd), where you'll recode a variable, link in tract-level greenness data, and save your processed dataset.

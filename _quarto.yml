@@ -12,8 +12,14 @@ website:
     left:
       - href: index.qmd
         text: Home
-      - href: lesson2.qmd
-        text: "Lesson 2: Intro to R"
+      - text: "Lesson 2: Intro to R"
+        menu:
+          - href: lesson2a.qmd
+            text: "Part 1: R Basics, Projects & Packages"
+          - href: lesson2b.qmd
+            text: "Part 2: Reading & Exploring Data"
+          - href: lesson2c.qmd
+            text: "Part 3: New Variables, Merging & Saving"
       - href: lesson3.qmd
         text: "Lesson 3: Conceptual Frameworks"
       - href: lesson4.qmd

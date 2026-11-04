@@ -15,7 +15,10 @@ Welcome! These tutorials walk through the R and analysis skills used in this cou
 
 Lesson numbers match the course week. Week 1 is orientation and technical setup, so it has no tutorial.
 
-- [Lesson 2: Intro to R and Handling Data](lesson2.qmd)
+- Lesson 2: Intro to R and Handling Data, in three parts:
+  - [Part 1: R Basics, Project Organization & Packages](lesson2a.qmd)
+  - [Part 2: Reading and Exploring Data](lesson2b.qmd)
+  - [Part 3: Creating Variables, Merging, and Saving Data](lesson2c.qmd)
 - [Lesson 3: Reading a Published Conceptual Framework](lesson3.qmd)
   — a reading/reflection activity applying exposure, outcome, mediator, confounder, and effect
   modifier vocabulary to a published greenspace-and-health framework

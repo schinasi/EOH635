@@ -1,5 +1,5 @@
 ---
-title: "Lesson 2: Intro to R and Handling Data"
+title: "Lesson 2, Part 3: Creating Variables, Merging, and Saving Data"
 subtitle: "EOH 635 — Environmental Epidemiology Methods"
 author: "Leah Schinasi"
 date: today
@@ -18,13 +18,11 @@ filters:
   - webr
 ---
 
-# ======================================================
-# 📌 Introduction to R and Data Handling in RStudio
-# ======================================================
+::: {.callout-note}
+## Lesson 2 is in three parts
 
-There is lots of syntax to learn for working in R. A lot of this will come in time, with practice, and trial and error. Here are some basics to get you started.
-
-Remember learning R is like learning a language. It will get easier, in time.
+This is **Part 3 of 3** (Sections 7–10). In [Part 1](lesson2a.qmd) you covered R basics, project organization, and packages; in [Part 2](lesson2b.qmd) you read in and explored the class data. Here you'll create a new variable, merge in tract-level greenness (NDVI) data, and save your processed dataset.
+:::
 
 ::: {.callout-important}
 ## How to use this tutorial
@@ -35,7 +33,7 @@ You can also edit the code first — click inside the box, change something, the
 
 Some sections are marked **🧠 Your Turn**. Those give you a task and a blank (or partially blank) code editor. Try to write the code yourself before you look at the answer — the solution is hidden underneath in a collapsed box. Click it open only after you've given it a real attempt (or if you're truly stuck).
 
-**A note on browser vs. RStudio code:** Two chunks in this lesson run automatically in the background (you'll see them labeled `#| autorun: true`). These chunks fetch the data files from the web so they're available in your browser — you don't need to do anything with them. **When you write your own scripts in RStudio, you will not include this fetching code.** Immediately after each autorun chunk, you'll find a green box labeled **"In your RStudio script"** showing the simpler code you'll actually use.
+**A note on browser vs. RStudio code:** Two chunks on this page run automatically in the background (you'll see them labeled `#| autorun: true`). These chunks fetch the data files from the web so they're available in your browser — you don't need to do anything with them. **When you write your own scripts in RStudio, you will not include this fetching code.** Immediately after each autorun chunk, you'll find a green box labeled **"In your RStudio script"** showing the simpler code you'll actually use.
 :::
 
 ::: {.callout-note}
@@ -50,177 +48,11 @@ This lab uses three files, also described in the [Data Codebook](codebook.qmd):
 Download all three into the `data_raw/` folder of the `EOH635_project` you built in the C01 setup assignment before you start.
 :::
 
-********************
-
-# 🛠 1. Basic R Concepts
-
-There are lots of amazing resources on using R on the web! Don't be shy about exploring these.
-
-The following text is excerpted from [this resource](https://www.dataquest.io/blog/tutorial-getting-started-with-r-and-rstudio/#tve-jump-173bb2584fe):
-
-> "Let's start off by introducing some features of the Console. The Console is a tab in RStudio where we can run R code.
->
-> Notice that the window pane where the console is located contains three tabs: Console, Terminal and Jobs (this may vary depending on the version of RStudio in use). We'll focus on the Console for now.
->
-> When we open RStudio, the console contains information about the version of R we're working with."
-
-Below, instead of typing into RStudio's console, you can just type directly into the editors on this page and click **Run Code**.
-
-## Assignment Operator (`<-`)
-
-```{webr-r}
-x <- 10  # Assigns the value 10 to x
-
-print(x)  # Prints x
-
-x  # Also prints x
-```
-
-## Creating a Simple Data Frame
-
-We can read a data frame into R, but we can also create a data frame within R itself.
-
-The following code creates a data frame called `my_data`:
-
-```{webr-r}
-my_data <- data.frame(name = c("Alice", "Bob"), age = c(25, 30))
-
-print(my_data)
-```
-
-The data frame has two variables (columns): `name` and `age`. It has two rows, each corresponding to one person.
-
-## Accessing Columns in a Data Frame (`$`)
-
-We may want to view a particular column in the data frame, or, later when we start conducting analyses, refer to a particular variable. We do this using the `$` sign.
-
-```{webr-r}
-# Extracts the "name" column
-my_data$name
-```
-
-## Indexing Rows and Columns `[row, column]`
-
-We can also use R's indexing system to refer to a particular row or column.
-
-```{webr-r}
-my_data[1, 2]  # First row, second column
-my_data[, 1]   # First column (all rows)
-```
-
-::: {.callout-tip title="🧠 Your Turn" collapse="false"}
-Using `my_data`, write one line of code that returns **Bob's age** using `$`-and-indexing together (i.e., pull the `age` column, then index the second element).
-:::
-
-```{webr-r}
-# Your code here
-
-```
-
-::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
-```{webr-r}
-my_data$age[2]
-```
-
-**How this works, piece by piece:**
-
-* `my_data$age` pulls out the entire `age` column from `my_data` — this returns a vector of all the ages, in row order: `25 30` (Alice's age, then Bob's age).
-* `[2]` then indexes into that vector and grabs its **2nd element** — since Bob is in the 2nd row of `my_data`, this returns his age, `30`.
-* Put together, `my_data$age[2]` reads as "give me the `age` column, then give me the 2nd value in it."
-
-This combination — `$` to grab a column, then `[ ]` to grab a specific position within it — comes up constantly in R, so it's worth being comfortable with both steps individually before chaining them together.
-:::
-
 # ======================================================
-# 📁 2. A Note on Project Organization
+# ⏮ Picking Up from Part 2
 # ======================================================
 
-In RStudio, we need a reliable way to tell R where to find (and save) files. You'll sometimes see older code use `setwd("C:/Users/yourname/YourFolder")` to do this — but **this course does not use `setwd()` as the standard workflow**. A path like that is tied to one specific computer and breaks the moment the project moves to a different machine (including, for grading, yours to mine).
-
-Instead, this course uses an **RStudio Project** with a standard folder structure, set up once in the C01 reproducible-workflow assignment:
-
-```
-EOH635_project/
-├── EOH635_project.Rproj
-├── data_raw/          <- original files exactly as you received them (never edit these by hand)
-├── data_processed/    <- new files your scripts create (cleaned, merged, recoded data)
-├── scripts/           <- your .R / .qmd / .Rmd files
-└── outputs/           <- tables, figures, and other generated results
-```
-
-When you open `EOH635_project.Rproj`, RStudio automatically sets your working directory to the project root — no `setwd()` needed. From there, you use **relative paths**, typically with `file.path()`, so the same script works on any computer:
-
-```r
-read.csv(file.path("data_raw", "class_data_raw.csv"))
-```
-
-For this lab, that means: Please put `class_data_raw.csv`, `PHL_NDVI_summer_annual.csv`, and `codebook.xlsx` in `data_raw/`, and save anything you create (like the merged dataset at the end of this lab) into `data_processed/`.
-
-**In this browser-based tutorial, there's no local file system to point to at all** — the data files below are fetched automatically for you from the web the moment you load this page, using the same `data_raw` / `data_processed` folder names so the code you see here matches what you'll type in RStudio.
-
-**This is important to keep straight:** the "fetch from the web" step you'll see below is a workaround that exists *only* on this tutorial page, because your browser has no access to any files at all — not the tutorial's, and not yours. **For your actual project, the data will live as real files on your own computer**, saved into the `data_raw/` folder of the `EOH635_project` you set up in RStudio. Your project scripts will simply read those files directly off your hard drive with `read.csv(file.path("data_raw", "..."))` — no downloading, no internet fetch, no `data_base_url`. Every time this tutorial shows a "fetch from the web" step, look for the green **"In your RStudio script"** box right after it — that box shows the shorter, simpler line you'll actually use for your project.
-
-# ======================================================
-# 📦 3. Loading Required Packages
-# ======================================================
-
-[This](https://faculty.washington.edu/kenrice/rintro/sess08.pdf) is a great tutorial on packages in R.
-
-Briefly (quoting from that guide):
-
-> "Base R includes pre-installed packages that allow for a fully functioning statistical environment in which a variety of analyses can be conducted. Thousands of user-contributed extension packages are available that provide enhanced functionality with R.
->
-> R packages are collections of functions, data, and compiled code in a well-defined format.
->
-> In order to install an extension package, we can invoke the `install.packages()` function, which typically downloads the package from CRAN and installs it for use."
-
-You only need to install a package one time on your computer (upon first use, or after installing/re-installing/updating R). After installing it, you need to *load* it every session with `library()`.
-
-On your own computer you'd run:
-
-```r
-install.packages("tidyverse")
-library(tidyverse)
-```
-
-::: {.callout-note}
-This tutorial page has already installed and loaded **tidyverse** for you in the background (that's what the `webr: packages:` setting in this page does). You can still call `library(tidyverse)` yourself below — it won't hurt anything, it's just already done.
-:::
-
-```{webr-r}
-library(tidyverse)
-```
-
-::: {.callout-tip}
-## 💻 In your RStudio script
-
-**This automatic install/load is unique to this tutorial page — it will not happen on your own computer.** `tidyverse` is actually a bundle of several packages (including `dplyr` and `tidyr`, which you'll use a lot), but the browser installing it silently for you is just a convenience built into this page.
-
-When you write your own project scripts in RStudio, **you are responsible for installing and loading every package your code uses.** For any package (`tidyverse` or otherwise):
-
-```r
-install.packages("tidyverse")  # run this once per computer, the first time you use the package
-library(tidyverse)              # run this at the top of every script/session that uses it
-```
-
-If you forget the `library()` line, R will give you an error like `could not find function "mutate"` (or whatever function you tried to use) — that's your signal to go back and load the package first.
-:::
-
-******
-
-# ======================================================
-# 📊 4. Reading Data into R
-# ======================================================
-
-Recall that we can either create a data frame in R, or read one in. A lot of times, as environmental epidemiologists, we have an already-existing data set that we need to read into R — you'll primarily do that this quarter.
-
-For this lab, the raw data file is **`class_data_raw.csv`** (find it described in the [Data Codebook](codebook.qmd), along with `codebook.xlsx`). In RStudio, once it's in `data_raw/` inside your `EOH635_project`, you'd run:
-
-```r
-data <- read.csv(file.path("data_raw", "class_data_raw.csv"))
-```
-
-**In the browser, we first have to fetch the file from the web** before R can see it (webR can't see your OneDrive or hard drive — only files that have been downloaded into its in-browser file system). The chunk below does that automatically when the page loads: it creates a `data_raw` folder right here in your browser's R session (mirroring the real project structure) and downloads the file into it, then reads it in exactly the way you would in RStudio.
+Each tutorial page runs its own R session in your browser, so nothing from Part 2 carries over to this page. The chunk below runs automatically when the page loads: it reloads the class data and repeats the one change from Part 2 that this page depends on — storing `geoid10` as character (Section 5).
 
 ```{webr-r}
 #| autorun: true
@@ -232,172 +64,22 @@ dir.create("data_raw", showWarnings = FALSE)
 download.file(paste0(data_base_url, "class_data_raw.csv"), file.path("data_raw", "class_data_raw.csv"))
 
 data <- read.csv(file.path("data_raw", "class_data_raw.csv"))
+
+data$geoid10 <- as.character(data$geoid10)
 ```
 
 ::: {.callout-tip}
 ## 💻 In your RStudio script
 
-The chunk above runs automatically in the browser to fetch the data file from the web. **In your own RStudio script, you don't need any of that.** With `class_data_raw.csv` already saved in your `data_raw/` folder, all you need is:
+If you're continuing in the same RStudio script you used for Part 2, you don't need to re-run anything — just keep going. If you're starting a fresh session, these two lines get you to the same place:
 
 ```r
 data <- read.csv(file.path("data_raw", "class_data_raw.csv"))
-```
-
-This is the line to copy into your own analysis script.
-:::
-
-******
-
-# ======================================================
-# 👀 5. Exploring Your Data
-# ======================================================
-
-Now let's start to have a look at our data frame.
-
-View first few rows:
-
-```{webr-r}
-head(data)
-```
-
-**Things to think about:**
-
-* What do you notice about the structure of the dataset just by looking at these rows?
-* Are there any missing or unusual values that stand out?
-* Do the variable names seem intuitive? Would renaming any of them improve clarity?
-* Does the dataset contain categorical or numerical variables? How can you tell?
-* Are there any obvious errors or inconsistencies in the first few rows?
-
-Let's view the structure of the dataset:
-
-```{webr-r}
-str(data)
-```
-
-**Some questions:**
-
-* What data types are present in the dataset? Are they what you expected?
-* Are any variables stored in an inappropriate data type (e.g., categorical variables stored as numeric)?
-* How might the structure of the dataset affect downstream analyses?
-* Do any variables have an unexpectedly small or large number of unique values?
-* Are there any factors with many levels? Should any be combined or reclassified?
-
-::: {.callout-note collapse="true" title="💡 One way to think about it — click to reveal"}
-Most of the individual-level variables (`gender`, `education`, `race_ethnicity`, `employment_status`) come in as **character** strings rather than factors, and many of the health/behavior indicators (`stress`, `current_smoker`, `obese`, `high_blood_pressure`, etc.) are stored as **numeric 0/1 flags** even though they're conceptually categorical (binary). That's common in survey data, and it's exactly the kind of thing `str()` is good for catching *before* you run an analysis that assumes the wrong type.
-:::
-
-One more thing worth noticing in `str(data)`: **`geoid10`** — the census tract identifier for each participant — shows up as `num` (numeric), even though it functions as a *label*, not a quantity. It would never make sense to compute an "average `geoid10`," the way it might for `age`. Because it happens to look like a number, R read it in as one — but ID variables like this are safer to store as **character**, so nothing downstream ever accidentally tries to do math with them. Let's fix that now:
-
-```{webr-r}
 data$geoid10 <- as.character(data$geoid10)
 ```
-
-Hang onto this — it'll matter again later in this lesson, when we merge in a second dataset.
-
-We can also view the dimensions of the data frame (rows × columns):
-
-* Rows show us the number of observations (in this case, people)
-* Columns show us the number of variables
-
-```{webr-r}
-dim(data)
-```
-
-> How many rows and columns are in our data frame? Based on this, how many people are in our data frame?
-
-Take a moment to actually answer this from the output above before revealing it below.
-
-::: {.callout-note collapse="true" title="💡 Answer — click to reveal"}
-`dim(data)` returns `2000  38`: **2,000 rows** and **38 columns**. Since each row is one participant, that means our data frame contains **2,000 people**, each described by 38 variables (columns).
 :::
 
 ******
-
-## Summary of numerical variables
-
-```{webr-r}
-summary(data)
-```
-
-* What summary statistics does this function produce?
-* What do you observe about key variables?
-* Are there particular variables for which these summary statistics do not make sense? (Hint: think about what `summary()` does with a 0/1 variable versus a truly continuous one like `age`.)
-
-Think through these for a couple of variables yourself before checking below.
-
-::: {.callout-note collapse="true" title="💡 Two worked examples — click to reveal"}
-**`age`** (a genuinely continuous variable): `summary()` gives six numbers — Min. `18.02`, 1st Qu. `29.99`, Median `40.36`, Mean `44.99`, 3rd Qu. `56.24`, Max. `116.00` — plus a count of missing values (`NA's 3`). These are all meaningful here: the middle 50% of participants (between the 1st and 3rd quartiles) are roughly 30 to 56 years old. But that **Max. of 116** should catch your eye immediately — a plausible age tops out well below that. That's exactly the kind of thing `summary()` is good for catching early, before it quietly distorts an analysis later. (We'll deal with this specific outlier in Lesson 4.)
-
-**`high_blood_pressure`** (a binary 0/1 flag, not a continuous quantity): `summary()` reports Min. `0`, Median `0`, Mean `0.3048`, Max. `1`. The Min./Median/Max. here aren't wrong, exactly, but they're not very *useful* — a variable that can only be 0 or 1 doesn't have a meaningful "middle" or "spread" the way age does. The one number worth keeping from this output is the **Mean, `0.3048`** — for a 0/1 variable, the mean is just the proportion coded `1`, so about 30.5% of participants have high blood pressure. For everything else about a binary variable's distribution, a frequency count (`table()`, coming up in Section 6) is the right tool, not `summary()`.
-:::
-
-******
-
-# ======================================================
-# 🗃 6. Accessing Specific Variables in a Data Frame
-# ======================================================
-
-Let's practice looking at particular variables in our data frame.
-
-Access the `education` column:
-
-```{webr-r}
-data$education
-```
-
-OK, we accessed it, but that looks pretty messy and it's hard to glean much information! We're just seeing the raw value of `education` for every single participant, one after another — technically correct, but far too much to scan by eye and make sense of.
-
-Instead, it can be helpful to create summary counts.
-
-* `education` is a categorical variable, so we can count the number of participants that fall into each level (category).
-* We use the `table()` function to do this.
-* We can also look at the proportion and percentage of participants in each category.
-
-```{webr-r}
-table(data$education)
-
-prop.table(table(data$education))
-
-prop.table(table(data$education)) * 100
-```
-
-**Putting this together:** the first line, `table()`, gives raw counts — 1,066 participants coded `"< Bachelor's"` and 934 coded `"Bachelor's degree or higher"`. `prop.table()` takes that same table and converts it to proportions of the total (each cell divided by 2,000), and multiplying by 100 turns those proportions into percentages: about 53.3% of participants have less than a bachelor's degree, and about 46.7% have a bachelor's degree or higher. All three lines describe the exact same underlying counts — they're just three different units (counts, proportions, percentages) for reporting the same distribution, and which one you'd report depends on your audience (a raw count is often more useful in a table you're building for yourself; a percentage usually reads more naturally in written text).
-
-::: {.callout-tip title="🧠 Your Turn"}
-See if you can do the same thing (raw counts, proportions, and percentages) with the **`race_ethnicity`** variable. Then answer these three questions using your output:
-
-1. How many people identify as **Hispanic or Latino (of any race)**?
-2. What **proportion** of the study population identifies as **White alone, not Hispanic or Latino**?
-3. What **percentage** of the study population identifies as **Asian alone, not Hispanic or Latino**?
-
-Type your three answers as comments in the code box below before checking the solution.
-:::
-
-```{webr-r}
-# Your code here — counts, proportions, and percentages for race_ethnicity
-
-
-# Your answers:
-# 1. Hispanic or Latino (of any race), count =
-# 2. White alone, not Hispanic or Latino, proportion =
-# 3. Asian alone, not Hispanic or Latino, percentage =
-```
-
-::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
-```{webr-r}
-table(data$race_ethnicity)
-
-prop.table(table(data$race_ethnicity))
-
-prop.table(table(data$race_ethnicity)) * 100
-```
-
-**Answers:**
-
-1. **275** people identify as Hispanic or Latino (of any race).
-2. **0.61** (about 61%) of the study population identifies as White alone, not Hispanic or Latino.
-3. **4.7%** of the study population identifies as Asian alone, not Hispanic or Latino.
-:::
 
 # ======================================================
 # 🔄 7. Creating a New Variable
@@ -574,7 +256,7 @@ str(data$geoid10)
 str(PHL_NDVI_summer_annual$GEOID10)
 ```
 
-Notice these **don't match**: `data$geoid10` shows up as `chr`, because we deliberately converted it back in Section 5 (it's a label, not a quantity, remember?) — but `PHL_NDVI_summer_annual$GEOID10` is freshly read in from its own file and is still `num`. This is exactly the situation the earlier conversion was setting up: without it, both would have looked numeric and matched by coincidence, hiding the fact that ID columns need this treatment at all. Since they don't match now, let's convert `GEOID10` to character too:
+Notice these **don't match**: `data$geoid10` shows up as `chr`, because we deliberately converted it back in Section 5 of Part 2, and again in the setup chunk at the top of this page (it's a label, not a quantity, remember?) — but `PHL_NDVI_summer_annual$GEOID10` is freshly read in from its own file and is still `num`. This is exactly the situation the earlier conversion was setting up: without it, both would have looked numeric and matched by coincidence, hiding the fact that ID columns need this treatment at all. Since they don't match now, let's convert `GEOID10` to character too:
 
 ```{webr-r}
 PHL_NDVI_summer_annual$GEOID10 <- as.character(PHL_NDVI_summer_annual$GEOID10)

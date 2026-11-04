@@ -1688,10 +1688,25 @@ globalThis.qwebrExecuteCode = async function (
     <a class="nav-link" href="./index.html"> 
 <span class="menu-text">Home</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./lesson2.html"> 
-<span class="menu-text">Lesson 2: Intro to R</span></a>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-lesson-2-intro-to-r" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Lesson 2: Intro to R</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-lesson-2-intro-to-r">    
+        <li>
+    <a class="dropdown-item" href="./lesson2a.html">
+ <span class="dropdown-text">Part 1: R Basics, Projects &amp; Packages</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="./lesson2b.html">
+ <span class="dropdown-text">Part 2: Reading &amp; Exploring Data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./lesson2c.html">
+ <span class="dropdown-text">Part 3: New Variables, Merging &amp; Saving</span></a>
+  </li>  
+    </ul>
+  </li>
   <li class="nav-item">
     <a class="nav-link" href="./lesson3.html"> 
 <span class="menu-text">Lesson 3: Conceptual Frameworks</span></a>
@@ -2074,7 +2089,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </header>
 
 
-<p>In <a href="./lesson2.html">Lesson 2</a>, we read in and manipulated our data set, and merged in NDVI (greenness) data by census tract. Last week (Week 3) you worked through hypothesis components (exposure, outcome, population, expected relationship), conceptual frameworks, and the mediator-vs-modifier distinction. This week’s module is about <strong>exploratory data analysis and data cleaning</strong>. This tutorial is the <strong>Practice</strong> half: hands-on descriptive statistics, data cleaning, and visualization in R.</p>
+<p>In <a href="./lesson2a.html">Lesson 2</a>, we read in and manipulated our data set, and merged in NDVI (greenness) data by census tract. Last week (Week 3) you worked through hypothesis components (exposure, outcome, population, expected relationship), conceptual frameworks, and the mediator-vs-modifier distinction. This week’s module is about <strong>exploratory data analysis and data cleaning</strong>. This tutorial is the <strong>Practice</strong> half: hands-on descriptive statistics, data cleaning, and visualization in R.</p>
 <p>That’s not busywork. Every study population, exposure, and outcome needs to be <em>characterized</em> before it can be modeled — and this week’s skills are exactly what you’ll need for <strong>Project Milestone 1</strong> (research question, hypothesis, and conceptual framework), due this week. Milestone 1 asks you to start characterizing the exposure and outcome you’re considering for your own project, using this same class dataset. Everything below — checking distributions, spotting errors, visualizing a relationship — is directly reusable for that.</p>
 <div class="callout callout-style-default callout-important callout-titled">
 <div class="callout-header d-flex align-content-center">

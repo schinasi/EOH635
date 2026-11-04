@@ -98,10 +98,25 @@ ul.task-list li input[type="checkbox"] {
     <a class="nav-link active" href="./index.html" aria-current="page"> 
 <span class="menu-text">Home</span></a>
   </li>  
-  <li class="nav-item">
-    <a class="nav-link" href="./lesson2.html"> 
-<span class="menu-text">Lesson 2: Intro to R</span></a>
+  <li class="nav-item dropdown ">
+    <a class="nav-link dropdown-toggle" href="#" id="nav-menu-lesson-2-intro-to-r" role="link" data-bs-toggle="dropdown" aria-expanded="false">
+ <span class="menu-text">Lesson 2: Intro to R</span>
+    </a>
+    <ul class="dropdown-menu" aria-labelledby="nav-menu-lesson-2-intro-to-r">    
+        <li>
+    <a class="dropdown-item" href="./lesson2a.html">
+ <span class="dropdown-text">Part 1: R Basics, Projects &amp; Packages</span></a>
   </li>  
+        <li>
+    <a class="dropdown-item" href="./lesson2b.html">
+ <span class="dropdown-text">Part 2: Reading &amp; Exploring Data</span></a>
+  </li>  
+        <li>
+    <a class="dropdown-item" href="./lesson2c.html">
+ <span class="dropdown-text">Part 3: New Variables, Merging &amp; Saving</span></a>
+  </li>  
+    </ul>
+  </li>
   <li class="nav-item">
     <a class="nav-link" href="./lesson3.html"> 
 <span class="menu-text">Lesson 3: Conceptual Frameworks</span></a>
@@ -185,7 +200,12 @@ ul.task-list li input[type="checkbox"] {
 <h2 class="anchored" data-anchor-id="lessons">Lessons</h2>
 <p>Lesson numbers match the course week. Week 1 is orientation and technical setup, so it has no tutorial.</p>
 <ul>
-<li><a href="./lesson2.html">Lesson 2: Intro to R and Handling Data</a></li>
+<li>Lesson 2: Intro to R and Handling Data, in three parts:
+<ul>
+<li><a href="./lesson2a.html">Part 1: R Basics, Project Organization &amp; Packages</a></li>
+<li><a href="./lesson2b.html">Part 2: Reading and Exploring Data</a></li>
+<li><a href="./lesson2c.html">Part 3: Creating Variables, Merging, and Saving Data</a></li>
+</ul></li>
 <li><a href="./lesson3.html">Lesson 3: Reading a Published Conceptual Framework</a> — a reading/reflection activity applying exposure, outcome, mediator, confounder, and effect modifier vocabulary to a published greenspace-and-health framework</li>
 <li><a href="./lesson4.html">Lesson 4: Exploratory Data Analysis &amp; Data Cleaning</a></li>
 <li><a href="./lesson5.html">Lesson 5: Exposure Assessment &amp; Misclassification</a> — coding decisions for a continuous exposure (NDVI), and how differential vs.&nbsp;non-differential misclassification bias an effect estimate, using a simulated dataset where the true exposure is known</li>

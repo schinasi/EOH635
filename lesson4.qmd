@@ -18,7 +18,7 @@ filters:
   - webr
 ---
 
-In [Lesson 2](lesson2.qmd), we read in and manipulated our data set, and merged in NDVI
+In [Lesson 2](lesson2a.qmd), we read in and manipulated our data set, and merged in NDVI
 (greenness) data by census tract. Last week (Week 3) you worked through hypothesis components
 (exposure, outcome, population, expected relationship), conceptual frameworks, and the
 mediator-vs-modifier distinction. This week's module is about **exploratory data analysis and
