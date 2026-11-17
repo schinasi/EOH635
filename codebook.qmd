@@ -8,9 +8,9 @@ format:
 ---
 
 This page documents every variable in `class_data_raw.csv`. Variable names, types, and one-line
-descriptions come from the course's official `codebook.xlsx` (also available in `data_raw/`);
-background and methodology for the tract-level environmental measures is pulled in from
-`Classdata_arealevelmeasures_description.docx`. It's meant as a reference to check back to while
+descriptions come from the course's `codebook.xlsx` (download it from the
+[Data Downloads](index.qmd#data-downloads) section of the home page), along with background on how
+the tract-level environmental measures were created. It's meant as a reference to check back to while
 working through the lessons — you don't need to read it top to bottom.
 
 ::: {.callout-tip}
@@ -158,8 +158,8 @@ You can calculate a total vegetation measure by summing `hrlctree` and `hrlcgras
 
 | Variable | Type | Description |
 |---|---|---|
-| `ctviolra` | Numeric | Violent crime rate — units unconfirmed, see flag below |
-| `ctviolkm` | Numeric | Violent crime rate per km² in the census tract |
+| `ctviolra` | Numeric | Violent crime rate: violent crime incidents per 10,000 residents in the census tract |
+| `ctviolkm` | Numeric | Violent crime density: violent crime incidents per km² in the census tract |
 
 Police-reported crime data is available from OpenDataPhilly. Yearly crime **rates** and
 **densities** (per square mile/km) for the City of Philadelphia were created for calendar years
@@ -168,31 +168,10 @@ drug violations, and property crime, summarized by 2010 U.S. Census Tract. These
 generated to provide objective measures of neighborhood safety, and can be used to explore the
 influence of crime and safety on health outcomes and behaviors.
 
-::: {.callout-warning}
-## ⚠️ Unresolved: units for `ctviolra`
-
-Two source documents disagree on the unit for `ctviolra`, and this hasn't been confirmed yet:
-
-- `Classdata_arealevelmeasures_description.docx` describes it as a rate **per 10,000 population**.
-- The official `codebook.xlsx` (and the `create_data.R` script that generated it) describes it as
-  **"Total violent crime incidents per 1,000 residents."**
-
-Leaving this unresolved for now, per instructor note — don't state a specific unit for
-`ctviolra` in student-facing material until this is confirmed.
-:::
-
-::: {.callout-note}
-The source `.docx` also lists a missing-data sentinel value of `9999999999` for the crime
-variables. That value does **not** actually appear anywhere in `class_data_raw.csv` (checked
-directly) — it looks like a leftover description from the original real-data source system, not
-something present in this simulated class dataset. No special recoding is needed for
-`ctviolra`/`ctviolkm` on that account.
-:::
-
 ## Known Missingness in This Dataset
 
 A few variables have a small number of true `NA` values, deliberately built into the simulated
-data set (confirmed by counting missing values directly in `class_data_raw.csv`):
+data set:
 
 | Variable | # Missing (of 2,000) |
 |---|---|
