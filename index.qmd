@@ -1,5 +1,5 @@
 ---
-title: "EOH 635: Environmental Epidemiology Methods"
+title: "EOH 635: Managing and Analyzing Environmental Epidemiology Data"
 subtitle: "Asynchronous R Tutorials"
 ---
 

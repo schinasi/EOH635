@@ -1,6 +1,6 @@
 ---
 title: "Lesson 4: Exploratory Data Analysis & Data Cleaning"
-subtitle: "EOH 635 — Environmental Epidemiology Methods"
+subtitle: "EOH 635 — Managing and Analyzing Environmental Epidemiology Data"
 author: "Leah Schinasi"
 date: today
 format:

@@ -1,6 +1,6 @@
 ---
 title: "Lesson 8: Effect Modification & Heterogeneity of Effects"
-subtitle: "EOH 635 — Environmental Epidemiology Methods"
+subtitle: "EOH 635 — Managing and Analyzing Environmental Epidemiology Data"
 author: "Leah Schinasi"
 date: today
 format:

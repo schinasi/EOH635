@@ -1,6 +1,6 @@
 ---
 title: "Lesson 7: Confounding & Directed Acyclic Graphs (DAGs)"
-subtitle: "EOH 635 — Environmental Epidemiology Methods"
+subtitle: "EOH 635 — Managing and Analyzing Environmental Epidemiology Data"
 author: "Leah Schinasi"
 date: today
 format:

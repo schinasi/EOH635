@@ -6,7 +6,7 @@ project:
     - images/
 
 website:
-  title: "EOH 635: Environmental Epidemiology Methods"
+  title: "EOH 635: Managing and Analyzing Environmental Epidemiology Data"
   page-navigation: true
   navbar:
     left:

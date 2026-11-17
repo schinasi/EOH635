@@ -310,21 +310,21 @@
   {
     "objectID": "index.html",
     "href": "index.html",
-    "title": "EOH 635: Environmental Epidemiology Methods",
+    "title": "EOH 635: Managing and Analyzing Environmental Epidemiology Data",
     "section": "",
     "text": "Welcome! These tutorials walk through the R and analysis skills used in this course. Each lesson is interactive — the code runs live, right in your browser, via webR. You don’t need R or RStudio installed to work through them.\nHow to use these tutorials:"
   },
   {
     "objectID": "index.html#lessons",
     "href": "index.html#lessons",
-    "title": "EOH 635: Environmental Epidemiology Methods",
+    "title": "EOH 635: Managing and Analyzing Environmental Epidemiology Data",
     "section": "Lessons",
     "text": "Lessons\nLesson numbers match the course week. Week 1 is orientation and technical setup, so it has no tutorial.\n\nLesson 2: Intro to R and Handling Data, in three parts:\n\nPart 1: R Basics, Project Organization & Packages\nPart 2: Reading and Exploring Data\nPart 3: Creating Variables, Merging, and Saving Data\n\nLesson 3: Reading a Published Conceptual Framework — a reading/reflection activity applying exposure, outcome, mediator, confounder, and effect modifier vocabulary to a published greenspace-and-health framework\nLesson 4: Exploratory Data Analysis & Data Cleaning\nLesson 5: Exposure Assessment & Misclassification — coding decisions for a continuous exposure (NDVI), and how differential vs. non-differential misclassification bias an effect estimate, using a simulated dataset where the true exposure is known\nLesson 6: Regression, Linearity & Dose-Response — choosing and fitting a crude regression model (logistic vs. log-binomial) for tree canopy and high blood pressure, interpreting the estimate, and checking the linearity assumption with categorical indicator terms\nLesson 7: Confounding & Directed Acyclic Graphs (DAGs) — drawing a DAG in R to find a minimally sufficient adjustment set, then checking confounding in the data with the change-in-estimate approach (including modified Poisson regression when a log-binomial model won’t converge)\nLesson 8: Effect Modification & Heterogeneity of Effects — asking whether the tree canopy–high blood pressure association differs by gender: stratified models, Cochran’s Q, interaction models, and Wald and likelihood ratio tests for interaction"
   },
   {
     "objectID": "index.html#reference",
     "href": "index.html#reference",
-    "title": "EOH 635: Environmental Epidemiology Methods",
+    "title": "EOH 635: Managing and Analyzing Environmental Epidemiology Data",
     "section": "Reference",
     "text": "Reference\n\nData Codebook — variable descriptions for class_data_raw.csv"
   },

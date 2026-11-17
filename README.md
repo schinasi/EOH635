@@ -1,4 +1,4 @@
-# EOH 635: Environmental Epidemiology Methods — Interactive R Tutorials
+# EOH 635: Managing and Analyzing Environmental Epidemiology Data — Interactive R Tutorials
 
 **Live site: <https://schinasi.github.io/EOH635/>**
 

@@ -1,6 +1,6 @@
 ---
 title: "Lesson 2, Part 3: Creating Variables, Merging, and Saving Data"
-subtitle: "EOH 635 — Environmental Epidemiology Methods"
+subtitle: "EOH 635 — Managing and Analyzing Environmental Epidemiology Data"
 author: "Leah Schinasi"
 date: today
 format:

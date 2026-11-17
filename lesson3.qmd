@@ -1,6 +1,6 @@
 ---
 title: "Lesson 3: Reading a Published Conceptual Framework"
-subtitle: "EOH 635 — Environmental Epidemiology Methods"
+subtitle: "EOH 635 — Managing and Analyzing Environmental Epidemiology Data"
 author: "Leah Schinasi"
 date: today
 format:
