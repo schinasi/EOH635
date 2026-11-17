@@ -231,6 +231,26 @@ head(PHL_NDVI_summer_annual)
 * What are the names of the variables (columns) in this data frame?
 * What seems to be the unique identifier in the NDVI data frame?
 
+::: {.callout-note collapse="true" title="💡 Solution — click to reveal"}
+**How many observations (rows)?** **384.** The first line of the `str()` output says
+`'data.frame': 384 obs. of 2 variables`. You can also get this directly with `nrow()`.
+
+**What are the variable names?** **`X2015_NDVI`** and **`GEOID10`**, as shown by `names()`.
+`X2015_NDVI` is each tract's median summer NDVI in 2015, and `GEOID10` is the 2010 census tract ID.
+Notice the `X` at the start of `X2015_NDVI`: the column is called `2015_NDVI` in the CSV file, but
+R variable names can't start with a number, so `read.csv()` adds an `X` in front. That's why the
+code below refers to it as `X2015_NDVI`.
+
+**What is the unique identifier?** **`GEOID10`**, the census tract ID. Each row is one Philadelphia
+census tract, so each `GEOID10` should appear only once. You can check this by comparing the number
+of distinct `GEOID10` values with the number of rows: both are 384, so no tract is repeated.
+
+```{webr-r}
+nrow(PHL_NDVI_summer_annual)
+length(unique(PHL_NDVI_summer_annual$GEOID10))
+```
+:::
+
 ******
 
 ## Summarize the NDVI values across Philadelphia
