@@ -162,6 +162,7 @@ ul.task-list li input[type="checkbox"] {
    
   <ul class="collapse">
   <li><a href="#lessons" id="toc-lessons" class="nav-link active" data-scroll-target="#lessons">Lessons</a></li>
+  <li><a href="#data-downloads" id="toc-data-downloads" class="nav-link" data-scroll-target="#data-downloads">Data Downloads</a></li>
   <li><a href="#reference" id="toc-reference" class="nav-link" data-scroll-target="#reference">Reference</a></li>
   </ul>
 </nav>
@@ -213,6 +214,52 @@ ul.task-list li input[type="checkbox"] {
 <li><a href="./lesson7.html">Lesson 7: Confounding &amp; Directed Acyclic Graphs (DAGs)</a> — drawing a DAG in R to find a minimally sufficient adjustment set, then checking confounding in the data with the change-in-estimate approach (including modified Poisson regression when a log-binomial model won’t converge)</li>
 <li><a href="./lesson8.html">Lesson 8: Effect Modification &amp; Heterogeneity of Effects</a> — asking whether the tree canopy–high blood pressure association differs by gender: stratified models, Cochran’s Q, interaction models, and Wald and likelihood ratio tests for interaction</li>
 </ul>
+</section>
+<section id="data-downloads" class="level2">
+<h2 class="anchored" data-anchor-id="data-downloads">Data Downloads</h2>
+<p>All course datasets are simulated (fake) data created for teaching. To work along in RStudio, download the files below and save them in your <code>EOH635_project</code> folder: raw files go in <code>data_raw/</code> and the processed file goes in <code>data_processed/</code> (see <a href="./lesson2a.html">Lesson 2, Part 1</a> for how to set up the project folders). Click a file name to download it; if it opens in your browser instead, right-click it and choose <strong>Save link as…</strong>.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>File</th>
+<th>Save in</th>
+<th>What it is</th>
+<th>Used in</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><a href="data/class_data_raw.csv" download="class_data_raw.csv">class_data_raw.csv</a></td>
+<td><code>data_raw/</code></td>
+<td>Main class dataset: one row per person, with health outcomes, demographics, and neighborhood environment measures. Variables are described in the <a href="./codebook.html">Data Codebook</a>.</td>
+<td>Lessons 2 and 4</td>
+</tr>
+<tr class="even">
+<td><a href="data/PHL_NDVI_summer_annual.csv" download="PHL_NDVI_summer_annual.csv">PHL_NDVI_summer_annual.csv</a></td>
+<td><code>data_raw/</code></td>
+<td>Summer greenness (NDVI) for Philadelphia census tracts, merged onto the class dataset.</td>
+<td>Lessons 2 and 5</td>
+</tr>
+<tr class="odd">
+<td><a href="data/codebook.xlsx" download="codebook.xlsx">codebook.xlsx</a></td>
+<td><code>data_raw/</code></td>
+<td>Variable names, descriptions, and coding for the class dataset.</td>
+<td>Lesson 2</td>
+</tr>
+<tr class="even">
+<td><a href="data/simulated_ozone_asthma_exposuremisclassification.csv" download="simulated_ozone_asthma_exposuremisclassification.csv">simulated_ozone_asthma_exposuremisclassification.csv</a></td>
+<td><code>data_raw/</code></td>
+<td>Simulated ozone and asthma data in which the true exposure is known, for studying exposure misclassification.</td>
+<td>Lesson 5</td>
+</tr>
+<tr class="odd">
+<td><a href="data/class_data_processed.csv" download="class_data_processed.csv">class_data_processed.csv</a></td>
+<td><code>data_processed/</code></td>
+<td>The cleaned, merged dataset you create at the end of Lesson 2, Part 3. If you didn’t finish that lesson, download this copy so you can keep going.</td>
+<td>Lessons 4–8</td>
+</tr>
+</tbody>
+</table>
 </section>
 <section id="reference" class="level2">
 <h2 class="anchored" data-anchor-id="reference">Reference</h2>

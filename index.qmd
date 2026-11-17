@@ -39,6 +39,22 @@ Lesson numbers match the course week. Week 1 is orientation and technical setup,
   — asking whether the tree canopy–high blood pressure association differs by gender: stratified
   models, Cochran's Q, interaction models, and Wald and likelihood ratio tests for interaction
 
+## Data Downloads
+
+All course datasets are simulated (fake) data created for teaching. To work along in RStudio,
+download the files below and save them in your `EOH635_project` folder: raw files go in
+`data_raw/` and the processed file goes in `data_processed/` (see
+[Lesson 2, Part 1](lesson2a.qmd) for how to set up the project folders). Click a file name to
+download it; if it opens in your browser instead, right-click it and choose **Save link as…**.
+
+| File | Save in | What it is | Used in |
+|------|---------|------------|---------|
+| [class_data_raw.csv](data/class_data_raw.csv){download="class_data_raw.csv"} | `data_raw/` | Main class dataset: one row per person, with health outcomes, demographics, and neighborhood environment measures. Variables are described in the [Data Codebook](codebook.qmd). | Lessons 2 and 4 |
+| [PHL_NDVI_summer_annual.csv](data/PHL_NDVI_summer_annual.csv){download="PHL_NDVI_summer_annual.csv"} | `data_raw/` | Summer greenness (NDVI) for Philadelphia census tracts, merged onto the class dataset. | Lessons 2 and 5 |
+| [codebook.xlsx](data/codebook.xlsx){download="codebook.xlsx"} | `data_raw/` | Variable names, descriptions, and coding for the class dataset. | Lesson 2 |
+| [simulated_ozone_asthma_exposuremisclassification.csv](data/simulated_ozone_asthma_exposuremisclassification.csv){download="simulated_ozone_asthma_exposuremisclassification.csv"} | `data_raw/` | Simulated ozone and asthma data in which the true exposure is known, for studying exposure misclassification. | Lesson 5 |
+| [class_data_processed.csv](data/class_data_processed.csv){download="class_data_processed.csv"} | `data_processed/` | The cleaned, merged dataset you create at the end of Lesson 2, Part 3. If you didn't finish that lesson, download this copy so you can keep going. | Lessons 4–8 |
+
 ## Reference
 
 - [Data Codebook](codebook.qmd) — variable descriptions for `class_data_raw.csv`
