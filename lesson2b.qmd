@@ -75,6 +75,57 @@ data <- read.csv(file.path("data_raw", "class_data_raw.csv"))
 This is the line to copy into your own analysis script.
 :::
 
+::: {.callout-note}
+## 📍 How relative paths work
+
+**The working directory.** R always has a *working directory*: the folder it starts from when
+you give it a file name. When you open `EOH635_project.Rproj`, RStudio sets the working directory
+to your `EOH635_project` folder. You can see it by running `getwd()` in the Console.
+
+**Relative vs. full paths.** A *full* (absolute) path spells out the whole location, like
+`C:/Users/yourname/OneDrive/EOH635_project/data_raw/class_data_raw.csv`. It only works on that
+one computer. A *relative* path starts from the working directory instead:
+`data_raw/class_data_raw.csv` means "the `data_raw` folder inside my project, then this file."
+It works on any computer, as long as the project is opened through its `.Rproj` file.
+
+**What `file.path()` does.** It joins folder and file names with `/`, so
+`file.path("data_raw", "class_data_raw.csv")` gives `"data_raw/class_data_raw.csv"`. Typing
+`read.csv("data_raw/class_data_raw.csv")` would do the same thing; `file.path()` just saves you
+from typing the slashes and getting them wrong.
+
+**When it goes wrong.** The most common error is:
+
+```
+Error in file(file, "rt") : cannot open the connection
+cannot open file 'data_raw/class_data_raw.csv': No such file or directory
+```
+
+This means R looked for the file starting from its working directory and didn't find it. The
+usual causes:
+
+- You opened RStudio directly instead of opening `EOH635_project.Rproj`, so the working
+  directory isn't your project folder. Check with `getwd()`.
+- The file isn't in `data_raw/` (it may still be in your Downloads folder). Check with
+  `list.files("data_raw")`.
+- The file name doesn't match exactly, including capitalization. Watch for a file saved as
+  `class_data_raw.csv.csv` (Windows can hide the extension).
+:::
+
+::: {.callout-tip title="🧠 Your Turn (in RStudio)"}
+This step can't be done in the browser, because the browser can't see the files on your computer.
+Open `EOH635_project.Rproj` in RStudio, create a script in your `scripts/` folder, and run:
+
+```r
+getwd()                     # should end in EOH635_project
+list.files("data_raw")      # should list class_data_raw.csv
+data <- read.csv(file.path("data_raw", "class_data_raw.csv"))
+nrow(data)                  # should be 2000
+```
+
+If `nrow(data)` returns 2000, your project is set up correctly and the data read in. If you get
+an error, work through the causes in the box above.
+:::
+
 ******
 
 # ======================================================

@@ -382,6 +382,40 @@ dir.create("data_processed", showWarnings = FALSE)
 write.csv(data2, file.path("data_processed", "class_data_processed.csv"), row.names = FALSE)
 ```
 
+::: {.callout-note}
+## 📍 A few things to know about saving
+
+**What `row.names = FALSE` does.** Without it, `write.csv()` adds an extra first column holding
+the row numbers (1, 2, 3, …). When you read the file back in, that column shows up as a new
+variable called `X`. Setting `row.names = FALSE` leaves it out.
+
+**`write.csv()` overwrites without asking.** If a file with the same name already exists in
+`data_processed/`, it is replaced, with no warning. That's fine when you re-run your own script
+(it should rebuild the same file), but be careful not to reuse a name for a different dataset.
+And never point `write.csv()` at `data_raw/`.
+
+**A CSV doesn't remember variable types.** A CSV file is plain text, so R has to guess each
+column's type when it reads the file back in. For example, we converted `geoid10` to character
+before merging, but when you read `class_data_processed.csv` back in (as you will in Lesson 4),
+`geoid10` comes back as a number again. If you merge again later, convert it again first. (R has
+its own file format, `.rds`, that keeps types: `saveRDS(data2, file.path("data_processed",
+"class_data_processed.rds"))` to save and `readRDS()` to read. We use CSV in this course because
+any program can open it.)
+:::
+
+::: {.callout-tip title="🧠 Your Turn (in RStudio)"}
+After running the `write.csv()` line in RStudio, check that the save worked:
+
+```r
+list.files("data_processed")    # should list class_data_processed.csv
+check <- read.csv(file.path("data_processed", "class_data_processed.csv"))
+nrow(check)                     # should be 2000, one row per participant
+names(check)                    # should include X2015_NDVI, and no column called X
+```
+
+You can also open the `data_processed/` folder on your computer and see the file there.
+:::
+
 # ======================================================
 # 🚀 10. Quick-Start Script for Your Own Project
 # ======================================================

@@ -2494,6 +2494,39 @@ Note
 <p>You can also run the chunk below in the browser to see how it works — but note that in the browser the file is only saved temporarily and disappears when you close the tab. <strong>To actually save this file permanently to your hard drive, run the single line shown in the green “In your RStudio script” box just above, inside RStudio</strong> — with <code>data2</code> in your R environment and <code>data_processed/</code> already existing in your <code>EOH635_project</code>, that <code>write.csv(...)</code> line writes the file to your computer’s disk, where it will still be there the next time you open RStudio.</p>
 <div id="qwebr-insertion-location-20"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>📍 A few things to know about saving
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>What <code>row.names = FALSE</code> does.</strong> Without it, <code>write.csv()</code> adds an extra first column holding the row numbers (1, 2, 3, …). When you read the file back in, that column shows up as a new variable called <code>X</code>. Setting <code>row.names = FALSE</code> leaves it out.</p>
+<p><strong><code>write.csv()</code> overwrites without asking.</strong> If a file with the same name already exists in <code>data_processed/</code>, it is replaced, with no warning. That’s fine when you re-run your own script (it should rebuild the same file), but be careful not to reuse a name for a different dataset. And never point <code>write.csv()</code> at <code>data_raw/</code>.</p>
+<p><strong>A CSV doesn’t remember variable types.</strong> A CSV file is plain text, so R has to guess each column’s type when it reads the file back in. For example, we converted <code>geoid10</code> to character before merging, but when you read <code>class_data_processed.csv</code> back in (as you will in Lesson 4), <code>geoid10</code> comes back as a number again. If you merge again later, convert it again first. (R has its own file format, <code>.rds</code>, that keeps types: <code>saveRDS(data2, file.path("data_processed", "class_data_processed.rds"))</code> to save and <code>readRDS()</code> to read. We use CSV in this course because any program can open it.)</p>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn (in RStudio)">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>🧠 Your Turn (in RStudio)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>After running the <code>write.csv()</code> line in RStudio, check that the save worked:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">list.files</span>(<span class="st">"data_processed"</span>)    <span class="co"># should list class_data_processed.csv</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>check <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>))</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(check)                     <span class="co"># should be 2000, one row per participant</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="fu">names</span>(check)                    <span class="co"># should include X2015_NDVI, and no column called X</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>You can also open the <code>data_processed/</code> folder on your computer and see the file there.</p>
+</div>
+</div>
 </section>
 <section id="section-8" class="level1">
 <h1>======================================================</h1>
@@ -2515,37 +2548,37 @@ Note
 </div>
 <div class="callout-body-container callout-body">
 <p>Copy the whole block below into a new script in RStudio to get started on your own computer. There’s no downloading step here — R just reads the files straight from your <code>data_raw/</code> folder.</p>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Setup ----</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Read in your data ----</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"class_data_raw.csv"</span>))</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>PHL_NDVI_summer_annual <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"PHL_NDVI_summer_annual.csv"</span>))</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Take a first look ----</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data)</span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(data)</span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(data)</span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(data)</span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Recode education into a numeric 0/1 variable ----</span></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">num_education =</span> <span class="fu">if_else</span>(education <span class="sc">==</span> <span class="st">"&lt; Bachelor's"</span>, <span class="dv">0</span>, <span class="dv">1</span>))</span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Match variable types before merging ----</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>geoid10 <span class="ot">&lt;-</span> <span class="fu">as.character</span>(data<span class="sc">$</span>geoid10)</span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>PHL_NDVI_summer_annual<span class="sc">$</span>GEOID10 <span class="ot">&lt;-</span> <span class="fu">as.character</span>(PHL_NDVI_summer_annual<span class="sc">$</span>GEOID10)</span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Merge in the NDVI (greenness) data ----</span></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>data2 <span class="ot">&lt;-</span> <span class="fu">merge</span>(data, PHL_NDVI_summer_annual,</span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>                <span class="at">by.x =</span> <span class="st">"geoid10"</span>, <span class="at">by.y =</span> <span class="st">"GEOID10"</span>, <span class="at">all.x =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Check that the merge worked ----</span></span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(data2)</span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data2)</span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Save your processed dataset ----</span></span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(data2, <span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Setup ----</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Read in your data ----</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"class_data_raw.csv"</span>))</span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>PHL_NDVI_summer_annual <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"PHL_NDVI_summer_annual.csv"</span>))</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Take a first look ----</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data)</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="fu">str</span>(data)</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(data)</span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="fu">summary</span>(data)</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Recode education into a numeric 0/1 variable ----</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> data <span class="sc">%&gt;%</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">num_education =</span> <span class="fu">if_else</span>(education <span class="sc">==</span> <span class="st">"&lt; Bachelor's"</span>, <span class="dv">0</span>, <span class="dv">1</span>))</span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Match variable types before merging ----</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>data<span class="sc">$</span>geoid10 <span class="ot">&lt;-</span> <span class="fu">as.character</span>(data<span class="sc">$</span>geoid10)</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>PHL_NDVI_summer_annual<span class="sc">$</span>GEOID10 <span class="ot">&lt;-</span> <span class="fu">as.character</span>(PHL_NDVI_summer_annual<span class="sc">$</span>GEOID10)</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Merge in the NDVI (greenness) data ----</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>data2 <span class="ot">&lt;-</span> <span class="fu">merge</span>(data, PHL_NDVI_summer_annual,</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>                <span class="at">by.x =</span> <span class="st">"geoid10"</span>, <span class="at">by.y =</span> <span class="st">"GEOID10"</span>, <span class="at">all.x =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Check that the merge worked ----</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(data2)</span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a><span class="fu">head</span>(data2)</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="co"># ---- Save your processed dataset ----</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a><span class="fu">write.csv</span>(data2, <span class="fu">file.path</span>(<span class="st">"data_processed"</span>, <span class="st">"class_data_processed.csv"</span>), <span class="at">row.names =</span> <span class="cn">FALSE</span>)</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
 </div>
 </div>
 </section>

@@ -2144,6 +2144,48 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 <p>This is the line to copy into your own analysis script.</p>
 </div>
 </div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>📍 How relative paths work
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><strong>The working directory.</strong> R always has a <em>working directory</em>: the folder it starts from when you give it a file name. When you open <code>EOH635_project.Rproj</code>, RStudio sets the working directory to your <code>EOH635_project</code> folder. You can see it by running <code>getwd()</code> in the Console.</p>
+<p><strong>Relative vs.&nbsp;full paths.</strong> A <em>full</em> (absolute) path spells out the whole location, like <code>C:/Users/yourname/OneDrive/EOH635_project/data_raw/class_data_raw.csv</code>. It only works on that one computer. A <em>relative</em> path starts from the working directory instead: <code>data_raw/class_data_raw.csv</code> means “the <code>data_raw</code> folder inside my project, then this file.” It works on any computer, as long as the project is opened through its <code>.Rproj</code> file.</p>
+<p><strong>What <code>file.path()</code> does.</strong> It joins folder and file names with <code>/</code>, so <code>file.path("data_raw", "class_data_raw.csv")</code> gives <code>"data_raw/class_data_raw.csv"</code>. Typing <code>read.csv("data_raw/class_data_raw.csv")</code> would do the same thing; <code>file.path()</code> just saves you from typing the slashes and getting them wrong.</p>
+<p><strong>When it goes wrong.</strong> The most common error is:</p>
+<pre><code>Error in file(file, "rt") : cannot open the connection
+cannot open file 'data_raw/class_data_raw.csv': No such file or directory</code></pre>
+<p>This means R looked for the file starting from its working directory and didn’t find it. The usual causes:</p>
+<ul>
+<li>You opened RStudio directly instead of opening <code>EOH635_project.Rproj</code>, so the working directory isn’t your project folder. Check with <code>getwd()</code>.</li>
+<li>The file isn’t in <code>data_raw/</code> (it may still be in your Downloads folder). Check with <code>list.files("data_raw")</code>.</li>
+<li>The file name doesn’t match exactly, including capitalization. Watch for a file saved as <code>class_data_raw.csv.csv</code> (Windows can hide the extension).</li>
+</ul>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled" title="🧠 Your Turn (in RStudio)">
+<div class="callout-header d-flex align-content-center">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>🧠 Your Turn (in RStudio)
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>This step can’t be done in the browser, because the browser can’t see the files on your computer. Open <code>EOH635_project.Rproj</code> in RStudio, create a script in your <code>scripts/</code> folder, and run:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">getwd</span>()                     <span class="co"># should end in EOH635_project</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">list.files</span>(<span class="st">"data_raw"</span>)      <span class="co"># should list class_data_raw.csv</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>data <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="fu">file.path</span>(<span class="st">"data_raw"</span>, <span class="st">"class_data_raw.csv"</span>))</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(data)                  <span class="co"># should be 2000</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p>If <code>nrow(data)</code> returns 2000, your project is set up correctly and the data read in. If you get an error, work through the causes in the box above.</p>
+</div>
+</div>
 <hr>
 </section>
 <section id="section-2" class="level1">
@@ -2178,7 +2220,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 <li>Are there any factors with many levels? Should any be combined or reclassified?</li>
 </ul>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 One way to think about it — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2187,7 +2229,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p>Most of the individual-level variables (<code>gender</code>, <code>education</code>, <code>race_ethnicity</code>, <code>employment_status</code>) come in as <strong>character</strong> strings rather than factors, and many of the health/behavior indicators (<code>stress</code>, <code>current_smoker</code>, <code>obese</code>, <code>high_blood_pressure</code>, etc.) are stored as <strong>numeric 0/1 flags</strong> even though they’re conceptually categorical (binary). That’s common in survey data, and it’s exactly the kind of thing <code>str()</code> is good for catching <em>before</em> you run an analysis that assumes the wrong type.</p>
 </div>
@@ -2209,7 +2251,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </blockquote>
 <p>Take a moment to actually answer this from the output above before revealing it below.</p>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Answer — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2218,7 +2260,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p><code>dim(data)</code> returns <code>2000  38</code>: <strong>2,000 rows</strong> and <strong>38 columns</strong>. Since each row is one participant, that means our data frame contains <strong>2,000 people</strong>, each described by 38 variables (columns).</p>
 </div>
@@ -2236,7 +2278,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </ul>
 <p>Think through these for a couple of variables yourself before checking below.</p>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Two worked examples — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2245,7 +2287,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <p><strong><code>age</code></strong> (a genuinely continuous variable): <code>summary()</code> gives six numbers — Min. <code>18.02</code>, 1st Qu. <code>29.99</code>, Median <code>40.36</code>, Mean <code>44.99</code>, 3rd Qu. <code>56.24</code>, Max. <code>116.00</code> — plus a count of missing values (<code>NA's 3</code>). These are all meaningful here: the middle 50% of participants (between the 1st and 3rd quartiles) are roughly 30 to 56 years old. But that <strong>Max. of 116</strong> should catch your eye immediately — a plausible age tops out well below that. That’s exactly the kind of thing <code>summary()</code> is good for catching early, before it quietly distorts an analysis later. (We’ll deal with this specific outlier in Lesson 4.)</p>
 <p><strong><code>high_blood_pressure</code></strong> (a binary 0/1 flag, not a continuous quantity): <code>summary()</code> reports Min. <code>0</code>, Median <code>0</code>, Mean <code>0.3048</code>, Max. <code>1</code>. The Min./Median/Max. here aren’t wrong, exactly, but they’re not very <em>useful</em> — a variable that can only be 0 or 1 doesn’t have a meaningful “middle” or “spread” the way age does. The one number worth keeping from this output is the <strong>Mean, <code>0.3048</code></strong> — for a 0/1 variable, the mean is just the proportion coded <code>1</code>, so about 30.5% of participants have high blood pressure. For everything else about a binary variable’s distribution, a frequency count (<code>table()</code>, coming up in Section 6) is the right tool, not <code>summary()</code>.</p>
@@ -2299,7 +2341,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 <div id="qwebr-insertion-location-9"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
 <div class="callout callout-style-default callout-note callout-titled" title="💡 Solution — click to reveal">
-<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
 <div class="callout-icon-container">
 <i class="callout-icon"></i>
 </div>
@@ -2308,7 +2350,7 @@ globalThis.qwebrCreateMonacoEditorInstance = function (cellData) {
 </div>
 <div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
 </div>
-<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
 <div class="callout-body-container callout-body">
 <div id="qwebr-insertion-location-10"></div>
 <noscript>Please enable JavaScript to experience the dynamic code cell content on this page.</noscript>
